@@ -7,6 +7,7 @@ from pathlib import Path
 import fitz # PyMuPDF
 import re
 import os
+from urllib.parse import quote_plus
 
 # --- Configuration ---
 # Job roles to search for
@@ -129,14 +130,14 @@ def get_rss_feeds(queries):
     for query in queries:
         location_param = ""
         if mapped_location:
-            location_param = f"&l={mapped_location}"
+            location_param = f"&l={quote_plus(mapped_location)}"
         
         fromage_param = ""
         if fromage:
             fromage_param = f"&fromage={fromage}"
 
         feed_name = f"Indeed - {query} ({location})"
-        feed_url = f"{INDEED_BASE_URL}?q={query.replace(' ', '+')}{location_param}{fromage_param}"
+        feed_url = f"{INDEED_BASE_URL}?q={quote_plus(query)}{location_param}{fromage_param}"
         feeds[feed_name] = feed_url
         
     return feeds

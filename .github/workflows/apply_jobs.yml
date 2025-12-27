@@ -23,7 +23,7 @@ on:
         - Last 7 days
         - Any
   schedule:
-    - cron: '0 8 * * *' # Runs at 8 AM UTC every day
+    - cron: '0 * * * *' # Runs every hour
 
 jobs:
   apply:

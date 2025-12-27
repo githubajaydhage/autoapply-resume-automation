@@ -74,7 +74,7 @@ jobs:
         NAUKRI_PASSWORD: ${{ secrets.NAUKRI_PASSWORD }}
 
     - name: Upload Application Logs
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: application-logs
         path: |

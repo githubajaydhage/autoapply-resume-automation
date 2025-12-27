@@ -2,6 +2,7 @@
 Scrapes job listings from company career pages
 """
 import logging
+import os
 from urllib.parse import urlencode
 from bs4 import BeautifulSoup
 from playwright.sync_api import sync_playwright
@@ -10,7 +11,7 @@ from utils.config import COMPANY_CAREERS
 logger = logging.getLogger(__name__)
 
 
-def scrape_company_jobs(keywords: list, companies: list = None) -> list:
+def scrape_company_jobs(keywords: list, companies: list = None, location: str = None) -> list:
     """
     Scrape jobs from company career pages
     
@@ -18,11 +19,16 @@ def scrape_company_jobs(keywords: list, companies: list = None) -> list:
         keywords: List of keywords to search for
         companies: List of company keys to scrape (e.g., ['google', 'microsoft'])
                   If None, scrapes all configured companies
+        location: Job location (e.g., 'Bangalore', 'Remote', 'Hybrid')
     
     Returns:
         List of job dictionaries with keys: title, company, url, portal
     """
     jobs = []
+    
+    # Get location from environment variable if not provided
+    if location is None:
+        location = os.getenv("JOB_LOCATION", "Bangalore")
     
     # If no companies specified, use all configured companies
     if companies is None:
@@ -46,11 +52,11 @@ def scrape_company_jobs(keywords: list, companies: list = None) -> list:
                 config = COMPANY_CAREERS[company_key]
                 company_name = config["name"]
                 
-                logger.info(f"[{company_name}] Starting scrape")
+                logger.info(f"[{company_name}] Starting scrape for location: {location}")
                 
-                # Build search URL with keywords
+                # Build search URL with keywords and location
                 base_url = config["careers_url"]
-                search_params = config.get("search_params", {})
+                search_params = config.get("search_params", {}).copy()
                 
                 # Add keywords to search params
                 keyword_str = " OR ".join(keywords[:5])  # Limit to top 5 keywords
@@ -58,6 +64,25 @@ def scrape_company_jobs(keywords: list, companies: list = None) -> list:
                     if "keyword" in key.lower() or "query" in key.lower() or key == "q":
                         search_params[key] = keyword_str
                         break
+                
+                # Add location to search params
+                location_map = {
+                    "Bangalore": "Bangalore",
+                    "Remote": "Remote",
+                    "Hybrid": "Remote",  # Most companies tag hybrid as remote
+                    "Any": ""
+                }
+                mapped_location = location_map.get(location, location)
+                
+                # Add location to search params if not "Any"
+                if mapped_location:
+                    for key in search_params:
+                        if "location" in key.lower() or "loc" in key.lower():
+                            search_params[key] = mapped_location
+                            break
+                    else:
+                        # If no location field found, add it
+                        search_params["location"] = mapped_location
                 
                 # Build full URL
                 if search_params:

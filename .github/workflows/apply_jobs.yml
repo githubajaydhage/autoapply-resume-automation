@@ -6,9 +6,10 @@ on:
       job_location:
         description: 'Job Location'
         required: true
-        default: 'Remote'
+        default: 'Bangalore'
         type: choice
         options:
+        - Bangalore
         - Remote
         - Hybrid
         - Any
@@ -53,7 +54,7 @@ jobs:
       run: python scripts/scrape_jobs.py
       working-directory: ./job-automation
       env:
-        JOB_LOCATION: ${{ github.event.inputs.job_location || 'Remote' }}
+        JOB_LOCATION: ${{ github.event.inputs.job_location || 'Bangalore' }}
         JOB_FRESHNESS: ${{ github.event.inputs.job_freshness || 'Last 24 hours' }}
 
     - name: Run Resume Tailor

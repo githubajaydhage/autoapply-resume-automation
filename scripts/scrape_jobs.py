@@ -82,7 +82,7 @@ def get_rss_feeds(queries):
     feeds = {}
     
     # Get location and freshness from environment variables set by the workflow
-    location = os.getenv("JOB_LOCATION", "Remote")
+    location = os.getenv("JOB_LOCATION", "Bangalore")
     freshness_days = os.getenv("JOB_FRESHNESS", "1") # Default to last 24 hours
 
     # Map freshness input to Indeed's 'fromage' parameter
@@ -94,10 +94,19 @@ def get_rss_feeds(queries):
     }
     fromage = freshness_map.get(freshness_days, "")
 
+    # Map location to Indeed's location format
+    location_map = {
+        "Bangalore": "Bangalore, Karnataka",
+        "Remote": "Remote",
+        "Hybrid": "Hybrid Remote",
+        "Any": ""
+    }
+    mapped_location = location_map.get(location, location)
+
     for query in queries:
         location_param = ""
-        if location != "Any":
-            location_param = f"&l={location}"
+        if mapped_location:
+            location_param = f"&l={mapped_location}"
         
         fromage_param = ""
         if fromage:

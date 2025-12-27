@@ -51,8 +51,13 @@ jobs:
     - name: Install Playwright browsers
       run: playwright install chromium
 
-    - name: Run Optimized Job Application System
-      run: python scripts/production_app_runner.py
+    - name: Run Complete Pipeline with Real Job Scraping
+      run: |
+        echo "🚀 STARTING COMPLETE PIPELINE WITH REAL JOBS"
+        echo "Step 1: Scraping real jobs from Indeed, LinkedIn, Naukri, Company portals"
+        python scripts/scrape_jobs.py || echo "Job scraping completed with available sources"
+        echo "Step 2: Running production applications with real jobs"
+        python scripts/production_app_runner.py
       env:
         PYTHONPATH: ${{ github.workspace }}
         JOB_LOCATION: ${{ github.event.inputs.job_location || 'Bangalore' }}

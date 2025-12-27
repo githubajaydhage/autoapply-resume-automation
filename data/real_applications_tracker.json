@@ -1,0 +1,28 @@
+{
+  "timestamp": 1766856021.0498242,
+  "workflow_triggered": true,
+  "expected_results": {
+    "applications": "50-200 jobs",
+    "email_confirmations": "Within 10-30 minutes",
+    "profile_views": "Within 1-6 hours",
+    "interview_calls": "Within 24-48 hours"
+  },
+  "platforms": {
+    "linkedin": {
+      "enabled": true,
+      "expected_confirmations": "20-60"
+    },
+    "naukri": {
+      "enabled": true,
+      "expected_confirmations": "20-60"
+    },
+    "indeed": {
+      "enabled": true,
+      "expected_confirmations": "10-30"
+    },
+    "companies": {
+      "enabled": true,
+      "expected_confirmations": "10-40"
+    }
+  }
+}

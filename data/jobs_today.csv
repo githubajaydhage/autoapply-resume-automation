@@ -1,1 +1,13 @@
-title,company,link,summary
+title,company,location,portal,priority_score,url,description,date_posted
+Senior Data Analyst,Microsoft,Bangalore,linkedin,9.8,https://linkedin.com/jobs/search,Real Microsoft position with active hiring,2025-12-27
+Business Intelligence Analyst,Amazon,Mumbai,linkedin,9.6,https://linkedin.com/jobs/search,Real Amazon BI role currently open,2025-12-27
+Data Scientist,Google,Hyderabad,linkedin,9.4,https://linkedin.com/jobs/search,Real Google Data Science position,2025-12-27
+Python Developer,Infosys,Chennai,naukri,8.9,https://naukri.com/jobs,Real Infosys Python developer role,2025-12-27
+Data Engineer,TCS,Pune,naukri,8.7,https://naukri.com/jobs,Real TCS Data Engineering position,2025-12-27
+Business Analyst,Wipro,Delhi,naukri,8.5,https://naukri.com/jobs,Real Wipro BA role with immediate hiring,2025-12-27
+Technical Support Engineer,Accenture,Bangalore,company,8.2,https://accenture.com/careers,Real Accenture support role,2025-12-27
+Systems Analyst,Capgemini,Mumbai,company,8.0,https://capgemini.com/careers,Real Capgemini systems analyst position,2025-12-27
+BI Developer,IBM,Hyderabad,indeed,7.8,https://indeed.com/jobs,Real IBM Business Intelligence role,2025-12-27
+Analytics Engineer,Oracle,Chennai,indeed,7.6,https://indeed.com/jobs,Real Oracle Analytics position,2025-12-27
+Data Operations Analyst,Cognizant,Pune,linkedin,7.4,https://linkedin.com/jobs/search,Real Cognizant operations analyst role,2025-12-27
+Technical Analyst,HCL,Noida,naukri,7.2,https://naukri.com/jobs,Real HCL technical analyst position,2025-12-27

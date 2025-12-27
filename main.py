@@ -68,7 +68,11 @@ def main():
             logging.info(f"Processing company career page jobs: {company_key}")
             
             from utils.browser_manager import BrowserManager
-            with BrowserManager() as page:
+            import os
+            user_data_dir = os.path.join(os.getcwd(), "browser_data", company_key)
+            os.makedirs(user_data_dir, exist_ok=True)
+            
+            with BrowserManager(user_data_dir, headless=True) as page:
                 applicator = CompanyCareersApplicator(page, company_key)
                 applicator.run(jobs)
         else:

@@ -2,14 +2,15 @@
 Company Career Pages Applicator - Generic handler for company career websites
 """
 import logging
+import os
+import re
 from playwright.sync_api import Page, TimeoutError
-from .base import BaseApplicator
 from utils.config import COMPANY_CAREERS
 
 logger = logging.getLogger(__name__)
 
 
-class CompanyCareersApplicator(BaseApplicator):
+class CompanyCareersApplicator:
     """Handles job applications on company career pages"""
     
     def __init__(self, page: Page, company_key: str):
@@ -20,24 +21,48 @@ class CompanyCareersApplicator(BaseApplicator):
             page: Playwright page object
             company_key: Key from COMPANY_CAREERS config (e.g., 'google', 'microsoft')
         """
+        self.page = page
         self.company_key = company_key
         self.company_config = COMPANY_CAREERS.get(company_key)
         
         if not self.company_config:
             raise ValueError(f"Company '{company_key}' not found in COMPANY_CAREERS config")
         
-        # Company career pages typically don't require login
-        # Set dummy portal_key to avoid base class errors
-        super().__init__(page, portal_key=None)
         self.company_name = self.company_config["name"]
+    
+    def run(self, jobs):
+        """
+        Process and apply to all jobs for this company
         
-    def login(self) -> bool:
+        Args:
+            jobs: List of job dictionaries
         """
-        Company career pages typically don't require login.
-        Override to skip authentication.
-        """
-        logger.info(f"[{self.company_name}] No login required for company career pages")
-        return True
+        logger.info(f"[{self.company_name}] Starting application process for {len(jobs)} jobs")
+        
+        for job in jobs:
+            # Get tailored resume path
+            tailored_resume_path = self._get_tailored_resume_path(job)
+            
+            if not os.path.exists(tailored_resume_path):
+                logger.warning(f"[{self.company_name}] Tailored resume not found: {tailored_resume_path}")
+                continue
+            
+            # Apply to the job
+            success = self.apply_to_job(job["link"], tailored_resume_path)
+            
+            if success:
+                logger.info(f"[{self.company_name}] ✓ Successfully applied to: {job['title']}")
+            else:
+                logger.warning(f"[{self.company_name}] ✗ Failed to apply to: {job['title']}")
+        
+        logger.info(f"[{self.company_name}] Application process completed")
+    
+    def _get_tailored_resume_path(self, job: dict) -> str:
+        """Constructs the path for the tailored resume"""
+        from utils.config import TAILORED_RESUMES_DIR
+        safe_title = re.sub(r'[\\/*?:"<>|]', "", job["title"])
+        safe_company = re.sub(r'[\\/*?:"<>|]', "", job["company"])
+        return os.path.join(TAILORED_RESUMES_DIR, f"{safe_company}_{safe_title}.pdf")
     
     def apply_to_job(self, job_url: str, tailored_resume_path: str) -> bool:
         """

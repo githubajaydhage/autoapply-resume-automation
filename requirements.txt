@@ -1,0 +1,8 @@
+playwright
+python-docx
+feedparser
+pandas
+requests
+beautifulsoup4
+lxml
+PyMuPDF

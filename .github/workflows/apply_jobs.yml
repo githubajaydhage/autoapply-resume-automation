@@ -1,0 +1,83 @@
+name: Scheduled Job Application
+
+on:
+  workflow_dispatch:
+    inputs:
+      job_location:
+        description: 'Job Location'
+        required: true
+        default: 'Remote'
+        type: choice
+        options:
+        - Remote
+        - Hybrid
+        - Any
+      job_freshness:
+        description: 'Job Freshness'
+        required: true
+        default: 'Last 24 hours'
+        type: choice
+        options:
+        - Last 24 hours
+        - Last 3 days
+        - Last 7 days
+        - Any
+  schedule:
+    - cron: '0 8 * * *' # Runs at 8 AM UTC every day
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+      working-directory: ./job-automation
+
+    - name: Install Playwright browsers
+      run: playwright install chromium
+      working-directory: ./job-automation
+
+    - name: Run Job Scraper
+      id: scrape
+      run: python scripts/scrape_jobs.py
+      working-directory: ./job-automation
+      env:
+        JOB_LOCATION: ${{ github.event.inputs.job_location || 'Remote' }}
+        JOB_FRESHNESS: ${{ github.event.inputs.job_freshness || 'Last 24 hours' }}
+
+    - name: Run Resume Tailor
+      run: python scripts/tailor_resume.py
+      working-directory: ./job-automation
+      # This step requires a base_resume.pdf, which should be in the repo.
+
+    - name: Run Main Application Orchestrator
+      run: python main.py
+      working-directory: ./job-automation
+      env:
+        LINKEDIN_EMAIL: ${{ secrets.LINKEDIN_EMAIL }}
+        LINKEDIN_PASSWORD: ${{ secrets.LINKEDIN_PASSWORD }}
+        INDEED_EMAIL: ${{ secrets.INDEED_EMAIL }}
+        INDEED_PASSWORD: ${{ secrets.INDEED_PASSWORD }}
+        NAUKRI_EMAIL: ${{ secrets.NAUKRI_EMAIL }}
+        NAUKRI_PASSWORD: ${{ secrets.NAUKRI_PASSWORD }}
+
+    - name: Upload Application Logs
+      uses: actions/upload-artifact@v3
+      with:
+        name: application-logs
+        path: |
+          job-automation/data/applied_log.csv
+          job-automation/data/errors.log
+          job-automation/data/main.log
+      if: always()

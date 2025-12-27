@@ -14,6 +14,22 @@ JOBS_CSV_PATH = os.path.join(DATA_DIR, "jobs_today.csv")
 APPLIED_LOG_PATH = os.path.join(DATA_DIR, "applied_log.csv")
 ERROR_LOG_PATH = os.path.join(DATA_DIR, "errors.log")
 
+# --- User Application Details ---
+# These will be used to auto-fill application forms
+USER_DETAILS = {
+    "full_name": os.getenv("APPLICANT_NAME", "Ajay Dhage"),
+    "first_name": os.getenv("APPLICANT_FIRST_NAME", "Ajay"),
+    "last_name": os.getenv("APPLICANT_LAST_NAME", "Dhage"),
+    "email": os.getenv("APPLICANT_EMAIL", "ajay.dhage@example.com"),
+    "phone": os.getenv("APPLICANT_PHONE", "+91 9876543210"),
+    "location": os.getenv("APPLICANT_LOCATION", "Bangalore, Karnataka, India"),
+    "city": os.getenv("APPLICANT_CITY", "Bangalore"),
+    "country": os.getenv("APPLICANT_COUNTRY", "India"),
+    "work_authorization": os.getenv("APPLICANT_WORK_AUTH", "Authorized to work in India"),
+    "linkedin_url": os.getenv("APPLICANT_LINKEDIN", "https://www.linkedin.com/in/ajay-dhage"),
+    "years_experience": os.getenv("APPLICANT_EXPERIENCE", "3"),
+}
+
 
 # --- Portal Configurations ---
 # Storing selectors here makes them easier to update when websites change.

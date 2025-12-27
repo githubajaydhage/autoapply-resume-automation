@@ -16,7 +16,15 @@ JOB_ROLES = [
     "BI Developer",
     "Business Analyst",
     "Data Engineer",
-    "Analytics Engineer"
+    "Analytics Engineer",
+    "Technical Support Engineer",
+    "Technical Analyst",
+    "Systems Analyst",
+    "IT Analyst",
+    "Support Engineer",
+    "Technical Support",
+    "Application Support",
+    "Data Operations Analyst"
 ]
 
 # Base search URL for Indeed

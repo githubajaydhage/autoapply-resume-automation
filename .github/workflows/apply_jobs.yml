@@ -43,28 +43,23 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
-      working-directory: ./job-automation
 
     - name: Install Playwright browsers
       run: playwright install chromium
-      working-directory: ./job-automation
 
     - name: Run Job Scraper
       id: scrape
       run: python scripts/scrape_jobs.py
-      working-directory: ./job-automation
       env:
         JOB_LOCATION: ${{ github.event.inputs.job_location || 'Bangalore' }}
         JOB_FRESHNESS: ${{ github.event.inputs.job_freshness || 'Last 24 hours' }}
 
     - name: Run Resume Tailor
       run: python scripts/tailor_resume.py
-      working-directory: ./job-automation
       # This step requires a base_resume.pdf, which should be in the repo.
 
     - name: Run Main Application Orchestrator
       run: python main.py
-      working-directory: ./job-automation
       env:
         LINKEDIN_EMAIL: ${{ secrets.LINKEDIN_EMAIL }}
         LINKEDIN_PASSWORD: ${{ secrets.LINKEDIN_PASSWORD }}
@@ -78,7 +73,7 @@ jobs:
       with:
         name: application-logs
         path: |
-          job-automation/data/applied_log.csv
-          job-automation/data/errors.log
-          job-automation/data/main.log
+          data/applied_log.csv
+          data/errors.log
+          data/main.log
       if: always()

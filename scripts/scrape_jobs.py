@@ -10,7 +10,14 @@ import os
 
 # --- Configuration ---
 # Job roles to search for
-JOB_ROLES = ["Data Analyst", "Python Developer", "DevOps Engineer"]
+JOB_ROLES = [
+    "Data Analyst",
+    "Business Intelligence Analyst",
+    "BI Developer",
+    "Business Analyst",
+    "Data Engineer",
+    "Analytics Engineer"
+]
 
 # Base search URL for Indeed
 INDEED_BASE_URL = "https://www.indeed.com/rss"
@@ -42,29 +49,37 @@ def extract_text_from_pdf(pdf_path):
         return ""
 
 def extract_skills_from_resume(resume_text):
-    """Extracts skills from resume text, looking for a specific section."""
+    """Extracts relevant data/analytics skills from resume text."""
     skills = []
-    try:
-        # Look for a "Technical Skills" section
-        skills_section = re.search(r"technical skills(.*?)(\n\n|\Z)", resume_text, re.IGNORECASE | re.DOTALL)
-        if skills_section:
-            # Simple split by common delimiters
-            potential_skills = re.split(r'[,|\n|•]', skills_section.group(1))
-            for skill in potential_skills:
-                skill = skill.strip()
-                if skill and len(skill) > 1:
-                    skills.append(skill)
-    except Exception as e:
-        logging.error(f"Could not extract skills from resume: {e}")
     
-    # Fallback to a generic keyword search if section not found
-    if not skills:
-        generic_skills = ["Python", "Java", "SQL", "AWS", "Azure", "Docker", "Kubernetes", "React", "JavaScript"]
-        for skill in generic_skills:
-            if re.search(r'\b' + re.escape(skill) + r'\b', resume_text, re.IGNORECASE):
-                skills.append(skill)
-
-    return list(set(skills)) # Return unique skills
+    # Prioritized data/analytics skills to search for
+    relevant_skills = [
+        # BI Tools
+        "Power BI", "Tableau", "Looker", "QlikView", "SSRS",
+        # Databases & Query Languages
+        "SQL", "MySQL", "PostgreSQL", "Oracle", "T-SQL", "SSMS",
+        # Programming
+        "Python", "R", "DAX", "M Query", "Power Query",
+        # Data Processing
+        "ETL", "Data Warehouse", "Data Pipeline", "Data Modeling",
+        # Excel & Office
+        "Excel", "Advanced Excel", "VBA", "Pivot Tables",
+        # Cloud Platforms
+        "Azure", "AWS", "GCP", "Snowflake", "BigQuery",
+        # Visualization
+        "Data Visualization", "Dashboard", "KPI", "Reporting"
+    ]
+    
+    # Extract skills present in resume
+    for skill in relevant_skills:
+        if re.search(r'\b' + re.escape(skill) + r'\b', resume_text, re.IGNORECASE):
+            skills.append(skill)
+    
+    # Add core competencies if skills list is short
+    if len(skills) < 3:
+        skills.extend(["SQL", "Power BI", "Excel"])
+    
+    return list(set(skills))[:8]  # Return unique skills, limit to top 8
 
 def construct_search_queries(skills):
     """Constructs search queries from roles and skills."""

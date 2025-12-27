@@ -179,10 +179,24 @@ if __name__ == "__main__":
         skills = extract_skills_from_resume(resume_text)
         logging.info(f"Extracted skills from resume: {skills}")
         
+        # Scrape from Indeed
         search_queries = construct_search_queries(skills)
         rss_feeds = get_rss_feeds(search_queries)
-        
         jobs = fetch_jobs(rss_feeds)
+        
+        # Scrape from company career pages
+        from scripts.scrape_company_jobs import scrape_company_jobs
+        company_jobs = scrape_company_jobs(skills)
+        
+        # Convert company jobs to same format as Indeed jobs
+        for job in company_jobs:
+            jobs.append({
+                "title": job["title"],
+                "company": job["company"],
+                "link": job["url"],
+                "summary": f"Job from {job['company']} career page",
+                "portal": job.get("portal", "company")
+            })
         
         if jobs:
             save_jobs_to_csv(jobs)

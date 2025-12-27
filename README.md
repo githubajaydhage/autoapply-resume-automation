@@ -1,6 +1,6 @@
 # Production-Grade Job Application Automation
 
-This framework automates the process of applying for jobs on portals like LinkedIn, Indeed, and Naukri. It is designed for full, headless automation within a GitHub Actions environment.
+This framework automates the process of applying for jobs on portals like **LinkedIn, Indeed, Naukri**, and **company career pages** (Google, Microsoft, Amazon, and more). It is designed for full, headless automation within a GitHub Actions environment.
 
 **Disclaimer:** This tool is for personal use only. The user is responsible for all actions performed.
 
@@ -12,19 +12,47 @@ The framework has been refactored to a production-grade architecture with a focu
 -   **`applicators/`**: Contains portal-specific logic. Each applicator inherits from a `BaseApplicator` to reduce code duplication.
     -   `base.py`: Abstract base class defining the standard interface for all applicators.
     -   `linkedin.py`, `indeed.py`, `naukri.py`: Implementations for each job portal.
+    -   `company_careers.py`: Generic applicator for company career pages (Google, Microsoft, Amazon, etc.).
 -   **`utils/`**: Contains shared, reusable components.
     -   `browser_manager.py`: A class to manage the Playwright browser instance.
     -   `config.py`: Centralized configuration for portal URLs, credentials, and CSS selectors. This makes updating selectors easy when websites change.
 -   **`scripts/`**: Contains standalone scripts for scraping and resume tailoring.
     -   `scrape_jobs.py`: Dynamically generates job search queries based on your resume's skills and applies filters for location and freshness.
+    -   `scrape_company_jobs.py`: Scrapes jobs directly from company career pages (Google, Microsoft, Amazon).
     -   `tailor_resume.py`: Customizes your PDF resume with job-specific keywords.
 
 ## How It Works
 
-1.  **Dynamic Job Scraping:** The GitHub Actions workflow triggers `scrape_jobs.py`. This script reads your `base_resume.pdf`, extracts your skills, and generates targeted search queries for Indeed. It filters by location and freshness based on your workflow inputs.
+1.  **Dynamic Job Scraping:** The GitHub Actions workflow triggers `scrape_jobs.py`. This script reads your `base_resume.pdf`, extracts your skills, and generates targeted search queries for Indeed and company career pages. It filters by location and freshness based on your workflow inputs.
 2.  **Resume Tailoring:** `tailor_resume.py` reads the scraped jobs and your base PDF resume. It injects relevant keywords into the resume, creating a tailored PDF for each application.
 3.  **Automated Application:** The main orchestrator (`main.py`) runs, delegating jobs to the correct applicator based on the job link. Each applicator logs in automatically using credentials from GitHub Secrets and submits the application.
 4.  **Logging and Artifacts:** All actions are logged. The final application log is uploaded as a GitHub Actions artifact.
+
+## Adding More Companies
+
+To apply to additional company career pages:
+
+1. Open [utils/config.py](utils/config.py)
+2. Add a new entry to the `COMPANY_CAREERS` dictionary with:
+   - `name`: Company name
+   - `careers_url`: Base URL for their careers page
+   - `search_params`: URL parameters for job search
+   - `selectors`: CSS selectors for job cards, titles, links, and apply buttons
+
+Example:
+```python
+"meta": {
+    "name": "Meta",
+    "careers_url": "https://www.metacareers.com/jobs/",
+    "search_params": {"q": ""},  # Keywords will be auto-filled
+    "selectors": {
+        "job_card": "._9ata",
+        "job_title": "._8esa",
+        "job_link": "a[href*='/jobs/']",
+        "apply_button": "button:has-text('Apply now')"
+    }
+}
+```
 
 ## Step-by-Step Execution
 

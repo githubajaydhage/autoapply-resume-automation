@@ -72,5 +72,53 @@ PORTAL_CONFIGS = {
             "application_sent_indicator": 'text="Your application has been sent"',
         }
     },
-    # Add Glassdoor and ZipRecruiter configs here if needed
+}
+
+# --- Company Career Page Configurations ---
+# Add companies you want to target with their career page URLs and selectors
+COMPANY_CAREERS = {
+    "google": {
+        "name": "Google",
+        "careers_url": "https://careers.google.com/jobs/results/",
+        "search_params": {
+            "q": "",  # Will be filled by keywords
+            "location": "Remote",
+        },
+        "selectors": {
+            "job_card": ".gc-card",
+            "job_title": "h3",
+            "job_link": "a[href*='/jobs/results/']",
+            "apply_button": "button:has-text('Apply')",
+            "application_form": "form",
+        }
+    },
+    "microsoft": {
+        "name": "Microsoft",
+        "careers_url": "https://careers.microsoft.com/professionals/us/en/search-results",
+        "search_params": {
+            "keywords": "",  # Will be filled by keywords
+            "location": "Remote",
+        },
+        "selectors": {
+            "job_card": "[data-ph-id*='ph-page-element-page']",
+            "job_title": "h2",
+            "job_link": "a[data-ph-id*='job-link']",
+            "apply_button": "a:has-text('Apply now')",
+        }
+    },
+    "amazon": {
+        "name": "Amazon",
+        "careers_url": "https://www.amazon.jobs/en/search",
+        "search_params": {
+            "base_query": "",  # Will be filled by keywords
+            "loc_query": "Remote",
+        },
+        "selectors": {
+            "job_card": ".job-tile",
+            "job_title": ".job-title",
+            "job_link": "a[href*='/jobs/']",
+            "apply_button": "#apply-button",
+        }
+    },
+    # Add more companies as needed
 }

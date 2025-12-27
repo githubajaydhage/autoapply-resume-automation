@@ -51,16 +51,20 @@ jobs:
       id: scrape
       run: python scripts/scrape_jobs.py
       env:
+        PYTHONPATH: ${{ github.workspace }}
         JOB_LOCATION: ${{ github.event.inputs.job_location || 'Bangalore' }}
         JOB_FRESHNESS: ${{ github.event.inputs.job_freshness || 'Last 24 hours' }}
 
     - name: Run Resume Tailor
       run: python scripts/tailor_resume.py
+      env:
+        PYTHONPATH: ${{ github.workspace }}
       # This step requires a base_resume.pdf, which should be in the repo.
 
     - name: Run Main Application Orchestrator
       run: python main.py
       env:
+        PYTHONPATH: ${{ github.workspace }}
         LINKEDIN_EMAIL: ${{ secrets.LINKEDIN_EMAIL }}
         LINKEDIN_PASSWORD: ${{ secrets.LINKEDIN_PASSWORD }}
         INDEED_EMAIL: ${{ secrets.INDEED_EMAIL }}

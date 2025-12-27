@@ -57,12 +57,6 @@ class CompanyCareersApplicator:
         
         logger.info(f"[{self.company_name}] Application process completed")
     
-    def _get_tailored_resume_path(self, job: dict) -> str:
-        """Constructs the path for the tailored resume"""
-        from utils.config import TAILORED_RESUMES_DIR
-        safe_title = re.sub(r'[\\/*?:"<>|]', "", job["title"])
-        safe_company = re.sub(r'[\\/*?:"<>|]', "", job["company"])
-        return os.path.join(TAILORED_RESUMES_DIR, f"{safe_company}_{safe_title}.pdf")
     
     def apply_to_job(self, job_url: str, tailored_resume_path: str) -> bool:
         """

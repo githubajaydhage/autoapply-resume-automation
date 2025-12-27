@@ -5,6 +5,7 @@ import logging
 import os
 from pathlib import Path
 from utils.config import JOBS_CSV_PATH, BASE_RESUME_PATH, TAILORED_RESUMES_DIR, ERROR_LOG_PATH
+from utils.resume_naming import get_resume_naming_manager
 
 # --- Configuration ---
 KEYWORDS_PLACEHOLDER = "[KEYWORDS]"
@@ -33,7 +34,7 @@ def extract_keywords_from_summary(text):
     keywords = [kw for kw in potential_keywords if kw.lower() not in STOP_WORDS and len(kw) > 1]
     return sorted(list(set(keywords)), key=lambda x: x.lower())
 
-def tailor_resume_pdf(job, base_doc):
+def tailor_resume_pdf(job, base_doc, naming_manager):
     """Injects keywords into a PDF resume and saves a tailored version."""
     try:
         keywords = extract_keywords_from_summary(job["summary"])
@@ -43,11 +44,12 @@ def tailor_resume_pdf(job, base_doc):
 
         keyword_str = ", ".join(keywords)
         
-        # Create a clean filename
-        safe_title = re.sub(r'[\\/*?:"<>|]', "", job["title"])
-        safe_company = re.sub(r'[\\/*?:"<>|]', "", job["company"])
-        tailored_resume_filename = f"{safe_company}_{safe_title}.pdf"
-        tailored_resume_path = os.path.join(TAILORED_RESUMES_DIR, tailored_resume_filename)
+        # Use standardized naming
+        tailored_resume_path = naming_manager.get_tailored_resume_path(job, use_standardized_title=True)
+        
+        # Log both original and standardized titles for debugging
+        standardized_title = naming_manager.title_standardizer.standardize_title(job["title"])
+        logging.info(f"Tailoring resume: '{job['title']}' -> '{standardized_title}' for {job['company']}")
 
         # Replace placeholder in the PDF
         for page in base_doc:
@@ -77,6 +79,9 @@ def main():
         return
 
     Path(TAILORED_RESUMES_DIR).mkdir(exist_ok=True)
+    
+    # Initialize resume naming manager
+    naming_manager = get_resume_naming_manager(TAILORED_RESUMES_DIR)
 
     try:
         jobs_df = pd.read_csv(JOBS_CSV_PATH)
@@ -86,7 +91,7 @@ def main():
 
     for index, job in jobs_df.iterrows():
         base_doc = fitz.open(BASE_RESUME_PATH) # Re-open for each job to start fresh
-        tailor_resume_pdf(job, base_doc)
+        tailor_resume_pdf(job, base_doc, naming_manager)
         base_doc.close()
 
     logging.info("--- Resume Tailoring Finished ---")

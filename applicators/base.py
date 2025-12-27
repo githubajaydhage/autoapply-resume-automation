@@ -7,6 +7,7 @@ import re
 from playwright.sync_api import Page, TimeoutError as PlaywrightTimeoutError
 from utils.browser_manager import BrowserManager
 from utils.config import PORTAL_CONFIGS
+from utils.resume_naming import get_resume_naming_manager
 import scripts.tracker as tracker
 
 class BaseApplicator(ABC):
@@ -19,6 +20,9 @@ class BaseApplicator(ABC):
             user_data_dir=self.config["user_data_dir"],
             headless=True # Always headless in production
         )
+        # Initialize resume naming manager
+        from utils.config import TAILORED_RESUMES_DIR
+        self.resume_naming_manager = get_resume_naming_manager(TAILORED_RESUMES_DIR)
 
     def run(self, jobs):
         """The main execution method for an applicator."""
@@ -74,8 +78,31 @@ class BaseApplicator(ABC):
         pass
 
     def _get_tailored_resume_path(self, job: dict) -> str:
-        """Constructs the path for the tailored resume."""
-        from utils.config import TAILORED_RESUMES_DIR
-        safe_title = re.sub(r'[\\/*?:"<>|]', "", job["title"])
-        safe_company = re.sub(r'[\\/*?:"<>|]', "", job["company"])
-        return os.path.join(TAILORED_RESUMES_DIR, f"{safe_company}_{safe_title}.pdf")
+        """Constructs the path for the tailored resume with fallback logic."""
+        # Try to find existing resume with multiple naming patterns
+        resume_path = self.resume_naming_manager.find_matching_resume(job)
+        
+        if resume_path and os.path.exists(resume_path):
+            logging.info(f"Found existing tailored resume: {resume_path}")
+            return resume_path
+        
+        # If not found, use standardized naming (this is what should be created)
+        expected_path = self.resume_naming_manager.get_tailored_resume_path(job, use_standardized_title=True)
+        
+        if not os.path.exists(expected_path):
+            # Log detailed information for debugging
+            original_title = job.get("title", "Unknown")
+            standardized_title = self.resume_naming_manager.title_standardizer.standardize_title(original_title)
+            company = job.get("company", "Unknown")
+            
+            logging.warning(f"Tailored resume not found for {company} - {original_title}")
+            logging.warning(f"Expected standardized title: {standardized_title}")
+            logging.warning(f"Expected path: {expected_path}")
+            
+            # List available resumes for debugging
+            from utils.config import TAILORED_RESUMES_DIR
+            if os.path.exists(TAILORED_RESUMES_DIR):
+                available_resumes = [f for f in os.listdir(TAILORED_RESUMES_DIR) if f.endswith('.pdf')]
+                logging.info(f"Available tailored resumes: {available_resumes}")
+        
+        return expected_path

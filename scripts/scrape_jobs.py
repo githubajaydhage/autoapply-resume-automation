@@ -8,6 +8,9 @@ import fitz # PyMuPDF
 import re
 import os
 from urllib.parse import quote_plus
+import requests
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 
 # --- Configuration ---
 # Job roles to search for
@@ -94,11 +97,12 @@ def construct_search_queries(skills):
     """Constructs search queries from roles and skills."""
     queries = []
     for role in JOB_ROLES:
-        # Main role query
+        # Main role query only - don't add skill variations to avoid rate limiting
         queries.append(role)
-        # Role + skill queries
-        for skill in skills[:3]: # Limit to top 3 skills to avoid overly specific searches
-            queries.append(f'{role} {skill}')
+    
+    # Add a few skill-based queries for top skills
+    queries.extend(skills[:3])
+    
     return queries
 
 def get_rss_feeds(queries):
@@ -147,17 +151,58 @@ def clean_summary(summary_html):
     soup = BeautifulSoup(summary_html, "lxml")
     return soup.get_text().strip()
 
+def create_session_with_retries():
+    """Creates a requests session with retry logic and proper headers."""
+    session = requests.Session()
+    
+    # Configure retry strategy
+    retry_strategy = Retry(
+        total=3,
+        backoff_factor=1,
+        status_forcelist=[429, 500, 502, 503, 504],
+    )
+    adapter = HTTPAdapter(max_retries=retry_strategy)
+    session.mount("http://", adapter)
+    session.mount("https://", adapter)
+    
+    # Add headers to appear as a normal browser
+    session.headers.update({
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Accept': 'application/rss+xml, application/xml, text/xml, */*',
+        'Accept-Language': 'en-US,en;q=0.9',
+        'Accept-Encoding': 'gzip, deflate, br',
+        'DNT': '1',
+        'Connection': 'keep-alive',
+        'Upgrade-Insecure-Requests': '1',
+    })
+    
+    return session
+
 def fetch_jobs(rss_feeds):
     """Fetches jobs from RSS feeds and returns a list of job dictionaries."""
     jobs_list = []
+    session = create_session_with_retries()
+    
     for feed_name, feed_url in rss_feeds.items():
         try:
             logging.info(f"Fetching jobs from: {feed_name}")
-            feed = feedparser.parse(feed_url)
+            
+            # Fetch with proper headers using requests
+            response = session.get(feed_url, timeout=30)
+            response.raise_for_status()
+            
+            # Parse the RSS feed from the response content
+            feed = feedparser.parse(response.content)
             
             if feed.bozo:
                 logging.warning(f"Could not parse feed {feed_name}: {feed.bozo_exception}")
                 continue
+
+            if not feed.entries:
+                logging.info(f"No jobs found in feed: {feed_name}")
+                continue
+                
+            logging.info(f"Found {len(feed.entries)} jobs in {feed_name}")
 
             for entry in feed.entries:
                 job = {
@@ -168,8 +213,11 @@ def fetch_jobs(rss_feeds):
                 }
                 jobs_list.append(job)
             
-            time.sleep(2)
+            # Rate limiting - wait between requests
+            time.sleep(3)
 
+        except requests.exceptions.RequestException as e:
+            logging.error(f"Network error fetching from {feed_name}: {e}")
         except Exception as e:
             logging.error(f"An error occurred while fetching from {feed_name}: {e}")
             

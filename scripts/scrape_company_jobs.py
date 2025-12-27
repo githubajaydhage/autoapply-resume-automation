@@ -58,8 +58,13 @@ def scrape_company_jobs(keywords: list, companies: list = None, location: str = 
                 base_url = config["careers_url"]
                 search_params = config.get("search_params", {}).copy()
                 
-                # Add keywords to search params
-                keyword_str = " OR ".join(keywords[:5])  # Limit to top 5 keywords
+                # Use SIMPLE keywords - just use first 2-3 core skills to get more results
+                # Most companies have few jobs matching complex queries
+                simple_keywords = [k for k in keywords if k in ["Python", "SQL", "Excel", "Data", "Analyst"]][:2]
+                if not simple_keywords:
+                    simple_keywords = keywords[:2]
+                
+                keyword_str = " OR ".join(simple_keywords)  # Use fewer, broader keywords
                 for key in search_params:
                     if "keyword" in key.lower() or "query" in key.lower() or key == "q":
                         search_params[key] = keyword_str
@@ -91,8 +96,15 @@ def scrape_company_jobs(keywords: list, companies: list = None, location: str = 
                     search_url = base_url
                 
                 logger.info(f"[{company_name}] Navigating to {search_url}")
+                
+                # Set extra headers to avoid detection
+                page.set_extra_http_headers({
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                    'Accept-Language': 'en-US,en;q=0.9',
+                })
+                
                 page.goto(search_url, wait_until="domcontentloaded", timeout=30000)
-                page.wait_for_timeout(5000)  # Wait for dynamic content
+                page.wait_for_timeout(3000)  # Wait for dynamic content
                 
                 # Get page content
                 content = page.content()
@@ -110,7 +122,32 @@ def scrape_company_jobs(keywords: list, companies: list = None, location: str = 
                 job_cards = soup.select(job_card_selector)
                 logger.info(f"[{company_name}] Found {len(job_cards)} job cards")
                 
-                for card in job_cards[:10]:  # Limit to first 10 jobs per company
+                # If no jobs found with filters, try base URL without search params
+                if len(job_cards) == 0 and search_params:
+                    logger.info(f"[{company_name}] Retrying without search filters...")
+                    page.goto(base_url, wait_until="domcontentloaded", timeout=30000)
+                    page.wait_for_timeout(3000)
+                    content = page.content()
+                    soup = BeautifulSoup(content, 'html.parser')
+                    job_cards = soup.select(job_card_selector)
+                    logger.info(f"[{company_name}] Found {len(job_cards)} jobs without filters")
+                
+                # If no jobs found with current selector, try fallback selectors
+                if len(job_cards) == 0:
+                    fallback_selectors = [
+                        'div[class*="job"]',
+                        'li[class*="job"]',
+                        'article',
+                        'div[data-job-id]',
+                        'div[role="listitem"]',
+                    ]
+                    for fallback in fallback_selectors:
+                        job_cards = soup.select(fallback)
+                        if len(job_cards) > 0:
+                            logger.info(f"[{company_name}] Found {len(job_cards)} jobs using fallback selector: {fallback}")
+                            break
+                
+                for card in job_cards[:15]:  # Increase limit to 15 jobs per company
                     try:
                         # Extract title
                         title_element = card.select_one(selectors.get("job_title", "h2, h3"))

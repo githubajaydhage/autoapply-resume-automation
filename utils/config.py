@@ -1950,3 +1950,4 @@ COMPANY_CAREERS = {
             "apply_button": "button:has-text('Apply')",
         }
     },
+}

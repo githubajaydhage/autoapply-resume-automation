@@ -1,0 +1,486 @@
+{
+  "timestamp": "2025-12-27T21:22:35.468083",
+  "total_opportunities": 33,
+  "opportunities": [
+    {
+      "company": "Salesforce",
+      "title": "Power BI Developer",
+      "location": "Bangalore",
+      "posted_date": "today",
+      "source": "indeed",
+      "url": "https://indeed.com/jobs?q=Power+BI+Developer&l=Bangalore",
+      "keywords_match": [
+        "Power",
+        "Developer"
+      ],
+      "priority_score": 50.0,
+      "fresh_score": 10.0,
+      "company_tier": "tier1"
+    },
+    {
+      "company": "Microsoft",
+      "title": "Data Analyst - Microsoft",
+      "location": "Bangalore",
+      "posted_date": "today",
+      "source": "linkedin",
+      "url": "https://linkedin.com/company/microsoft/jobs",
+      "keywords_match": [
+        "Data Analyst"
+      ],
+      "priority_score": 50.0,
+      "fresh_score": 9.0,
+      "company_tier": "tier1"
+    },
+    {
+      "company": "Microsoft",
+      "title": "Business Analyst - Microsoft",
+      "location": "Bangalore",
+      "posted_date": "today",
+      "source": "linkedin",
+      "url": "https://linkedin.com/company/microsoft/jobs",
+      "keywords_match": [
+        "Business Analyst"
+      ],
+      "priority_score": 50.0,
+      "fresh_score": 9.0,
+      "company_tier": "tier1"
+    },
+    {
+      "company": "Microsoft",
+      "title": "BI Analyst - Microsoft",
+      "location": "Bangalore",
+      "posted_date": "today",
+      "source": "linkedin",
+      "url": "https://linkedin.com/company/microsoft/jobs",
+      "keywords_match": [
+        "BI Analyst"
+      ],
+      "priority_score": 50.0,
+      "fresh_score": 9.0,
+      "company_tier": "tier1"
+    },
+    {
+      "company": "Amazon",
+      "title": "Data Analyst - Amazon",
+      "location": "Bangalore",
+      "posted_date": "today",
+      "source": "linkedin",
+      "url": "https://linkedin.com/company/amazon/jobs",
+      "keywords_match": [
+        "Data Analyst"
+      ],
+      "priority_score": 50.0,
+      "fresh_score": 9.0,
+      "company_tier": "tier1"
+    },
+    {
+      "company": "Amazon",
+      "title": "Business Analyst - Amazon",
+      "location": "Bangalore",
+      "posted_date": "today",
+      "source": "linkedin",
+      "url": "https://linkedin.com/company/amazon/jobs",
+      "keywords_match": [
+        "Business Analyst"
+      ],
+      "priority_score": 50.0,
+      "fresh_score": 9.0,
+      "company_tier": "tier1"
+    },
+    {
+      "company": "Amazon",
+      "title": "BI Analyst - Amazon",
+      "location": "Bangalore",
+      "posted_date": "today",
+      "source": "linkedin",
+      "url": "https://linkedin.com/company/amazon/jobs",
+      "keywords_match": [
+        "BI Analyst"
+      ],
+      "priority_score": 50.0,
+      "fresh_score": 9.0,
+      "company_tier": "tier1"
+    },
+    {
+      "company": "Google",
+      "title": "Data Analyst - Google",
+      "location": "Bangalore",
+      "posted_date": "today",
+      "source": "linkedin",
+      "url": "https://linkedin.com/company/google/jobs",
+      "keywords_match": [
+        "Data Analyst"
+      ],
+      "priority_score": 50.0,
+      "fresh_score": 9.0,
+      "company_tier": "tier1"
+    },
+    {
+      "company": "Google",
+      "title": "Business Analyst - Google",
+      "location": "Bangalore",
+      "posted_date": "today",
+      "source": "linkedin",
+      "url": "https://linkedin.com/company/google/jobs",
+      "keywords_match": [
+        "Business Analyst"
+      ],
+      "priority_score": 50.0,
+      "fresh_score": 9.0,
+      "company_tier": "tier1"
+    },
+    {
+      "company": "Google",
+      "title": "BI Analyst - Google",
+      "location": "Bangalore",
+      "posted_date": "today",
+      "source": "linkedin",
+      "url": "https://linkedin.com/company/google/jobs",
+      "keywords_match": [
+        "BI Analyst"
+      ],
+      "priority_score": 50.0,
+      "fresh_score": 9.0,
+      "company_tier": "tier1"
+    },
+    {
+      "company": "Meta",
+      "title": "Data Analyst - Meta",
+      "location": "Bangalore",
+      "posted_date": "today",
+      "source": "linkedin",
+      "url": "https://linkedin.com/company/meta/jobs",
+      "keywords_match": [
+        "Data Analyst"
+      ],
+      "priority_score": 50.0,
+      "fresh_score": 9.0,
+      "company_tier": "tier1"
+    },
+    {
+      "company": "Meta",
+      "title": "Business Analyst - Meta",
+      "location": "Bangalore",
+      "posted_date": "today",
+      "source": "linkedin",
+      "url": "https://linkedin.com/company/meta/jobs",
+      "keywords_match": [
+        "Business Analyst"
+      ],
+      "priority_score": 50.0,
+      "fresh_score": 9.0,
+      "company_tier": "tier1"
+    },
+    {
+      "company": "Meta",
+      "title": "BI Analyst - Meta",
+      "location": "Bangalore",
+      "posted_date": "today",
+      "source": "linkedin",
+      "url": "https://linkedin.com/company/meta/jobs",
+      "keywords_match": [
+        "BI Analyst"
+      ],
+      "priority_score": 50.0,
+      "fresh_score": 9.0,
+      "company_tier": "tier1"
+    },
+    {
+      "company": "Apple",
+      "title": "Data Analyst - Apple",
+      "location": "Bangalore",
+      "posted_date": "today",
+      "source": "linkedin",
+      "url": "https://linkedin.com/company/apple/jobs",
+      "keywords_match": [
+        "Data Analyst"
+      ],
+      "priority_score": 50.0,
+      "fresh_score": 9.0,
+      "company_tier": "tier1"
+    },
+    {
+      "company": "Apple",
+      "title": "Business Analyst - Apple",
+      "location": "Bangalore",
+      "posted_date": "today",
+      "source": "linkedin",
+      "url": "https://linkedin.com/company/apple/jobs",
+      "keywords_match": [
+        "Business Analyst"
+      ],
+      "priority_score": 50.0,
+      "fresh_score": 9.0,
+      "company_tier": "tier1"
+    },
+    {
+      "company": "Apple",
+      "title": "BI Analyst - Apple",
+      "location": "Bangalore",
+      "posted_date": "today",
+      "source": "linkedin",
+      "url": "https://linkedin.com/company/apple/jobs",
+      "keywords_match": [
+        "BI Analyst"
+      ],
+      "priority_score": 50.0,
+      "fresh_score": 9.0,
+      "company_tier": "tier1"
+    },
+    {
+      "company": "Amazon",
+      "title": "Data Analyst",
+      "location": "Bangalore",
+      "posted_date": "today",
+      "source": "indeed",
+      "url": "https://indeed.com/jobs?q=Data+Analyst&l=Bangalore",
+      "keywords_match": [
+        "Data",
+        "Analyst"
+      ],
+      "priority_score": 48.0,
+      "fresh_score": 10.0,
+      "company_tier": "tier1"
+    },
+    {
+      "company": "Microsoft",
+      "title": "Business Analyst",
+      "location": "Bangalore",
+      "posted_date": "today",
+      "source": "indeed",
+      "url": "https://indeed.com/jobs?q=Business+Analyst&l=Bangalore",
+      "keywords_match": [
+        "Business",
+        "Analyst"
+      ],
+      "priority_score": 48.0,
+      "fresh_score": 10.0,
+      "company_tier": "tier1"
+    },
+    {
+      "company": "Google",
+      "title": "BI Analyst",
+      "location": "Bangalore",
+      "posted_date": "today",
+      "source": "indeed",
+      "url": "https://indeed.com/jobs?q=BI+Analyst&l=Bangalore",
+      "keywords_match": [
+        "BI",
+        "Analyst"
+      ],
+      "priority_score": 48.0,
+      "fresh_score": 10.0,
+      "company_tier": "tier1"
+    },
+    {
+      "company": "Meta",
+      "title": "Data Scientist",
+      "location": "Bangalore",
+      "posted_date": "today",
+      "source": "indeed",
+      "url": "https://indeed.com/jobs?q=Data+Scientist&l=Bangalore",
+      "keywords_match": [
+        "Data",
+        "Scientist"
+      ],
+      "priority_score": 48.0,
+      "fresh_score": 10.0,
+      "company_tier": "tier1"
+    },
+    {
+      "company": "Tesla",
+      "title": "Analytics Engineer",
+      "location": "Bangalore",
+      "posted_date": "today",
+      "source": "indeed",
+      "url": "https://indeed.com/jobs?q=Analytics+Engineer&l=Bangalore",
+      "keywords_match": [
+        "Analytics",
+        "Engineer"
+      ],
+      "priority_score": 48.0,
+      "fresh_score": 10.0,
+      "company_tier": "tier1"
+    },
+    {
+      "company": "Netflix",
+      "title": "Python Developer",
+      "location": "Bangalore",
+      "posted_date": "today",
+      "source": "indeed",
+      "url": "https://indeed.com/jobs?q=Python+Developer&l=Bangalore",
+      "keywords_match": [
+        "Python",
+        "Developer"
+      ],
+      "priority_score": 48.0,
+      "fresh_score": 10.0,
+      "company_tier": "tier1"
+    },
+    {
+      "company": "Apple",
+      "title": "SQL Analyst",
+      "location": "Bangalore",
+      "posted_date": "today",
+      "source": "indeed",
+      "url": "https://indeed.com/jobs?q=SQL+Analyst&l=Bangalore",
+      "keywords_match": [
+        "SQL",
+        "Analyst"
+      ],
+      "priority_score": 48.0,
+      "fresh_score": 10.0,
+      "company_tier": "tier1"
+    },
+    {
+      "company": "Uber",
+      "title": "Data Engineer",
+      "location": "Bangalore",
+      "posted_date": "today",
+      "source": "indeed",
+      "url": "https://indeed.com/jobs?q=Data+Engineer&l=Bangalore",
+      "keywords_match": [
+        "Data",
+        "Engineer"
+      ],
+      "priority_score": 48.0,
+      "fresh_score": 10.0,
+      "company_tier": "tier1"
+    },
+    {
+      "company": "Airbnb",
+      "title": "Business Intelligence",
+      "location": "Bangalore",
+      "posted_date": "today",
+      "source": "indeed",
+      "url": "https://indeed.com/jobs?q=Business+Intelligence&l=Bangalore",
+      "keywords_match": [
+        "Business",
+        "Intelligence"
+      ],
+      "priority_score": 48.0,
+      "fresh_score": 10.0,
+      "company_tier": "tier1"
+    },
+    {
+      "company": "Deloitte",
+      "title": "Analytics Engineer",
+      "location": "Bangalore",
+      "posted_date": "recent",
+      "source": "glassdoor",
+      "url": "https://glassdoor.com/job/deloitte-analytics-engineer",
+      "keywords_match": [
+        "Analytics",
+        "Engineer"
+      ],
+      "priority_score": 36.0,
+      "fresh_score": 7.0,
+      "company_tier": "tier2"
+    },
+    {
+      "company": "TCS",
+      "title": "Senior Data Analyst",
+      "location": "Bangalore",
+      "posted_date": "recent",
+      "source": "glassdoor",
+      "url": "https://glassdoor.com/job/tcs-senior-data-analyst",
+      "keywords_match": [
+        "Senior",
+        "Data"
+      ],
+      "priority_score": 28.0,
+      "fresh_score": 7.0,
+      "company_tier": "tier3"
+    },
+    {
+      "company": "Infosys",
+      "title": "Business Analyst",
+      "location": "Bangalore",
+      "posted_date": "recent",
+      "source": "glassdoor",
+      "url": "https://glassdoor.com/job/infosys-business-analyst",
+      "keywords_match": [
+        "Business",
+        "Analyst"
+      ],
+      "priority_score": 28.0,
+      "fresh_score": 7.0,
+      "company_tier": "tier3"
+    },
+    {
+      "company": "Wipro",
+      "title": "Data Scientist",
+      "location": "Bangalore",
+      "posted_date": "recent",
+      "source": "glassdoor",
+      "url": "https://glassdoor.com/job/wipro-data-scientist",
+      "keywords_match": [
+        "Data",
+        "Scientist"
+      ],
+      "priority_score": 28.0,
+      "fresh_score": 7.0,
+      "company_tier": "tier3"
+    },
+    {
+      "company": "Accenture",
+      "title": "BI Developer",
+      "location": "Bangalore",
+      "posted_date": "recent",
+      "source": "glassdoor",
+      "url": "https://glassdoor.com/job/accenture-bi-developer",
+      "keywords_match": [
+        "BI",
+        "Developer"
+      ],
+      "priority_score": 28.0,
+      "fresh_score": 7.0,
+      "company_tier": "tier3"
+    },
+    {
+      "company": "IBM",
+      "title": "Python Developer",
+      "location": "Bangalore",
+      "posted_date": "recent",
+      "source": "glassdoor",
+      "url": "https://glassdoor.com/job/ibm-python-developer",
+      "keywords_match": [
+        "Python",
+        "Developer"
+      ],
+      "priority_score": 28.0,
+      "fresh_score": 7.0,
+      "company_tier": "tier3"
+    },
+    {
+      "company": "Cognizant",
+      "title": "SQL Analyst",
+      "location": "Bangalore",
+      "posted_date": "recent",
+      "source": "glassdoor",
+      "url": "https://glassdoor.com/job/cognizant-sql-analyst",
+      "keywords_match": [
+        "SQL",
+        "Analyst"
+      ],
+      "priority_score": 28.0,
+      "fresh_score": 7.0,
+      "company_tier": "tier3"
+    },
+    {
+      "company": "HCL",
+      "title": "Data Engineer",
+      "location": "Bangalore",
+      "posted_date": "recent",
+      "source": "glassdoor",
+      "url": "https://glassdoor.com/job/hcl-data-engineer",
+      "keywords_match": [
+        "Data",
+        "Engineer"
+      ],
+      "priority_score": 28.0,
+      "fresh_score": 7.0,
+      "company_tier": "tier3"
+    }
+  ]
+}

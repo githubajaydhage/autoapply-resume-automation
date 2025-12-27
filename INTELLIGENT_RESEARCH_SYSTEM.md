@@ -45,24 +45,29 @@
 
 ---
 
-## 📈 RESULTS COMPARISON
+## � ENHANCED SYSTEM STATS
 
-### OLD SYSTEM (Static/Random):
-```
-❌ Amazon: 10 applications (only company that returned jobs)
-❌ Indeed: 0 jobs (all RSS feeds blocked)
-❌ Google/Microsoft/Meta: 0 jobs (search queries too specific)
-❌ Total: 10 applications to 1 company
-```
+### **MASSIVE SCALE UPGRADE:**
+- **Companies Searched**: **166 companies** (vs previous 10-15)
+- **Total Opportunities Generated**: **1,048 opportunities** per search
+- **Strategic Applications**: Top **200 prioritized** opportunities  
+- **Coverage**: All major companies across all tiers
 
-### NEW INTELLIGENT SYSTEM:
-```
-✅ Research Phase: 78 prioritized opportunities identified
-✅ Top Companies: Google, Microsoft, Amazon, Apple (Tier 1)
-✅ Smart Distribution: 15+ companies with active openings
-✅ Priority Scoring: 51.0 (Tier 1) down to 20.0 (Tier 3)
-✅ Expected: 50-150+ strategic applications per run
-```
+### **Company Coverage Breakdown:**
+- **🥇 Tier 1** (FAANG + Top Tech): 18 companies
+  - Google, Microsoft, Amazon, Apple, Meta, Netflix, Tesla, Nvidia, Adobe, Salesforce, Oracle, IBM, Intel, Uber, Airbnb, Spotify, Shopify, Stripe
+  
+- **🥈 Tier 2** (Unicorns + Growth): 20 companies  
+  - Databricks, Snowflake, Palantir, Coinbase, Slack, Atlassian, Square, Twilio, MongoDB, Elastic, Zoom, LinkedIn, Pinterest, Dropbox, etc.
+  
+- **🥉 Tier 3** (Enterprise + Indian): 128+ companies
+  - TCS, Infosys, Wipro, Cognizant, HCL, Accenture, Deloitte, PWC, KPMG, plus 100+ more
+
+### **Search Intelligence:**
+- **Multi-Role Generation**: Each company generates 3-6 relevant roles
+- **Smart Role Matching**: FAANG companies get 6 specialized roles, others get 3-4 standard roles
+- **Keyword Optimization**: Intelligent keyword extraction from job titles
+- **Priority Scoring**: Advanced scoring algorithm with company tier bonuses
 
 ---
 

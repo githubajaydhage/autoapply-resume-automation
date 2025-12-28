@@ -85,7 +85,8 @@ def run_linkedin_applications(jobs):
     try:
         applicator = LinkedInApplicator()
         applicator.run(linkedin_jobs)
-        return len(linkedin_jobs)
+        # Return actual applied count from tracker
+        return applicator.applied_count if hasattr(applicator, 'applied_count') else 0
     except Exception as e:
         logger.error(f"LinkedIn application error: {e}")
         return 0
@@ -111,7 +112,8 @@ def run_naukri_applications(jobs):
     try:
         applicator = NaukriApplicator()
         applicator.run(naukri_jobs)
-        return len(naukri_jobs)
+        # Return actual applied count from tracker
+        return applicator.applied_count if hasattr(applicator, 'applied_count') else 0
     except Exception as e:
         logger.error(f"Naukri application error: {e}")
         return 0

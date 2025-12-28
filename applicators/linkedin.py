@@ -11,13 +11,13 @@ class LinkedInApplicator(BaseApplicator):
     def __init__(self):
         super().__init__("linkedin")
 
-    def apply_to_job(self, page: Page, job: dict):
-        """Applies to a single LinkedIn job."""
+    def apply_to_job(self, page: Page, job: dict) -> bool:
+        """Applies to a single LinkedIn job. Returns True if successful."""
         try:
             job_url = job.get('url', job.get('link', ''))
             if not job_url:
                 logging.error(f"No URL found for job: {job.get('title', 'Unknown')}")
-                return
+                return False
             
             logging.info(f"Applying to: {job['title']} at {job['company']}")
             page.goto(job_url, timeout=60000)
@@ -26,7 +26,7 @@ class LinkedInApplicator(BaseApplicator):
             apply_button = page.locator(self.config["selectors"]["apply_button"]).first
             if not apply_button.is_visible():
                 logging.warning(f"No 'Easy Apply' button found for {job['title']}. Skipping.")
-                return
+                return False
 
             apply_button.click()
             
@@ -71,9 +71,12 @@ class LinkedInApplicator(BaseApplicator):
                 break
             
             logging.warning(f"Could not complete application for {job['title']}")
+            return False
 
         except PlaywrightTimeoutError:
             logging.error(f"Timeout while applying for {job['title']}.")
+            return False
         except Exception as e:
             logging.error(f"An unexpected error occurred for {job['title']}: {e}")
             page.screenshot(path=os.path.join("data", f"error_linkedin_{job['title']}.png"))
+            return False

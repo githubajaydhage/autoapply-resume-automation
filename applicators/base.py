@@ -23,23 +23,38 @@ class BaseApplicator(ABC):
         # Initialize resume naming manager
         from utils.config import TAILORED_RESUMES_DIR
         self.resume_naming_manager = get_resume_naming_manager(TAILORED_RESUMES_DIR)
+        # Track actual successful applications
+        self.applied_count = 0
+        self.login_successful = False
 
     def run(self, jobs):
         """The main execution method for an applicator."""
         logging.info(f"--- Starting {self.portal_name.capitalize()} Application Process ---")
+        self.applied_count = 0  # Reset counter
         
         with self.browser_manager as page:
             if not self.login(page):
                 logging.error(f"Login failed for {self.portal_name}. Aborting.")
+                self.login_successful = False
                 return
+            
+            self.login_successful = True
 
             for job in jobs:
-                self.apply_to_job(page, job)
+                try:
+                    success = self.apply_to_job(page, job)
+                    if success:
+                        self.applied_count += 1
+                        logging.info(f"✅ Successfully applied to {job.get('title', 'Unknown')} ({self.applied_count} total)")
+                except Exception as e:
+                    logging.error(f"Error applying to job: {e}")
+                
                 sleep_time = random.uniform(10, 25)
                 logging.info(f"Waiting for {sleep_time:.2f} seconds before the next application.")
                 time.sleep(sleep_time)
 
         logging.info(f"--- {self.portal_name.capitalize()} Application Process Finished ---")
+        logging.info(f"📊 Applied to {self.applied_count} out of {len(jobs)} jobs")
 
     def login(self, page: Page) -> bool:
         """Handles the login process for the portal with retry logic."""

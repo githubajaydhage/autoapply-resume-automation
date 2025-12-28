@@ -112,6 +112,9 @@ jobs:
         echo "   100+ verified company HR/recruitment emails"
         python scripts/curated_hr_database.py
         echo ""
+        echo "   Finding HR emails from companies with active openings..."
+        python scripts/hr_email_finder.py
+        echo ""
         echo "   Also scraping additional emails from job postings..."
         python scripts/email_scraper.py || true
       env:

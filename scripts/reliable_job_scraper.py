@@ -59,20 +59,491 @@ class ReliableJobScraper:
         # 1. RemoteOK API (actually works, free, no auth)
         self._scrape_remoteok()
         
-        # 2. Direct company career pages (most reliable)
+        # 2. Arbeitnow API (free, no auth, remote jobs)
+        self._scrape_arbeitnow()
+        
+        # 3. Himalayas API (free, remote jobs)
+        self._scrape_himalayas()
+        
+        # 4. Jobicy API (free, remote jobs)
+        self._scrape_jobicy()
+        
+        # 5. Adzuna API (free tier, global jobs)
+        self._scrape_adzuna()
+        
+        # 6. Direct company career pages (most reliable)
         self._scrape_direct_career_pages()
         
-        # 3. Google Jobs via RSS proxies
+        # 7. Google Jobs via RSS proxies
         self._scrape_google_jobs_rss()
         
-        # 4. Startup/tech specific sites
+        # 8. Indian job sites
+        self._scrape_indian_job_sites()
+        
+        # 9. Startup/tech specific sites
         self._scrape_startup_jobs()
         
-        # 5. Job aggregator RSS feeds
+        # 10. Job aggregator RSS feeds
         self._scrape_job_aggregators()
+        
+        # 11. GitHub/Dev focused job boards
+        self._scrape_dev_job_boards()
         
         logging.info(f"✅ Total jobs scraped: {len(self.all_jobs)}")
         return self.all_jobs
+    
+    def _scrape_arbeitnow(self):
+        """Arbeitnow - Free API for remote jobs, no auth required."""
+        try:
+            logging.info("📡 Scraping Arbeitnow API (free, no auth)...")
+            url = "https://www.arbeitnow.com/api/job-board-api"
+            response = self.session.get(url, timeout=15)
+            
+            if response.status_code == 200:
+                data = response.json()
+                jobs_data = data.get('data', [])
+                count = 0
+                
+                for job in jobs_data[:40]:
+                    job_entry = {
+                        'title': job.get('title', ''),
+                        'company': job.get('company_name', ''),
+                        'location': job.get('location', 'Remote'),
+                        'url': job.get('url', ''),
+                        'description': job.get('description', '')[:500] if job.get('description') else '',
+                        'source': 'arbeitnow',
+                        'scraped_at': datetime.now().isoformat(),
+                        'remote': job.get('remote', False),
+                        'tags': ', '.join(job.get('tags', [])[:5]) if job.get('tags') else ''
+                    }
+                    
+                    if job_entry['title'] and job_entry['company']:
+                        self.all_jobs.append(job_entry)
+                        count += 1
+                        
+                logging.info(f"   ✅ Found {count} jobs from Arbeitnow")
+                
+        except Exception as e:
+            logging.warning(f"   ⚠️ Arbeitnow error: {e}")
+        
+        time.sleep(1)
+    
+    def _scrape_himalayas(self):
+        """Himalayas.app - Free API for remote jobs."""
+        try:
+            logging.info("📡 Scraping Himalayas API (free, remote jobs)...")
+            url = "https://himalayas.app/jobs/api?limit=50"
+            response = self.session.get(url, timeout=15)
+            
+            if response.status_code == 200:
+                data = response.json()
+                jobs_data = data.get('jobs', [])
+                count = 0
+                
+                for job in jobs_data:
+                    job_entry = {
+                        'title': job.get('title', ''),
+                        'company': job.get('companyName', ''),
+                        'location': job.get('locationRestrictions', ['Remote'])[0] if job.get('locationRestrictions') else 'Remote',
+                        'url': f"https://himalayas.app/jobs/{job.get('slug', '')}",
+                        'description': job.get('excerpt', '')[:500],
+                        'source': 'himalayas',
+                        'scraped_at': datetime.now().isoformat(),
+                        'salary': job.get('salary', ''),
+                        'category': job.get('categories', [''])[0] if job.get('categories') else ''
+                    }
+                    
+                    if job_entry['title'] and job_entry['company']:
+                        self.all_jobs.append(job_entry)
+                        count += 1
+                        
+                logging.info(f"   ✅ Found {count} jobs from Himalayas")
+                
+        except Exception as e:
+            logging.warning(f"   ⚠️ Himalayas error: {e}")
+        
+        time.sleep(1)
+    
+    def _scrape_jobicy(self):
+        """Jobicy - Free remote jobs API."""
+        try:
+            logging.info("📡 Scraping Jobicy API (free, remote jobs)...")
+            url = "https://jobicy.com/api/v2/remote-jobs?count=50"
+            response = self.session.get(url, timeout=15)
+            
+            if response.status_code == 200:
+                data = response.json()
+                jobs_data = data.get('jobs', [])
+                count = 0
+                
+                for job in jobs_data:
+                    job_entry = {
+                        'title': job.get('jobTitle', ''),
+                        'company': job.get('companyName', ''),
+                        'location': job.get('jobGeo', 'Remote'),
+                        'url': job.get('url', ''),
+                        'description': job.get('jobExcerpt', '')[:500],
+                        'source': 'jobicy',
+                        'scraped_at': datetime.now().isoformat(),
+                        'salary': f"{job.get('annualSalaryMin', '')} - {job.get('annualSalaryMax', '')}",
+                        'job_type': job.get('jobType', '')
+                    }
+                    
+                    if job_entry['title'] and job_entry['company']:
+                        self.all_jobs.append(job_entry)
+                        count += 1
+                        
+                logging.info(f"   ✅ Found {count} jobs from Jobicy")
+                
+        except Exception as e:
+            logging.warning(f"   ⚠️ Jobicy error: {e}")
+        
+        time.sleep(1)
+    
+    def _scrape_adzuna(self):
+        """Adzuna - Job search with free RSS feeds."""
+        try:
+            logging.info("📡 Scraping Adzuna RSS feeds...")
+            
+            # Adzuna India RSS feeds (no API key needed for RSS)
+            for keyword in self.search_keywords[:3]:
+                encoded = quote_plus(keyword)
+                rss_url = f"https://www.adzuna.in/search/rss?q={encoded}&loc=India"
+                
+                try:
+                    feed = feedparser.parse(rss_url)
+                    
+                    for entry in feed.entries[:10]:
+                        job_entry = {
+                            'title': entry.get('title', ''),
+                            'company': self._extract_company_from_title(entry.get('title', '')),
+                            'location': self.location,
+                            'url': entry.get('link', ''),
+                            'description': entry.get('summary', '')[:500],
+                            'source': 'adzuna',
+                            'scraped_at': datetime.now().isoformat()
+                        }
+                        
+                        if job_entry['title']:
+                            self.all_jobs.append(job_entry)
+                            
+                except Exception:
+                    pass
+                    
+                time.sleep(0.5)
+                
+            logging.info(f"   ✅ Scraped Adzuna RSS feeds")
+                
+        except Exception as e:
+            logging.warning(f"   ⚠️ Adzuna error: {e}")
+    
+    def _extract_company_from_title(self, title: str) -> str:
+        """Extract company name from job title if present."""
+        if ' at ' in title:
+            return title.split(' at ')[-1].strip()
+        if ' - ' in title:
+            parts = title.split(' - ')
+            if len(parts) > 1:
+                return parts[-1].strip()
+        return 'Various'
+    
+    def _scrape_indian_job_sites(self):
+        """Scrape Indian-specific job sites."""
+        logging.info("🇮🇳 Scraping Indian job sites...")
+        
+        # Freshersworld (for freshers)
+        self._scrape_freshersworld()
+        
+        # Instahyre
+        self._scrape_instahyre()
+        
+        # Cutshort
+        self._scrape_cutshort()
+        
+        # Hirist
+        self._scrape_hirist()
+        
+        # IIMJobs
+        self._scrape_iimjobs()
+    
+    def _scrape_freshersworld(self):
+        """Freshersworld - Indian freshers job portal."""
+        try:
+            url = "https://www.freshersworld.com/jobs/category/it-software-jobs"
+            response = self.session.get(url, timeout=15)
+            
+            if response.status_code == 200:
+                soup = BeautifulSoup(response.text, 'html.parser')
+                job_cards = soup.find_all('div', {'class': re.compile(r'job-container|job_listing')})
+                count = 0
+                
+                for card in job_cards[:15]:
+                    title_elem = card.find(['h2', 'h3', 'a'], {'class': re.compile(r'title|job-title')})
+                    company_elem = card.find(['span', 'div'], {'class': re.compile(r'company')})
+                    link_elem = card.find('a', href=True)
+                    
+                    if title_elem:
+                        job_entry = {
+                            'title': title_elem.get_text(strip=True),
+                            'company': company_elem.get_text(strip=True) if company_elem else 'Various',
+                            'location': self.location,
+                            'url': link_elem.get('href', url) if link_elem else url,
+                            'source': 'freshersworld',
+                            'scraped_at': datetime.now().isoformat()
+                        }
+                        self.all_jobs.append(job_entry)
+                        count += 1
+                
+                if count:
+                    logging.info(f"   ✅ Found {count} jobs from Freshersworld")
+                    
+        except Exception as e:
+            logging.debug(f"   Freshersworld: {e}")
+        
+        time.sleep(1)
+    
+    def _scrape_instahyre(self):
+        """Instahyre - Indian tech job portal."""
+        try:
+            # Instahyre public job listings page
+            url = "https://www.instahyre.com/search-jobs/"
+            response = self.session.get(url, timeout=15)
+            
+            if response.status_code == 200:
+                soup = BeautifulSoup(response.text, 'html.parser')
+                job_cards = soup.find_all('div', {'class': re.compile(r'job-card|opportunity')})
+                count = 0
+                
+                for card in job_cards[:20]:
+                    title_elem = card.find(['h2', 'h3', 'a', 'div'], {'class': re.compile(r'title|position')})
+                    company_elem = card.find(['span', 'div', 'a'], {'class': re.compile(r'company|employer')})
+                    
+                    if title_elem:
+                        job_entry = {
+                            'title': title_elem.get_text(strip=True),
+                            'company': company_elem.get_text(strip=True) if company_elem else 'Startup',
+                            'location': self.location,
+                            'url': url,
+                            'source': 'instahyre',
+                            'scraped_at': datetime.now().isoformat()
+                        }
+                        self.all_jobs.append(job_entry)
+                        count += 1
+                
+                if count:
+                    logging.info(f"   ✅ Found {count} jobs from Instahyre")
+                    
+        except Exception as e:
+            logging.debug(f"   Instahyre: {e}")
+        
+        time.sleep(1)
+    
+    def _scrape_cutshort(self):
+        """Cutshort - Indian startup job portal."""
+        try:
+            url = "https://cutshort.io/jobs"
+            response = self.session.get(url, timeout=15)
+            
+            if response.status_code == 200:
+                soup = BeautifulSoup(response.text, 'html.parser')
+                job_cards = soup.find_all('div', {'class': re.compile(r'job-card|opportunity-card')})
+                count = 0
+                
+                for card in job_cards[:20]:
+                    title_elem = card.find(['h2', 'h3', 'a'])
+                    company_elem = card.find(['span', 'div'], {'class': re.compile(r'company')})
+                    
+                    if title_elem:
+                        job_entry = {
+                            'title': title_elem.get_text(strip=True),
+                            'company': company_elem.get_text(strip=True) if company_elem else 'Startup',
+                            'location': self.location,
+                            'url': url,
+                            'source': 'cutshort',
+                            'scraped_at': datetime.now().isoformat()
+                        }
+                        self.all_jobs.append(job_entry)
+                        count += 1
+                
+                if count:
+                    logging.info(f"   ✅ Found {count} jobs from Cutshort")
+                    
+        except Exception as e:
+            logging.debug(f"   Cutshort: {e}")
+        
+        time.sleep(1)
+    
+    def _scrape_hirist(self):
+        """Hirist - Indian tech/startup jobs."""
+        try:
+            for keyword in ['python', 'data-analyst', 'software-engineer']:
+                url = f"https://www.hirist.tech/{keyword}-jobs"
+                response = self.session.get(url, timeout=15)
+                
+                if response.status_code == 200:
+                    soup = BeautifulSoup(response.text, 'html.parser')
+                    job_cards = soup.find_all('div', {'class': re.compile(r'job|listing')})
+                    
+                    for card in job_cards[:10]:
+                        title_elem = card.find(['h2', 'h3', 'a'])
+                        company_elem = card.find(['span', 'div'], {'class': re.compile(r'company')})
+                        
+                        if title_elem:
+                            job_entry = {
+                                'title': title_elem.get_text(strip=True),
+                                'company': company_elem.get_text(strip=True) if company_elem else 'Tech Company',
+                                'location': self.location,
+                                'url': url,
+                                'source': 'hirist',
+                                'scraped_at': datetime.now().isoformat()
+                            }
+                            self.all_jobs.append(job_entry)
+                
+                time.sleep(0.5)
+                
+        except Exception as e:
+            logging.debug(f"   Hirist: {e}")
+    
+    def _scrape_iimjobs(self):
+        """IIMJobs - Indian management/professional jobs."""
+        try:
+            url = "https://www.iimjobs.com/j/data-analyst-jobs.html"
+            response = self.session.get(url, timeout=15)
+            
+            if response.status_code == 200:
+                soup = BeautifulSoup(response.text, 'html.parser')
+                job_cards = soup.find_all('div', {'class': re.compile(r'job-wrap|listing')})
+                count = 0
+                
+                for card in job_cards[:15]:
+                    title_elem = card.find(['h2', 'h3', 'a'])
+                    company_elem = card.find(['span', 'div'], {'class': re.compile(r'company')})
+                    
+                    if title_elem:
+                        job_entry = {
+                            'title': title_elem.get_text(strip=True),
+                            'company': company_elem.get_text(strip=True) if company_elem else 'Corporate',
+                            'location': self.location,
+                            'url': url,
+                            'source': 'iimjobs',
+                            'scraped_at': datetime.now().isoformat()
+                        }
+                        self.all_jobs.append(job_entry)
+                        count += 1
+                
+                if count:
+                    logging.info(f"   ✅ Found {count} jobs from IIMJobs")
+                    
+        except Exception as e:
+            logging.debug(f"   IIMJobs: {e}")
+        
+        time.sleep(1)
+    
+    def _scrape_dev_job_boards(self):
+        """Scrape developer-focused job boards."""
+        logging.info("💻 Scraping developer job boards...")
+        
+        # WeWorkRemotely
+        self._scrape_weworkremotely()
+        
+        # Working Nomads
+        self._scrape_workingnomads()
+        
+        # Authentic Jobs
+        self._scrape_authentic_jobs()
+    
+    def _scrape_weworkremotely(self):
+        """WeWorkRemotely - Popular remote job board."""
+        try:
+            categories = ['programming', 'devops-sysadmin', 'data']
+            
+            for category in categories:
+                url = f"https://weworkremotely.com/categories/{category}/jobs.rss"
+                
+                try:
+                    feed = feedparser.parse(url)
+                    
+                    for entry in feed.entries[:10]:
+                        job_entry = {
+                            'title': entry.get('title', ''),
+                            'company': entry.get('author', 'Remote Company'),
+                            'location': 'Remote',
+                            'url': entry.get('link', ''),
+                            'description': entry.get('summary', '')[:500],
+                            'source': 'weworkremotely',
+                            'scraped_at': datetime.now().isoformat()
+                        }
+                        
+                        if job_entry['title']:
+                            self.all_jobs.append(job_entry)
+                            
+                except Exception:
+                    pass
+                    
+                time.sleep(0.5)
+                
+            logging.info("   ✅ Scraped WeWorkRemotely")
+                
+        except Exception as e:
+            logging.debug(f"   WeWorkRemotely: {e}")
+    
+    def _scrape_workingnomads(self):
+        """Working Nomads - Remote job aggregator with RSS."""
+        try:
+            url = "https://www.workingnomads.com/jobs.rss"
+            feed = feedparser.parse(url)
+            count = 0
+            
+            for entry in feed.entries[:20]:
+                job_entry = {
+                    'title': entry.get('title', ''),
+                    'company': self._extract_company_from_title(entry.get('title', '')),
+                    'location': 'Remote',
+                    'url': entry.get('link', ''),
+                    'description': entry.get('summary', '')[:500],
+                    'source': 'workingnomads',
+                    'scraped_at': datetime.now().isoformat()
+                }
+                
+                if job_entry['title']:
+                    self.all_jobs.append(job_entry)
+                    count += 1
+                    
+            if count:
+                logging.info(f"   ✅ Found {count} jobs from Working Nomads")
+                
+        except Exception as e:
+            logging.debug(f"   Working Nomads: {e}")
+        
+        time.sleep(1)
+    
+    def _scrape_authentic_jobs(self):
+        """Authentic Jobs - Design & dev jobs with RSS."""
+        try:
+            url = "https://authenticjobs.com/rss/"
+            feed = feedparser.parse(url)
+            count = 0
+            
+            for entry in feed.entries[:15]:
+                job_entry = {
+                    'title': entry.get('title', ''),
+                    'company': entry.get('author', 'Tech Company'),
+                    'location': 'Remote/Flexible',
+                    'url': entry.get('link', ''),
+                    'description': entry.get('summary', '')[:500],
+                    'source': 'authenticjobs',
+                    'scraped_at': datetime.now().isoformat()
+                }
+                
+                if job_entry['title']:
+                    self.all_jobs.append(job_entry)
+                    count += 1
+                    
+            if count:
+                logging.info(f"   ✅ Found {count} jobs from Authentic Jobs")
+                
+        except Exception as e:
+            logging.debug(f"   Authentic Jobs: {e}")
     
     def _scrape_remoteok(self):
         """RemoteOK has a free, reliable JSON API."""

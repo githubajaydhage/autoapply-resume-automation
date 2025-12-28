@@ -295,8 +295,8 @@ Thank you for considering my application. I look forward to hearing from you.
 
 Best regards,
 ${name}
-${phone}
-${linkedin}""",
+📞 ${phone}
+🔗 LinkedIn: ${linkedin}""",
 
             # Template 2 - Enthusiastic
             """Dear HR Team,
@@ -316,8 +316,8 @@ I would appreciate the opportunity to discuss how I can contribute to your team'
 
 Warm regards,
 ${name}
-Contact: ${phone}
-LinkedIn: ${linkedin}""",
+📞 ${phone}
+🔗 LinkedIn: ${linkedin}""",
 
             # Template 3 - Concise
             """Dear Recruitment Team,
@@ -335,7 +335,8 @@ Please review my attached resume. I look forward to discussing this opportunity 
 
 Best regards,
 ${name}
-${phone}"""
+📞 ${phone}
+🔗 LinkedIn: ${linkedin}"""
         ]
         
         template = Template(random.choice(templates))

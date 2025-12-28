@@ -4,6 +4,8 @@ Personalized Email Sender - Sends customized job application emails to HR contac
 
 import smtplib
 import ssl
+import socket
+import dns.resolver
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from email.mime.base import MIMEBase
@@ -14,6 +16,7 @@ import sys
 import logging
 import time
 import random
+import re
 from datetime import datetime
 from string import Template
 
@@ -24,6 +27,116 @@ from utils.config import USER_DETAILS, BASE_RESUME_PATH
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] %(message)s')
+
+
+class EmailValidator:
+    """Validates email addresses before sending."""
+    
+    # Known invalid/fake email patterns
+    INVALID_PATTERNS = [
+        r'.*@example\.com$',
+        r'.*@test\.com$',
+        r'.*@fake\.com$',
+        r'.*@email\.com$',
+        r'.*@mail\.com$',
+        r'noreply@.*',
+        r'no-reply@.*',
+        r'donotreply@.*',
+        r'mailer-daemon@.*',
+        r'postmaster@.*',
+    ]
+    
+    # Known valid company domains (verified to exist)
+    KNOWN_VALID_DOMAINS = {
+        'infosys.com', 'tcs.com', 'wipro.com', 'hcl.com', 'techmahindra.com',
+        'mindtree.com', 'mphasis.com', 'ltimindtree.com', 'cognizant.com',
+        'capgemini.com', 'accenture.com', 'deloitte.com', 'pwc.com', 'ey.com',
+        'kpmg.com', 'razorpay.com', 'zerodha.com', 'phonepe.com', 'swiggy.in',
+        'zomato.com', 'cred.club', 'meesho.com', 'groww.in', 'freshworks.com',
+        'zohocorp.com', 'flipkart.com', 'olacabs.com', 'paytm.com', 'dream11.com',
+        'google.com', 'microsoft.com', 'amazon.com', 'fb.com', 'apple.com',
+        'netflix.com', 'uber.com', 'salesforce.com', 'adobe.com', 'oracle.com',
+        'ibm.com', 'sap.com', 'vmware.com', 'cisco.com', 'intel.com',
+        'qualcomm.com', 'nvidia.com', 'linkedin.com', 'twitter.com', 'stripe.com',
+        'hdfcbank.com', 'icicibank.com', 'kotak.com', 'axisbank.com', 'yesbank.in',
+        'mckinsey.com', 'bcg.com', 'bain.com', 'mu-sigma.com', 'fractal.ai',
+        'gmail.com', 'yahoo.com', 'hotmail.com', 'outlook.com',
+    }
+    
+    def __init__(self):
+        self.dns_cache = {}  # Cache DNS lookups
+        
+    def is_valid_format(self, email: str) -> bool:
+        """Check if email has valid format."""
+        if not email or not isinstance(email, str):
+            return False
+        
+        email = email.strip().lower()
+        
+        # Basic format check
+        pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+        if not re.match(pattern, email):
+            return False
+        
+        # Check against invalid patterns
+        for invalid in self.INVALID_PATTERNS:
+            if re.match(invalid, email, re.IGNORECASE):
+                return False
+        
+        return True
+    
+    def has_valid_mx_record(self, email: str) -> bool:
+        """Check if the email domain has valid MX records (can receive email)."""
+        try:
+            domain = email.split('@')[1].lower()
+            
+            # Check cache first
+            if domain in self.dns_cache:
+                return self.dns_cache[domain]
+            
+            # Known valid domains - skip DNS check
+            if domain in self.KNOWN_VALID_DOMAINS:
+                self.dns_cache[domain] = True
+                return True
+            
+            # Try DNS MX lookup
+            try:
+                mx_records = dns.resolver.resolve(domain, 'MX', lifetime=5)
+                has_mx = len(list(mx_records)) > 0
+                self.dns_cache[domain] = has_mx
+                return has_mx
+            except (dns.resolver.NXDOMAIN, dns.resolver.NoAnswer, dns.resolver.NoNameservers):
+                # Domain doesn't exist or has no MX records
+                self.dns_cache[domain] = False
+                return False
+            except dns.exception.Timeout:
+                # Timeout - assume valid (don't block on slow DNS)
+                self.dns_cache[domain] = True
+                return True
+                
+        except Exception as e:
+            logging.debug(f"MX check error for {email}: {e}")
+            return True  # Don't block on errors
+    
+    def validate_email(self, email: str) -> tuple:
+        """
+        Validate an email address.
+        Returns: (is_valid, reason)
+        """
+        if not email:
+            return False, "Empty email"
+        
+        email = email.strip().lower()
+        
+        # Format check
+        if not self.is_valid_format(email):
+            return False, "Invalid format"
+        
+        # MX record check
+        if not self.has_valid_mx_record(email):
+            return False, "Domain cannot receive email"
+        
+        return True, "Valid"
 
 
 class PersonalizedEmailSender:
@@ -49,11 +162,19 @@ class PersonalizedEmailSender:
         # Resume path from config
         self.resume_path = BASE_RESUME_PATH
         
+        # Email validator
+        self.validator = EmailValidator()
+        
         # Track sent emails
         self.sent_log_path = os.path.join(
             os.path.dirname(__file__), '..', 'data', 'sent_emails_log.csv'
         )
         self.sent_emails = self._load_sent_log()
+        
+        # Track invalid emails
+        self.invalid_log_path = os.path.join(
+            os.path.dirname(__file__), '..', 'data', 'invalid_emails_log.csv'
+        )
         
         # Log configuration
         logging.info(f"📧 Email Sender Configuration:")
@@ -223,12 +344,36 @@ ${phone}"""
         
         return message
     
+    def _log_invalid_email(self, email: str, company: str, reason: str):
+        """Log invalid email addresses."""
+        log_entry = {
+            'email': email,
+            'company': company,
+            'reason': reason,
+            'checked_at': datetime.now().isoformat()
+        }
+        
+        if os.path.exists(self.invalid_log_path):
+            df = pd.read_csv(self.invalid_log_path)
+            df = pd.concat([df, pd.DataFrame([log_entry])], ignore_index=True)
+        else:
+            df = pd.DataFrame([log_entry])
+        
+        df.to_csv(self.invalid_log_path, index=False)
+    
     def send_email(self, recipient_email: str, company: str, job_title: str, job_url: str = None) -> bool:
         """Send a personalized email to a single recipient."""
         
         # Skip if already sent
         if recipient_email.lower() in self.sent_emails:
             logging.info(f"⏭️ Skipping {recipient_email} - already contacted")
+            return False
+        
+        # VALIDATE EMAIL BEFORE SENDING
+        is_valid, reason = self.validator.validate_email(recipient_email)
+        if not is_valid:
+            logging.warning(f"⚠️ Skipping {recipient_email} - {reason}")
+            self._log_invalid_email(recipient_email, company, reason)
             return False
         
         # Validate configuration

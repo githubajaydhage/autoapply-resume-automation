@@ -5,6 +5,9 @@ requests
 beautifulsoup4
 lxml
 
+# Email validation
+dnspython
+
 # Resume/PDF handling
 python-docx
 PyMuPDF

@@ -286,14 +286,15 @@ class PersonalizedEmailSender:
             # Template 1 - Professional and direct
             """Dear Hiring Manager,
 
-I am writing to express my strong interest in the ${job_title} position at ${company}'s Bangalore office. With ${experience}+ years of experience in ${skills_area}, I am confident in my ability to contribute effectively to your team.
+I am writing to express my strong interest in the ${job_title} position at ${company}. With ${experience}+ years of experience in ${skills_area}, I am confident in my ability to contribute effectively to your team.
 
 My key qualifications include:
 • Proficient in ${skills}
 • Strong analytical and problem-solving abilities
 • Excellent communication and collaboration skills
 • Proven track record of delivering results
-• Currently based in Bangalore and immediately available to join
+
+I am based in Bangalore and prefer Remote/Hybrid work arrangements, but I am open to all options including on-site.
 
 I am particularly drawn to ${company}'s reputation for innovation and excellence in the industry. I believe my skills and experience align well with the requirements of this role.
 
@@ -310,7 +311,7 @@ ${name}
             # Template 2 - Enthusiastic
             """Dear HR Team,
 
-I recently came across the ${job_title} opening at ${company}, and I am excited to submit my application for this role in Bangalore.
+I recently came across the ${job_title} opening at ${company}, and I am excited to submit my application for this role.
 
 As a professional with ${experience}+ years of experience, I have developed strong expertise in ${skills}. I am passionate about leveraging data and technology to drive business insights and decisions.
 
@@ -319,7 +320,7 @@ What excites me about ${company}:
 • The opportunity to work on challenging projects
 • The collaborative and growth-oriented culture
 
-I am based in Bangalore and immediately available to join. I am confident that my skills and enthusiasm make me a strong candidate for this position.
+I am based in Bangalore and immediately available. I prefer Remote/Hybrid arrangements but am flexible and open to all work modes.
 
 Please find my resume attached for your consideration.
 
@@ -332,15 +333,16 @@ ${name}
             # Template 3 - Concise
             """Dear Recruitment Team,
 
-I am applying for the ${job_title} position at ${company} (Bangalore).
+I am applying for the ${job_title} position at ${company}.
 
 Profile Summary:
 • Experience: ${experience}+ years
 • Skills: ${skills}
 • Location: Bangalore, Karnataka
+• Work Preference: Remote/Hybrid preferred, open to all
 • Availability: Immediate
 
-I am currently based in Bangalore and excited about the opportunity to contribute to ${company}'s success.
+I am excited about the opportunity to contribute to ${company}'s success.
 
 Please review my attached resume. I look forward to discussing this opportunity with you.
 

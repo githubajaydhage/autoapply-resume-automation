@@ -118,41 +118,6 @@ CURATED_HR_EMAILS = [
     {"company": "Tata Digital", "email": "careers@tatadigital.com", "type": "general"},
     {"company": "Reliance Retail", "email": "careers@ril.com", "type": "general"},
     {"company": "FirstCry", "email": "careers@firstcry.com", "type": "general"},
-    
-    # Personal HR Email IDs (Verified HR professionals on LinkedIn/Naukri)
-    # These are HR managers/recruiters who accept direct applications
-    {"company": "TCS HR", "email": "tcs.recruitment.india@gmail.com", "type": "personal_hr"},
-    {"company": "Infosys HR", "email": "infosys.careers.india@gmail.com", "type": "personal_hr"},
-    {"company": "Wipro HR", "email": "wipro.hiring.team@gmail.com", "type": "personal_hr"},
-    {"company": "Cognizant HR", "email": "cognizant.talent.india@gmail.com", "type": "personal_hr"},
-    {"company": "Capgemini HR", "email": "capgemini.india.jobs@gmail.com", "type": "personal_hr"},
-    {"company": "Accenture HR", "email": "accenture.india.hiring@gmail.com", "type": "personal_hr"},
-    {"company": "Deloitte HR", "email": "deloitte.careers.in@gmail.com", "type": "personal_hr"},
-    {"company": "HCL HR", "email": "hcl.careers.india@gmail.com", "type": "personal_hr"},
-    {"company": "Tech Mahindra HR", "email": "techmahindra.jobs@gmail.com", "type": "personal_hr"},
-    {"company": "LTIMindtree HR", "email": "ltimindtree.recruitment@gmail.com", "type": "personal_hr"},
-    
-    # Startup HR (Personal emails from LinkedIn job posts)
-    {"company": "Razorpay HR", "email": "razorpay.hiring@gmail.com", "type": "personal_hr"},
-    {"company": "PhonePe HR", "email": "phonepe.talent@gmail.com", "type": "personal_hr"},
-    {"company": "Swiggy HR", "email": "swiggy.careers.in@gmail.com", "type": "personal_hr"},
-    {"company": "Zomato HR", "email": "zomato.jobs.india@gmail.com", "type": "personal_hr"},
-    {"company": "Meesho HR", "email": "meesho.hiring@gmail.com", "type": "personal_hr"},
-    {"company": "CRED HR", "email": "cred.talent.team@gmail.com", "type": "personal_hr"},
-    {"company": "Groww HR", "email": "groww.careers@gmail.com", "type": "personal_hr"},
-    {"company": "Freshworks HR", "email": "freshworks.india.hr@gmail.com", "type": "personal_hr"},
-    
-    # Recruitment Agencies (Personal recruiters)
-    {"company": "ABC Consultants", "email": "abcconsultants.india@gmail.com", "type": "agency"},
-    {"company": "Teamlease", "email": "teamlease.jobs@gmail.com", "type": "agency"},
-    {"company": "Randstad India", "email": "randstad.india.jobs@gmail.com", "type": "agency"},
-    {"company": "Michael Page", "email": "michaelpage.india@gmail.com", "type": "agency"},
-    {"company": "ManpowerGroup", "email": "manpower.india.hiring@gmail.com", "type": "agency"},
-    {"company": "Kelly Services", "email": "kelly.india.recruitment@gmail.com", "type": "agency"},
-    {"company": "Adecco India", "email": "adecco.india.jobs@gmail.com", "type": "agency"},
-    {"company": "Hays India", "email": "hays.india.recruitment@gmail.com", "type": "agency"},
-    {"company": "Robert Half", "email": "roberthalf.india@gmail.com", "type": "agency"},
-    {"company": "Naukri Recruiter", "email": "naukri.recruiter.india@gmail.com", "type": "agency"},
 ]
 
 

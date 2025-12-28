@@ -1,13 +1,16 @@
 """
-HR Email Finder - Finds HR emails from companies with ACTIVE job openings
-Uses multiple strategies:
-1. Job APIs (RemoteOK, Adzuna, TheMuseAPI) to find companies hiring
-2. Generates HR email patterns from company domains
-3. Hunter.io style email guessing
-4. Verifies emails via MX records
+HR Email Finder - Extracts REAL HR emails from actual job postings
+NO guessing or pattern generation - only genuine emails found in job listings
+
+Sources:
+1. Job posting pages (mailto: links)
+2. Company career pages (contact emails)
+3. Job boards that show recruiter emails
+4. Naukri/LinkedIn public job posts with emails
 """
 
 import requests
+from bs4 import BeautifulSoup
 import pandas as pd
 import os
 import logging
@@ -15,7 +18,7 @@ import re
 import time
 import random
 from datetime import datetime
-from urllib.parse import urlparse
+from urllib.parse import urljoin, quote_plus
 
 try:
     import dns.resolver
@@ -26,424 +29,356 @@ except ImportError:
 logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] %(message)s')
 
 
-class HREmailFinder:
-    """Finds HR emails from companies with active job openings."""
+class RealHREmailFinder:
+    """Finds REAL HR emails from actual job postings - NO guessing."""
     
-    # Common HR email patterns used by companies
-    HR_EMAIL_PATTERNS = [
-        "careers@{domain}",
-        "hr@{domain}",
-        "jobs@{domain}",
-        "recruitment@{domain}",
-        "recruiting@{domain}",
-        "hiring@{domain}",
-        "talent@{domain}",
-        "resume@{domain}",
-        "apply@{domain}",
-        "careers.india@{domain}",
-        "india.careers@{domain}",
-        "india.recruiting@{domain}",
-        "indiacareers@{domain}",
-        "indiajobs@{domain}",
-        "hr.india@{domain}",
-    ]
+    # Email pattern to find in HTML
+    EMAIL_REGEX = re.compile(r'[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}')
+    
+    # Keywords that indicate HR/recruitment emails
+    HR_KEYWORDS = ['hr', 'career', 'careers', 'recruit', 'hiring', 'talent', 'jobs', 'job', 'resume', 'apply', 'staffing']
+    
+    # Skip these generic emails
+    SKIP_PATTERNS = ['noreply', 'no-reply', 'donotreply', 'mailer', 'notification', 'alert', 
+                     'newsletter', 'unsubscribe', 'feedback', 'example.com', 'test@']
     
     def __init__(self):
         self.session = requests.Session()
         self.session.headers.update({
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-            'Accept': 'application/json, text/html',
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+            'Accept-Language': 'en-US,en;q=0.9',
         })
         self.found_emails = []
-        self.verified_emails = []
         self.dns_cache = {}
         
-    def find_all_hr_emails(self) -> pd.DataFrame:
-        """Find HR emails from all sources."""
+    def find_real_hr_emails(self) -> pd.DataFrame:
+        """Find real HR emails from multiple sources."""
         logging.info("="*60)
-        logging.info("🔍 HR EMAIL FINDER - Finding HR contacts from active job postings")
+        logging.info("🔍 REAL HR EMAIL FINDER")
+        logging.info("   Only genuine emails from actual job postings")
         logging.info("="*60)
         
-        # 1. Get companies from job APIs
-        companies = self._get_hiring_companies()
-        logging.info(f"📊 Found {len(companies)} companies with active openings")
+        # Source 1: Naukri job listings (has real recruiter emails)
+        self._scrape_naukri_emails()
         
-        # 2. Generate HR email patterns
-        self._generate_hr_emails(companies)
-        logging.info(f"📧 Generated {len(self.found_emails)} potential HR emails")
+        # Source 2: Indeed job postings
+        self._scrape_indeed_emails()
         
-        # 3. Verify emails (MX record check)
-        self._verify_emails()
-        logging.info(f"✅ Verified {len(self.verified_emails)} HR emails")
+        # Source 3: Company career pages
+        self._scrape_career_pages()
         
-        # 4. Save results
-        return self._save_results()
+        # Source 4: LinkedIn public job posts
+        self._scrape_linkedin_jobs()
+        
+        # Source 5: Glassdoor job listings
+        self._scrape_glassdoor_emails()
+        
+        # Source 6: Internshala (for fresher jobs)
+        self._scrape_internshala_emails()
+        
+        # Deduplicate and validate
+        df = self._process_results()
+        
+        return df
     
-    def _get_hiring_companies(self) -> list:
-        """Get list of companies with active job openings."""
-        companies = []
+    def _scrape_naukri_emails(self):
+        """Scrape real recruiter emails from Naukri job listings."""
+        logging.info("📡 Scraping Naukri for recruiter emails...")
         
-        # Source 1: RemoteOK API
-        companies.extend(self._get_remoteok_companies())
+        keywords = ["data analyst bangalore", "business analyst bangalore", "python developer bangalore"]
         
-        # Source 2: Adzuna API (free tier)
-        companies.extend(self._get_adzuna_companies())
-        
-        # Source 3: The Muse API
-        companies.extend(self._get_themuse_companies())
-        
-        # Source 4: GitHub Jobs alternatives
-        companies.extend(self._get_startup_companies())
-        
-        # Source 5: Direct company list (known hiring)
-        companies.extend(self._get_known_hiring_companies())
-        
-        # Deduplicate
-        seen = set()
-        unique_companies = []
-        for company in companies:
-            domain = company.get('domain', '').lower()
-            if domain and domain not in seen:
-                seen.add(domain)
-                unique_companies.append(company)
-        
-        return unique_companies
-    
-    def _get_remoteok_companies(self) -> list:
-        """Get companies from RemoteOK API."""
-        companies = []
-        try:
-            logging.info("📡 Fetching companies from RemoteOK...")
-            response = self.session.get("https://remoteok.com/api", timeout=15)
-            
-            if response.status_code == 200:
-                jobs = response.json()
-                for job in jobs[1:100]:  # First 100 jobs
-                    if isinstance(job, dict) and job.get('company'):
-                        company_name = job.get('company', '')
-                        # Try to extract domain from job URL or company name
-                        domain = self._extract_domain(job.get('company_logo', '') or job.get('url', ''))
-                        if not domain:
-                            domain = self._guess_domain(company_name)
-                        
-                        if domain:
-                            companies.append({
-                                'name': company_name,
-                                'domain': domain,
-                                'job_title': job.get('position', ''),
-                                'source': 'remoteok'
-                            })
-                            
-                logging.info(f"   Found {len(companies)} companies from RemoteOK")
+        for keyword in keywords:
+            try:
+                # Naukri search URL
+                url = f"https://www.naukri.com/{keyword.replace(' ', '-')}-jobs"
                 
-        except Exception as e:
-            logging.warning(f"RemoteOK error: {e}")
-        
-        return companies
-    
-    def _get_adzuna_companies(self) -> list:
-        """Get companies from Adzuna (no API key needed for basic access)."""
-        companies = []
-        try:
-            logging.info("📡 Fetching companies from Adzuna...")
-            
-            # Adzuna India RSS-like endpoints
-            keywords = ["data+analyst", "business+analyst", "python", "sql"]
-            
-            for keyword in keywords[:2]:  # Limit to avoid rate limiting
-                url = f"https://www.adzuna.in/search?q={keyword}&w=bangalore"
-                try:
-                    response = self.session.get(url, timeout=10)
-                    if response.status_code == 200:
-                        # Extract company names from HTML
-                        from bs4 import BeautifulSoup
-                        soup = BeautifulSoup(response.text, 'html.parser')
-                        
-                        # Find company elements
-                        company_elements = soup.find_all(['a', 'div'], class_=lambda x: x and 'company' in str(x).lower())
-                        for elem in company_elements[:20]:
-                            company_name = elem.get_text(strip=True)
-                            if company_name and len(company_name) > 2:
-                                domain = self._guess_domain(company_name)
-                                if domain:
-                                    companies.append({
-                                        'name': company_name,
-                                        'domain': domain,
-                                        'job_title': keyword.replace('+', ' '),
-                                        'source': 'adzuna'
-                                    })
-                                    
-                    time.sleep(1)  # Rate limit
-                except:
-                    pass
+                response = self.session.get(url, timeout=15)
+                if response.status_code == 200:
+                    soup = BeautifulSoup(response.text, 'html.parser')
                     
-            logging.info(f"   Found {len(companies)} companies from Adzuna")
-            
-        except Exception as e:
-            logging.warning(f"Adzuna error: {e}")
+                    # Find all job cards
+                    job_cards = soup.find_all(['article', 'div'], class_=lambda x: x and 'job' in str(x).lower())
+                    
+                    for card in job_cards[:20]:
+                        # Look for mailto links
+                        mailto_links = card.find_all('a', href=lambda x: x and 'mailto:' in str(x).lower())
+                        for link in mailto_links:
+                            email = link['href'].replace('mailto:', '').split('?')[0].strip()
+                            if self._is_valid_hr_email(email):
+                                company = self._extract_company(card)
+                                self._add_email(email, company, 'naukri', keyword)
+                        
+                        # Also search for emails in text
+                        text = card.get_text()
+                        emails = self.EMAIL_REGEX.findall(text)
+                        for email in emails:
+                            if self._is_valid_hr_email(email):
+                                company = self._extract_company(card)
+                                self._add_email(email, company, 'naukri', keyword)
+                
+                time.sleep(random.uniform(2, 4))
+                
+            except Exception as e:
+                logging.debug(f"Naukri error for {keyword}: {e}")
         
-        return companies
+        logging.info(f"   Found {len([e for e in self.found_emails if e['source'] == 'naukri'])} emails from Naukri")
     
-    def _get_themuse_companies(self) -> list:
-        """Get companies from The Muse API (free, no auth)."""
-        companies = []
+    def _scrape_indeed_emails(self):
+        """Scrape recruiter emails from Indeed job listings."""
+        logging.info("📡 Scraping Indeed for recruiter emails...")
+        
+        keywords = ["data+analyst", "business+analyst", "python"]
+        
+        for keyword in keywords:
+            try:
+                url = f"https://in.indeed.com/jobs?q={keyword}&l=Bangalore"
+                
+                response = self.session.get(url, timeout=15)
+                if response.status_code == 200:
+                    soup = BeautifulSoup(response.text, 'html.parser')
+                    
+                    # Find email patterns in the page
+                    page_text = soup.get_text()
+                    emails = self.EMAIL_REGEX.findall(page_text)
+                    
+                    for email in emails:
+                        if self._is_valid_hr_email(email):
+                            self._add_email(email, 'Unknown', 'indeed', keyword)
+                    
+                    # Check mailto links
+                    mailto_links = soup.find_all('a', href=lambda x: x and 'mailto:' in str(x).lower())
+                    for link in mailto_links:
+                        email = link['href'].replace('mailto:', '').split('?')[0].strip()
+                        if self._is_valid_hr_email(email):
+                            self._add_email(email, 'Unknown', 'indeed', keyword)
+                
+                time.sleep(random.uniform(2, 4))
+                
+            except Exception as e:
+                logging.debug(f"Indeed error: {e}")
+        
+        logging.info(f"   Found {len([e for e in self.found_emails if e['source'] == 'indeed'])} emails from Indeed")
+    
+    def _scrape_career_pages(self):
+        """Scrape emails from company career pages."""
+        logging.info("📡 Scraping company career pages...")
+        
+        # Real career page URLs with known HR emails
+        career_pages = [
+            ("Infosys", "https://www.infosys.com/careers/"),
+            ("TCS", "https://www.tcs.com/careers"),
+            ("Wipro", "https://careers.wipro.com/"),
+            ("HCL", "https://www.hcltech.com/careers"),
+            ("Tech Mahindra", "https://careers.techmahindra.com/"),
+            ("Mindtree", "https://www.ltimindtree.com/careers/"),
+            ("Mphasis", "https://careers.mphasis.com/"),
+            ("Cognizant", "https://careers.cognizant.com/"),
+            ("Capgemini", "https://www.capgemini.com/in-en/careers/"),
+            ("Accenture", "https://www.accenture.com/in-en/careers"),
+            ("Deloitte", "https://www2.deloitte.com/in/en/careers.html"),
+            ("Razorpay", "https://razorpay.com/jobs/"),
+            ("Swiggy", "https://careers.swiggy.com/"),
+            ("Zomato", "https://www.zomato.com/careers"),
+            ("PhonePe", "https://www.phonepe.com/careers/"),
+            ("CRED", "https://careers.cred.club/"),
+            ("Meesho", "https://www.meesho.com/careers"),
+            ("Groww", "https://groww.in/careers"),
+            ("Flipkart", "https://www.flipkartcareers.com/"),
+            ("Amazon India", "https://www.amazon.jobs/en/locations/india"),
+        ]
+        
+        for company, url in career_pages:
+            try:
+                response = self.session.get(url, timeout=10)
+                if response.status_code == 200:
+                    soup = BeautifulSoup(response.text, 'html.parser')
+                    
+                    # Find all mailto links
+                    mailto_links = soup.find_all('a', href=lambda x: x and 'mailto:' in str(x).lower())
+                    for link in mailto_links:
+                        email = link['href'].replace('mailto:', '').split('?')[0].strip()
+                        if self._is_valid_hr_email(email):
+                            self._add_email(email, company, 'career_page', 'direct')
+                    
+                    # Search for emails in contact sections
+                    contact_sections = soup.find_all(['div', 'section', 'footer'], 
+                                                     class_=lambda x: x and any(k in str(x).lower() for k in ['contact', 'footer', 'connect']))
+                    for section in contact_sections:
+                        emails = self.EMAIL_REGEX.findall(section.get_text())
+                        for email in emails:
+                            if self._is_valid_hr_email(email):
+                                self._add_email(email, company, 'career_page', 'direct')
+                
+                time.sleep(random.uniform(1, 2))
+                
+            except Exception as e:
+                logging.debug(f"Career page error for {company}: {e}")
+        
+        logging.info(f"   Found {len([e for e in self.found_emails if e['source'] == 'career_page'])} emails from career pages")
+    
+    def _scrape_linkedin_jobs(self):
+        """Scrape emails from LinkedIn public job listings."""
+        logging.info("📡 Checking LinkedIn public job pages...")
+        
+        # LinkedIn public job search (no login needed)
+        keywords = ["data analyst india", "business analyst bangalore"]
+        
+        for keyword in keywords:
+            try:
+                url = f"https://www.linkedin.com/jobs/search?keywords={quote_plus(keyword)}&location=India"
+                
+                response = self.session.get(url, timeout=15)
+                if response.status_code == 200:
+                    soup = BeautifulSoup(response.text, 'html.parser')
+                    
+                    # Find emails in the page
+                    page_text = soup.get_text()
+                    emails = self.EMAIL_REGEX.findall(page_text)
+                    
+                    for email in emails:
+                        if self._is_valid_hr_email(email):
+                            self._add_email(email, 'Unknown', 'linkedin_jobs', keyword)
+                
+                time.sleep(random.uniform(3, 5))
+                
+            except Exception as e:
+                logging.debug(f"LinkedIn error: {e}")
+        
+        logging.info(f"   Found {len([e for e in self.found_emails if e['source'] == 'linkedin_jobs'])} emails from LinkedIn")
+    
+    def _scrape_glassdoor_emails(self):
+        """Scrape emails from Glassdoor job listings."""
+        logging.info("📡 Checking Glassdoor job listings...")
+        
         try:
-            logging.info("📡 Fetching companies from The Muse...")
+            url = "https://www.glassdoor.co.in/Job/bangalore-data-analyst-jobs-SRCH_IL.0,9_IC2940587_KO10,22.htm"
             
-            # The Muse has a free public API
-            url = "https://www.themuse.com/api/public/companies?page=1&industry=Technology"
             response = self.session.get(url, timeout=15)
-            
             if response.status_code == 200:
-                data = response.json()
-                for company in data.get('results', [])[:50]:
-                    company_name = company.get('name', '')
-                    # The Muse provides company info
-                    refs = company.get('refs', {})
-                    landing = refs.get('landing_page', '')
-                    
-                    domain = self._extract_domain(landing)
-                    if not domain:
-                        domain = self._guess_domain(company_name)
-                    
-                    if domain:
-                        companies.append({
-                            'name': company_name,
-                            'domain': domain,
-                            'job_title': 'Various',
-                            'source': 'themuse'
-                        })
-                        
-                logging.info(f"   Found {len(companies)} companies from The Muse")
+                soup = BeautifulSoup(response.text, 'html.parser')
                 
+                # Find emails
+                page_text = soup.get_text()
+                emails = self.EMAIL_REGEX.findall(page_text)
+                
+                for email in emails:
+                    if self._is_valid_hr_email(email):
+                        self._add_email(email, 'Unknown', 'glassdoor', 'data analyst')
+            
         except Exception as e:
-            logging.warning(f"The Muse error: {e}")
+            logging.debug(f"Glassdoor error: {e}")
         
-        return companies
+        logging.info(f"   Found {len([e for e in self.found_emails if e['source'] == 'glassdoor'])} emails from Glassdoor")
     
-    def _get_startup_companies(self) -> list:
-        """Get companies from startup job boards."""
-        companies = []
+    def _scrape_internshala_emails(self):
+        """Scrape emails from Internshala (fresher jobs)."""
+        logging.info("📡 Checking Internshala job listings...")
         
-        # Known startup domains that are actively hiring
-        startups = [
-            {"name": "Razorpay", "domain": "razorpay.com"},
-            {"name": "Zerodha", "domain": "zerodha.com"},
-            {"name": "CRED", "domain": "cred.club"},
-            {"name": "Meesho", "domain": "meesho.com"},
-            {"name": "Groww", "domain": "groww.in"},
-            {"name": "PhonePe", "domain": "phonepe.com"},
-            {"name": "Swiggy", "domain": "swiggy.in"},
-            {"name": "Zomato", "domain": "zomato.com"},
-            {"name": "Ola", "domain": "olacabs.com"},
-            {"name": "Paytm", "domain": "paytm.com"},
-            {"name": "PolicyBazaar", "domain": "policybazaar.com"},
-            {"name": "Lenskart", "domain": "lenskart.com"},
-            {"name": "Urban Company", "domain": "urbancompany.com"},
-            {"name": "Dunzo", "domain": "dunzo.in"},
-            {"name": "BigBasket", "domain": "bigbasket.com"},
-            {"name": "Nykaa", "domain": "nykaa.com"},
-            {"name": "Flipkart", "domain": "flipkart.com"},
-            {"name": "Dream11", "domain": "dream11.com"},
-            {"name": "Udaan", "domain": "udaan.com"},
-            {"name": "Byju's", "domain": "byjus.com"},
-            {"name": "Unacademy", "domain": "unacademy.com"},
-            {"name": "UpGrad", "domain": "upgrad.com"},
-            {"name": "Delhivery", "domain": "delhivery.com"},
-            {"name": "ShareChat", "domain": "sharechat.co"},
-            {"name": "Ather Energy", "domain": "atherenergy.com"},
-            {"name": "Rapido", "domain": "rapido.bike"},
-            {"name": "Jupiter", "domain": "jupiter.money"},
-            {"name": "Slice", "domain": "sliceit.com"},
-            {"name": "Jar", "domain": "myjar.app"},
-            {"name": "Fi", "domain": "fi.money"},
-        ]
-        
-        for s in startups:
-            companies.append({
-                'name': s['name'],
-                'domain': s['domain'],
-                'job_title': 'Various Openings',
-                'source': 'startup_list'
-            })
-        
-        logging.info(f"   Added {len(startups)} known startups")
-        return companies
-    
-    def _get_known_hiring_companies(self) -> list:
-        """List of major companies known to be actively hiring."""
-        companies = [
-            # IT Services
-            {"name": "TCS", "domain": "tcs.com"},
-            {"name": "Infosys", "domain": "infosys.com"},
-            {"name": "Wipro", "domain": "wipro.com"},
-            {"name": "HCL", "domain": "hcl.com"},
-            {"name": "Tech Mahindra", "domain": "techmahindra.com"},
-            {"name": "Cognizant", "domain": "cognizant.com"},
-            {"name": "Capgemini", "domain": "capgemini.com"},
-            {"name": "LTIMindtree", "domain": "ltimindtree.com"},
-            {"name": "Mphasis", "domain": "mphasis.com"},
-            {"name": "Persistent", "domain": "persistent.com"},
-            {"name": "Cyient", "domain": "cyient.com"},
-            {"name": "Zensar", "domain": "zensar.com"},
-            {"name": "Birlasoft", "domain": "birlasoft.com"},
-            {"name": "Hexaware", "domain": "hexaware.com"},
-            {"name": "NIIT Technologies", "domain": "niit-tech.com"},
-            {"name": "Sonata Software", "domain": "sonata-software.com"},
-            
-            # Product Companies (India offices)
-            {"name": "Google", "domain": "google.com"},
-            {"name": "Microsoft", "domain": "microsoft.com"},
-            {"name": "Amazon", "domain": "amazon.com"},
-            {"name": "Meta", "domain": "fb.com"},
-            {"name": "Apple", "domain": "apple.com"},
-            {"name": "Netflix", "domain": "netflix.com"},
-            {"name": "Adobe", "domain": "adobe.com"},
-            {"name": "Salesforce", "domain": "salesforce.com"},
-            {"name": "Oracle", "domain": "oracle.com"},
-            {"name": "SAP", "domain": "sap.com"},
-            {"name": "IBM", "domain": "ibm.com"},
-            {"name": "VMware", "domain": "vmware.com"},
-            {"name": "Cisco", "domain": "cisco.com"},
-            {"name": "Intel", "domain": "intel.com"},
-            {"name": "Qualcomm", "domain": "qualcomm.com"},
-            {"name": "NVIDIA", "domain": "nvidia.com"},
-            {"name": "Uber", "domain": "uber.com"},
-            {"name": "Atlassian", "domain": "atlassian.com"},
-            {"name": "Stripe", "domain": "stripe.com"},
-            {"name": "Spotify", "domain": "spotify.com"},
-            
-            # Banks & Finance
-            {"name": "HDFC Bank", "domain": "hdfcbank.com"},
-            {"name": "ICICI Bank", "domain": "icicibank.com"},
-            {"name": "Kotak", "domain": "kotak.com"},
-            {"name": "Axis Bank", "domain": "axisbank.com"},
-            {"name": "Yes Bank", "domain": "yesbank.in"},
-            {"name": "Bajaj Finance", "domain": "bajajfinserv.in"},
-            {"name": "Paytm Payments Bank", "domain": "paytmbank.com"},
-            
-            # Consulting
-            {"name": "Accenture", "domain": "accenture.com"},
-            {"name": "Deloitte", "domain": "deloitte.com"},
-            {"name": "PwC", "domain": "pwc.com"},
-            {"name": "EY", "domain": "ey.com"},
-            {"name": "KPMG", "domain": "kpmg.com"},
-            {"name": "McKinsey", "domain": "mckinsey.com"},
-            {"name": "BCG", "domain": "bcg.com"},
-            {"name": "Bain", "domain": "bain.com"},
-            
-            # Analytics
-            {"name": "Mu Sigma", "domain": "mu-sigma.com"},
-            {"name": "Fractal Analytics", "domain": "fractal.ai"},
-            {"name": "Tiger Analytics", "domain": "tigeranalytics.com"},
-            {"name": "LatentView", "domain": "latentview.com"},
-            {"name": "AbsolutData", "domain": "absolutdata.com"},
-            {"name": "Tredence", "domain": "tredence.com"},
-            {"name": "TheMathCompany", "domain": "themathcompany.com"},
-        ]
-        
-        result = []
-        for c in companies:
-            result.append({
-                'name': c['name'],
-                'domain': c['domain'],
-                'job_title': 'Active Openings',
-                'source': 'known_hiring'
-            })
-        
-        logging.info(f"   Added {len(companies)} known hiring companies")
-        return result
-    
-    def _extract_domain(self, url: str) -> str:
-        """Extract domain from URL."""
-        if not url:
-            return ""
         try:
-            parsed = urlparse(url if url.startswith('http') else f"https://{url}")
-            domain = parsed.netloc.lower()
-            # Remove www.
-            if domain.startswith('www.'):
-                domain = domain[4:]
-            return domain if '.' in domain else ""
-        except:
-            return ""
-    
-    def _guess_domain(self, company_name: str) -> str:
-        """Guess company domain from name."""
-        if not company_name:
-            return ""
-        
-        # Clean company name
-        name = company_name.lower().strip()
-        name = re.sub(r'[^\w\s]', '', name)
-        name = re.sub(r'\s+(inc|ltd|llc|pvt|private|limited|corp|corporation|technologies|tech|software|solutions|services|india|global).*$', '', name)
-        name = name.strip().replace(' ', '')
-        
-        if len(name) < 2:
-            return ""
-        
-        # Try common TLDs
-        possible_domains = [
-            f"{name}.com",
-            f"{name}.in",
-            f"{name}.io",
-            f"{name}.co",
-            f"{name}.ai",
-        ]
-        
-        # Return first one that might exist
-        return possible_domains[0]
-    
-    def _generate_hr_emails(self, companies: list):
-        """Generate HR email patterns for each company."""
-        for company in companies:
-            domain = company.get('domain', '')
-            if not domain:
-                continue
+            urls = [
+                "https://internshala.com/jobs/data-analyst-jobs-in-bangalore/",
+                "https://internshala.com/jobs/business-analyst-jobs/",
+                "https://internshala.com/jobs/python-jobs-in-bangalore/",
+            ]
             
-            for pattern in self.HR_EMAIL_PATTERNS:
-                email = pattern.format(domain=domain)
-                self.found_emails.append({
-                    'company': company.get('name', ''),
-                    'email': email,
-                    'domain': domain,
-                    'job_title': company.get('job_title', 'Various'),
-                    'source': company.get('source', 'unknown'),
-                    'pattern': pattern.split('@')[0]
-                })
+            for url in urls:
+                response = self.session.get(url, timeout=15)
+                if response.status_code == 200:
+                    soup = BeautifulSoup(response.text, 'html.parser')
+                    
+                    # Find emails in job cards
+                    page_text = soup.get_text()
+                    emails = self.EMAIL_REGEX.findall(page_text)
+                    
+                    for email in emails:
+                        if self._is_valid_hr_email(email):
+                            self._add_email(email, 'Unknown', 'internshala', 'fresher')
+                    
+                    # Check mailto links
+                    mailto_links = soup.find_all('a', href=lambda x: x and 'mailto:' in str(x).lower())
+                    for link in mailto_links:
+                        email = link['href'].replace('mailto:', '').split('?')[0].strip()
+                        if self._is_valid_hr_email(email):
+                            self._add_email(email, 'Unknown', 'internshala', 'fresher')
+                
+                time.sleep(random.uniform(2, 3))
+            
+        except Exception as e:
+            logging.debug(f"Internshala error: {e}")
+        
+        logging.info(f"   Found {len([e for e in self.found_emails if e['source'] == 'internshala'])} emails from Internshala")
     
-    def _verify_emails(self):
-        """Verify emails by checking MX records."""
-        if not HAS_DNS:
-            logging.warning("⚠️ dnspython not installed - skipping MX verification")
-            self.verified_emails = self.found_emails
+    def _is_valid_hr_email(self, email: str) -> bool:
+        """Check if email is a valid HR/recruitment email."""
+        if not email:
+            return False
+        
+        email = email.lower().strip()
+        
+        # Basic format check
+        if not re.match(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$', email):
+            return False
+        
+        # Skip invalid patterns
+        for pattern in self.SKIP_PATTERNS:
+            if pattern in email:
+                return False
+        
+        # Must contain HR keywords OR be from a known company domain
+        local_part = email.split('@')[0]
+        domain = email.split('@')[1]
+        
+        # Check for HR keywords in local part
+        has_hr_keyword = any(kw in local_part for kw in self.HR_KEYWORDS)
+        
+        # Check if from company domain (not personal email like gmail)
+        personal_domains = ['gmail.com', 'yahoo.com', 'hotmail.com', 'outlook.com', 'rediffmail.com']
+        is_company_domain = domain not in personal_domains
+        
+        # Accept if has HR keyword, OR if it's from company domain
+        if has_hr_keyword:
+            return True
+        
+        # For company domains, accept even without HR keyword (might be recruiter name)
+        if is_company_domain and len(local_part) > 2:
+            return True
+        
+        # For personal domains, only accept if has HR keyword
+        return False
+    
+    def _extract_company(self, element) -> str:
+        """Extract company name from HTML element."""
+        try:
+            # Try common class patterns
+            company_elem = element.find(['a', 'span', 'div'], class_=lambda x: x and 'company' in str(x).lower())
+            if company_elem:
+                return company_elem.get_text(strip=True)
+            return 'Unknown'
+        except:
+            return 'Unknown'
+    
+    def _add_email(self, email: str, company: str, source: str, job_keyword: str):
+        """Add email to found list."""
+        email = email.lower().strip()
+        
+        # Check if already exists
+        if any(e['email'] == email for e in self.found_emails):
             return
         
-        logging.info("🔍 Verifying email domains (MX records)...")
-        
-        verified_domains = set()
-        invalid_domains = set()
-        
-        for email_info in self.found_emails:
-            domain = email_info.get('domain', '')
-            
-            if domain in verified_domains:
-                self.verified_emails.append(email_info)
-            elif domain in invalid_domains:
-                continue
-            else:
-                # Check MX record
-                if self._has_mx_record(domain):
-                    verified_domains.add(domain)
-                    self.verified_emails.append(email_info)
-                else:
-                    invalid_domains.add(domain)
-        
-        logging.info(f"   Valid domains: {len(verified_domains)}")
-        logging.info(f"   Invalid domains: {len(invalid_domains)}")
+        self.found_emails.append({
+            'email': email,
+            'company': company,
+            'source': source,
+            'job_keyword': job_keyword,
+            'found_at': datetime.now().isoformat()
+        })
     
-    def _has_mx_record(self, domain: str) -> bool:
-        """Check if domain has MX records."""
+    def _verify_mx_record(self, domain: str) -> bool:
+        """Verify domain has MX records."""
+        if not HAS_DNS:
+            return True  # Skip if dns module not available
+        
         if domain in self.dns_cache:
             return self.dns_cache[domain]
         
@@ -456,35 +391,41 @@ class HREmailFinder:
             self.dns_cache[domain] = False
             return False
     
-    def _save_results(self) -> pd.DataFrame:
-        """Save verified HR emails to CSV."""
-        if not self.verified_emails:
-            logging.error("❌ No verified HR emails found!")
+    def _process_results(self) -> pd.DataFrame:
+        """Process and save results."""
+        if not self.found_emails:
+            logging.warning("⚠️ No genuine HR emails found from job postings")
+            logging.info("   This is normal - most job sites hide recruiter emails")
+            logging.info("   System will use curated database (130+ verified emails)")
             return pd.DataFrame()
         
-        df = pd.DataFrame(self.verified_emails)
+        df = pd.DataFrame(self.found_emails)
         
-        # Add job_title column if missing
-        if 'job_title' not in df.columns:
-            df['job_title'] = 'Data Analyst / Business Analyst'
+        # Verify MX records
+        if HAS_DNS:
+            logging.info("🔍 Verifying email domains...")
+            valid_mask = df['email'].apply(lambda x: self._verify_mx_record(x.split('@')[1]))
+            invalid_count = (~valid_mask).sum()
+            if invalid_count > 0:
+                logging.info(f"   Removed {invalid_count} emails with invalid domains")
+            df = df[valid_mask]
         
-        # Rename email to hr_email for compatibility
-        if 'email' in df.columns:
-            df = df.rename(columns={'email': 'hr_email'})
+        # Rename for compatibility
+        df = df.rename(columns={'email': 'hr_email'})
+        df['job_title'] = df['job_keyword'].apply(lambda x: x.title() if x else 'Various')
         
-        # Deduplicate by email
+        # Deduplicate
         df = df.drop_duplicates(subset=['hr_email'], keep='first')
         
-        # Save to multiple locations
+        # Save results
         data_dir = os.path.join(os.path.dirname(__file__), '..', 'data')
         os.makedirs(data_dir, exist_ok=True)
         
-        # Save as new_hr_emails.csv
-        new_path = os.path.join(data_dir, 'new_hr_emails.csv')
-        df.to_csv(new_path, index=False)
-        logging.info(f"💾 Saved {len(df)} new HR emails to {new_path}")
+        output_path = os.path.join(data_dir, 'scraped_hr_emails.csv')
+        df.to_csv(output_path, index=False)
+        logging.info(f"💾 Saved {len(df)} genuine HR emails to {output_path}")
         
-        # Also append to all_hr_emails.csv
+        # Merge with all_hr_emails.csv
         all_hr_path = os.path.join(data_dir, 'all_hr_emails.csv')
         if os.path.exists(all_hr_path):
             existing = pd.read_csv(all_hr_path)
@@ -500,21 +441,23 @@ class HREmailFinder:
 
 
 def main():
-    """Find HR emails from companies with active job openings."""
+    """Find real HR emails from job postings."""
     logging.info("="*60)
-    logging.info("🔍 HR EMAIL FINDER")
+    logging.info("🔍 REAL HR EMAIL FINDER")
+    logging.info("   Only genuine emails - NO pattern guessing")
     logging.info("="*60)
     
-    finder = HREmailFinder()
-    df = finder.find_all_hr_emails()
+    finder = RealHREmailFinder()
+    df = finder.find_real_hr_emails()
     
     if not df.empty:
-        logging.info("\n📊 SUMMARY:")
-        logging.info(f"   Total new HR emails: {len(df)}")
-        logging.info(f"   Unique companies: {df['company'].nunique()}")
-        logging.info("\n📧 Sample emails found:")
-        for _, row in df.head(10).iterrows():
-            logging.info(f"   {row['company']}: {row['hr_email']}")
+        logging.info("\n📊 GENUINE EMAILS FOUND:")
+        for _, row in df.head(15).iterrows():
+            logging.info(f"   ✅ {row['company']}: {row['hr_email']} (from {row['source']})")
+    else:
+        logging.info("\n⚠️ No emails scraped - this is normal!")
+        logging.info("   Most job sites hide recruiter emails.")
+        logging.info("   System will use curated database (130+ verified emails)")
     
     logging.info("="*60)
     return df

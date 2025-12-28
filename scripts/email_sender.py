@@ -175,19 +175,15 @@ class EmailValidator:
             if pattern in email_lower:
                 return False
         
-        # Accept personal email domains if they contain HR keywords in local part
+        # Block personal email domains (gmail, yahoo, etc.) - only company emails allowed
         personal_domains = ['gmail.com', 'yahoo.com', 'outlook.com', 'hotmail.com', 'rediffmail.com']
         domain = email.split('@')[1].lower()
         
         if domain in personal_domains:
-            # For personal emails, require HR keywords in the local part
-            personal_hr_keywords = ['hr', 'recruit', 'hiring', 'talent', 'career', 'job', 'staffing']
-            for keyword in personal_hr_keywords:
-                if keyword in local_part:
-                    return True
+            # Don't send to personal email addresses - not genuine HR
             return False
         
-        # If from known valid domains AND not in non-HR patterns, accept
+        # If from known valid company domains, accept
         if domain in self.KNOWN_VALID_DOMAINS:
             return True
         

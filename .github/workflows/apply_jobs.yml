@@ -51,6 +51,17 @@ jobs:
     - name: Install Playwright browsers
       run: playwright install chromium
 
+    - name: Restore Browser Session Cache
+      uses: actions/cache@v3
+      with:
+        path: |
+          data/playwright_user_data_linkedin
+          data/playwright_user_data_naukri
+          data/playwright_user_data_indeed
+        key: browser-session-${{ runner.os }}-v1
+        restore-keys: |
+          browser-session-${{ runner.os }}-
+
     - name: Run Complete Pipeline with Real Job Scraping
       run: |
         echo "🚀 STARTING COMPLETE PIPELINE WITH REAL JOBS"

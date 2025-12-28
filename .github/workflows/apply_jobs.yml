@@ -61,8 +61,8 @@ on:
         - 'true'
         
   schedule:
-    # Runs at 9 AM UTC weekdays (2:30 PM IST)
-    - cron: '0 9 * * 1-5'
+    # Runs 3 times per day on weekdays (IST: 9:30 AM, 2:30 PM, 7:30 PM)
+    - cron: '0 4,9,14 * * 1-5'
 
 jobs:
   apply:

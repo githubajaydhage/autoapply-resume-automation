@@ -143,6 +143,19 @@ jobs:
         SENDER_PASSWORD: ${{ secrets.SENDER_PASSWORD }}
         MAX_FOLLOWUPS: '10'
 
+    # PHASE 5: Check for Bounces and Update Email Quality
+    - name: Phase 5 - Check Email Bounces
+      if: ${{ github.event.inputs.scrape_only != 'true' }}
+      run: |
+        echo "📬 PHASE 5: CHECKING FOR BOUNCED EMAILS"
+        python scripts/bounce_checker.py || true
+        echo ""
+        echo "📧 Updating verified emails database..."
+        python scripts/verified_emails_db.py || true
+      env:
+        PYTHONPATH: ${{ github.workspace }}
+        SENDER_PASSWORD: ${{ secrets.SENDER_PASSWORD }}
+
     - name: Save Data Cache
       uses: actions/cache/save@v3
       with:
@@ -152,6 +165,10 @@ jobs:
           data/all_hr_emails.csv
           data/jobs_today.csv
           data/curated_hr_emails.csv
+          data/bounced_emails.csv
+          data/verified_hr_emails.csv
+          data/known_bad_emails.csv
+          data/email_verification_log.csv
         key: job-data-${{ runner.os }}-v3-${{ github.run_number }}
 
     - name: Upload Results
@@ -164,6 +181,10 @@ jobs:
           data/curated_hr_emails.csv
           data/sent_emails_log.csv
           data/followup_log.csv
+          data/bounced_emails.csv
+          data/verified_hr_emails.csv
+          data/problematic_emails.csv
+          data/email_verification_log.csv
           data/*.json
         retention-days: 30
       if: always()
@@ -189,5 +210,13 @@ jobs:
         if [ -f data/followup_log.csv ]; then
           FOLLOWUPS=$(wc -l < data/followup_log.csv)
           echo "🔄 Follow-ups Sent: $((FOLLOWUPS - 1))"
+        fi
+        if [ -f data/bounced_emails.csv ]; then
+          BOUNCED=$(wc -l < data/bounced_emails.csv)
+          echo "❌ Bounced Emails: $((BOUNCED - 1))"
+        fi
+        if [ -f data/verified_hr_emails.csv ]; then
+          VERIFIED=$(wc -l < data/verified_hr_emails.csv)
+          echo "✅ Verified HR Emails: $((VERIFIED - 1))"
         fi
         echo "📊 =============================================="

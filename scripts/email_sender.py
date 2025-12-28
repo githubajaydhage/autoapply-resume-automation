@@ -1,5 +1,6 @@
 """
 Personalized Email Sender - Sends customized job application emails to HR contacts
+With integrated email verification and bounce tracking
 """
 
 import smtplib
@@ -24,6 +25,13 @@ from string import Template
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from utils.config import USER_DETAILS, BASE_RESUME_PATH
+
+# Import email verifier for pre-send validation
+try:
+    from scripts.email_verifier import EmailVerifier
+    VERIFIER_AVAILABLE = True
+except ImportError:
+    VERIFIER_AVAILABLE = False
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] %(message)s')
@@ -193,6 +201,26 @@ class EmailValidator:
 class PersonalizedEmailSender:
     """Sends personalized job application emails to HR contacts."""
     
+    # KNOWN BAD EMAILS - Do not send to these (waste of time)
+    KNOWN_BAD_EMAILS = {
+        'jobs@google.com': 'Google does not accept direct applications',
+        'careers@google.com': 'Google does not accept direct applications',
+        'careers@microsoft.com': 'Microsoft uses ATS only',
+        'amazon-hiring@amazon.com': 'Not a valid Amazon email',
+        'recruiting@fb.com': 'Meta does not accept direct applications',
+        'careers@fb.com': 'Meta does not accept direct applications',
+        'careers@apple.com': 'Apple uses ATS only',
+        'jobs@apple.com': 'Apple uses ATS only',
+        'careers@netflix.com': 'Netflix uses ATS only',
+    }
+    
+    # KNOWN GOOD EMAILS - Verified to work
+    VERIFIED_EMAILS = {
+        'helpdesk.recruitment@wipro.com',
+        'career@razorpay.com',
+        'recrops@ca.ibm.com',
+    }
+    
     def __init__(self):
         # Email configuration - only password needed from secrets
         self.smtp_server = os.getenv('SMTP_SERVER', 'smtp.gmail.com')
@@ -226,6 +254,25 @@ class PersonalizedEmailSender:
         self.invalid_log_path = os.path.join(
             os.path.dirname(__file__), '..', 'data', 'invalid_emails_log.csv'
         )
+        
+        # Track verified emails (successfully delivered)
+        self.verified_log_path = os.path.join(
+            os.path.dirname(__file__), '..', 'data', 'verified_emails.csv'
+        )
+        
+        # Track problematic emails (bounced/failed)
+        self.problematic_log_path = os.path.join(
+            os.path.dirname(__file__), '..', 'data', 'problematic_emails.csv'
+        )
+        
+        # Initialize email verifier if available
+        self.verifier = None
+        if VERIFIER_AVAILABLE:
+            try:
+                self.verifier = EmailVerifier()
+                logging.info("   ✅ Email verifier loaded")
+            except:
+                pass
         
         # Log configuration
         logging.info(f"📧 Email Sender Configuration:")
@@ -423,17 +470,36 @@ ${name}
     def send_email(self, recipient_email: str, company: str, job_title: str, job_url: str = None) -> bool:
         """Send a personalized email to a single recipient."""
         
+        recipient_lower = recipient_email.lower()
+        
         # Skip if already sent
-        if recipient_email.lower() in self.sent_emails:
+        if recipient_lower in self.sent_emails:
             logging.info(f"⏭️ Skipping {recipient_email} - already contacted")
             return False
         
-        # VALIDATE EMAIL BEFORE SENDING
-        is_valid, reason = self.validator.validate_email(recipient_email)
-        if not is_valid:
-            logging.warning(f"⚠️ Skipping {recipient_email} - {reason}")
-            self._log_invalid_email(recipient_email, company, reason)
+        # CHECK KNOWN BAD EMAILS FIRST - Save time and quota
+        if recipient_lower in self.KNOWN_BAD_EMAILS:
+            reason = self.KNOWN_BAD_EMAILS[recipient_lower]
+            logging.warning(f"🚫 Skipping {recipient_email} - {reason}")
+            self._log_invalid_email(recipient_email, company, f"Known bad: {reason}")
             return False
+        
+        # Use enhanced verifier if available
+        if self.verifier:
+            result = self.verifier.calculate_deliverability_score(recipient_email)
+            if result['score'] < 50:
+                logging.warning(f"⚠️ Skipping {recipient_email} - Low deliverability score: {result['score']}/100 ({result['recommendation']})")
+                self._log_invalid_email(recipient_email, company, result['recommendation'])
+                return False
+            elif result['score'] < 70:
+                logging.info(f"⚠️ Warning: {recipient_email} has medium deliverability score: {result['score']}/100")
+        else:
+            # Fallback to basic validation
+            is_valid, reason = self.validator.validate_email(recipient_email)
+            if not is_valid:
+                logging.warning(f"⚠️ Skipping {recipient_email} - {reason}")
+                self._log_invalid_email(recipient_email, company, reason)
+                return False
         
         # Validate configuration
         if not self.sender_email or not self.sender_password:

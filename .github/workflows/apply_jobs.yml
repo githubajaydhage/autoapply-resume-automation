@@ -90,4 +90,5 @@ jobs:
           data/main.log
           data/production_applications.log
           data/prioritized_jobs_today.csv
+          data/*.png
       if: always()

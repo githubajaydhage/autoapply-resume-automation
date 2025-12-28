@@ -92,6 +92,46 @@ class BaseApplicator(ABC):
                 page.click(self.config["selectors"]["login_button"])
                 time.sleep(random.uniform(2, 4))
                 
+                # Handle LinkedIn verification/checkpoint page
+                if self.portal_name == "linkedin":
+                    # Check for checkpoint/verification page
+                    checkpoint_selectors = [
+                        'input[name="pin"]',  # PIN verification
+                        'text=verify',  # Various verification messages
+                        'text=security check',
+                        'text=confirm your identity',
+                        'text=we need to verify',
+                        '#captcha',
+                        '.challenge',
+                    ]
+                    
+                    # First, wait a moment to see what page we're on
+                    time.sleep(3)
+                    page.screenshot(path=os.path.join("data", f"login_state_{self.portal_name}.png"))
+                    
+                    # Check if we're on a verification page
+                    is_checkpoint = False
+                    for selector in checkpoint_selectors:
+                        try:
+                            if page.locator(selector).first.is_visible(timeout=1000):
+                                is_checkpoint = True
+                                logging.warning(f"⚠️ LinkedIn verification/checkpoint detected! Check your phone/email.")
+                                logging.info("Waiting up to 5 minutes for manual verification...")
+                                break
+                        except:
+                            continue
+                    
+                    if is_checkpoint:
+                        # Wait longer for manual verification (5 minutes)
+                        try:
+                            page.wait_for_selector(self.config["selectors"]["login_success_indicator"], timeout=300000)
+                            logging.info(f"✅ Verification completed! Login to {self.portal_name} successful.")
+                            return True
+                        except PlaywrightTimeoutError:
+                            logging.error("Verification timed out after 5 minutes.")
+                            page.screenshot(path=os.path.join("data", f"verification_timeout_{self.portal_name}.png"))
+                            raise
+                
                 # Wait for login success with extended timeout
                 page.wait_for_selector(self.config["selectors"]["login_success_indicator"], timeout=120000)
                 logging.info(f"Login to {self.portal_name} successful.")

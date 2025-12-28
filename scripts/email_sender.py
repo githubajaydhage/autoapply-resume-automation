@@ -10,11 +10,17 @@ from email.mime.base import MIMEBase
 from email import encoders
 import pandas as pd
 import os
+import sys
 import logging
 import time
 import random
 from datetime import datetime
 from string import Template
+
+# Add parent directory to path for imports
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from utils.config import USER_DETAILS, BASE_RESUME_PATH
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] %(message)s')
@@ -24,30 +30,37 @@ class PersonalizedEmailSender:
     """Sends personalized job application emails to HR contacts."""
     
     def __init__(self):
-        # Email configuration from environment variables
+        # Email configuration - only password needed from secrets
         self.smtp_server = os.getenv('SMTP_SERVER', 'smtp.gmail.com')
         self.smtp_port = int(os.getenv('SMTP_PORT', '587'))
-        self.sender_email = os.getenv('SENDER_EMAIL', '')
-        self.sender_password = os.getenv('SENDER_PASSWORD', '')  # App password for Gmail
-        self.sender_name = os.getenv('SENDER_NAME', 'Job Applicant')
         
-        # Applicant details
-        self.applicant_name = os.getenv('APPLICANT_NAME', 'Your Name')
-        self.applicant_phone = os.getenv('APPLICANT_PHONE', '+91-XXXXXXXXXX')
-        self.applicant_linkedin = os.getenv('APPLICANT_LINKEDIN', '')
-        self.applicant_experience = os.getenv('APPLICANT_EXPERIENCE', '3')
-        self.applicant_skills = os.getenv('APPLICANT_SKILLS', 'Data Analysis, Python, SQL, Excel, Tableau')
+        # Use email from config, password from secrets
+        self.sender_email = USER_DETAILS.get('email', 'biradarshweta48@gmail.com')
+        self.sender_password = os.getenv('SENDER_PASSWORD', '')  # App password from GitHub Secrets
+        self.sender_name = USER_DETAILS.get('full_name', 'Shweta Biradar')
         
-        # Resume path
-        self.resume_path = os.getenv('RESUME_PATH', os.path.join(
-            os.path.dirname(__file__), '..', 'resumes', 'base_resume.pdf'
-        ))
+        # Applicant details from config.py - no secrets needed!
+        self.applicant_name = USER_DETAILS.get('full_name', 'Shweta Biradar')
+        self.applicant_phone = USER_DETAILS.get('phone', '+91-7676294009')
+        self.applicant_linkedin = USER_DETAILS.get('linkedin_url', '')
+        self.applicant_experience = USER_DETAILS.get('years_experience', '3')
+        self.applicant_skills = 'Data Analysis, Python, SQL, Excel, Tableau, Power BI'
+        
+        # Resume path from config
+        self.resume_path = BASE_RESUME_PATH
         
         # Track sent emails
         self.sent_log_path = os.path.join(
             os.path.dirname(__file__), '..', 'data', 'sent_emails_log.csv'
         )
         self.sent_emails = self._load_sent_log()
+        
+        # Log configuration
+        logging.info(f"📧 Email Sender Configuration:")
+        logging.info(f"   Sender: {self.sender_name} <{self.sender_email}>")
+        logging.info(f"   Phone: {self.applicant_phone}")
+        logging.info(f"   Experience: {self.applicant_experience}+ years")
+        logging.info(f"   Resume: {self.resume_path}")
         
     def _load_sent_log(self) -> set:
         """Load previously sent emails to avoid duplicates."""
@@ -317,16 +330,17 @@ def main():
     
     logging.info(f"📊 Loaded {len(emails_df)} HR email contacts")
     
-    # Check for credentials
-    if not os.getenv('SENDER_EMAIL') or not os.getenv('SENDER_PASSWORD'):
-        logging.error("\n❌ Email credentials not configured!")
-        logging.error("Set these environment variables:")
-        logging.error("  SENDER_EMAIL=your.email@gmail.com")
-        logging.error("  SENDER_PASSWORD=your-app-password")
-        logging.error("\nFor Gmail, create an App Password:")
-        logging.error("  1. Enable 2-Factor Authentication")
-        logging.error("  2. Go to https://myaccount.google.com/apppasswords")
-        logging.error("  3. Create a new app password")
+    # Check for password - only thing needed from secrets!
+    if not os.getenv('SENDER_PASSWORD'):
+        logging.error("\n❌ Gmail App Password not configured!")
+        logging.error("Add this ONE secret to GitHub:")
+        logging.error("  SENDER_PASSWORD = your-16-char-app-password")
+        logging.error("\nHow to create App Password:")
+        logging.error("  1. Go to https://myaccount.google.com/security")
+        logging.error("  2. Enable 2-Factor Authentication")
+        logging.error("  3. Go to https://myaccount.google.com/apppasswords")
+        logging.error("  4. Create app password for 'Mail'")
+        logging.error("  5. Copy the 16-character password")
         return
     
     # Get max emails from environment variable

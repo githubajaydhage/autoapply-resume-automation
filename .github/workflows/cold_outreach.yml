@@ -67,21 +67,13 @@ jobs:
       if: ${{ github.event.inputs.scrape_only != 'true' }}
       run: |
         echo "📧 PHASE 2: Sending personalized application emails"
+        echo "📧 All applicant details are read from utils/config.py"
+        echo "📧 Only SENDER_PASSWORD secret is required!"
         python scripts/email_sender.py
       env:
         PYTHONPATH: ${{ github.workspace }}
-        # Email sending configuration
-        SENDER_EMAIL: ${{ secrets.SENDER_EMAIL }}
+        # ONLY this one secret is required!
         SENDER_PASSWORD: ${{ secrets.SENDER_PASSWORD }}
-        SENDER_NAME: ${{ secrets.SENDER_NAME || 'Job Applicant' }}
-        SMTP_SERVER: ${{ secrets.SMTP_SERVER || 'smtp.gmail.com' }}
-        SMTP_PORT: ${{ secrets.SMTP_PORT || '587' }}
-        # Applicant details
-        APPLICANT_NAME: ${{ secrets.APPLICANT_NAME }}
-        APPLICANT_PHONE: ${{ secrets.APPLICANT_PHONE }}
-        APPLICANT_LINKEDIN: ${{ secrets.APPLICANT_LINKEDIN }}
-        APPLICANT_EXPERIENCE: ${{ secrets.APPLICANT_EXPERIENCE || '3' }}
-        APPLICANT_SKILLS: ${{ secrets.APPLICANT_SKILLS || 'Data Analysis, Python, SQL, Excel, Tableau' }}
         # Email limits
         MAX_EMAILS: ${{ github.event.inputs.max_emails || '20' }}
 

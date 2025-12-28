@@ -1,13 +1,16 @@
-name: Job Application System (Production Ready)
+name: Job Application System (Enhanced)
 
 # =================================================================
-# PRODUCTION READY - Maximum Application Outreach System
+# ENHANCED PRODUCTION SYSTEM - Maximum Interview Generation
 # =================================================================
 # Features:
-# ✅ Multiple reliable job sources (RemoteOK API, career pages, RSS)
+# ✅ Multiple job sources (RemoteOK API, Naukri, career pages, RSS)
 # ✅ Curated HR email database (100+ verified company emails)
-# ✅ Personalized cold email outreach
-# ✅ Automatic follow-up emails (5 days after initial contact)
+# ✅ Email verification before sending (deliverability scoring)
+# ✅ Smart multi-stage follow-ups (Day 3, 7, 14)
+# ✅ Bounce detection and email quality tracking
+# ✅ Resume keyword optimization and match scoring
+# ✅ Auto-generated cover letters
 # ✅ Duplicate prevention and tracking
 # ✅ Resume attachment
 # =================================================================
@@ -101,9 +104,23 @@ jobs:
         echo "🔍 PHASE 1: SCRAPING JOBS FROM RELIABLE SOURCES"
         echo "   Sources: RemoteOK API, Company Career Pages, Job Aggregators"
         python scripts/reliable_job_scraper.py
+        echo ""
+        echo "🇮🇳 Scraping Naukri.com..."
+        python scripts/naukri_scraper.py || true
       env:
         PYTHONPATH: ${{ github.workspace }}
         JOB_LOCATION: ${{ github.event.inputs.job_location || 'Bangalore' }}
+        NAUKRI_LOCATION: ${{ github.event.inputs.job_location || 'bangalore' }}
+        NAUKRI_KEYWORDS: 'python developer, software engineer, data scientist'
+        NAUKRI_EXPERIENCE: 'mid'
+
+    # PHASE 1.5: Resume Optimization & Job Matching
+    - name: Phase 1.5 - Resume Optimization
+      run: |
+        echo "📄 PHASE 1.5: ANALYZING RESUME MATCH SCORES"
+        python scripts/resume_optimizer.py || true
+      env:
+        PYTHONPATH: ${{ github.workspace }}
 
     # PHASE 2: Load HR Emails
     - name: Phase 2 - Load HR Email Database
@@ -120,28 +137,42 @@ jobs:
       env:
         PYTHONPATH: ${{ github.workspace }}
 
-    # PHASE 3: Send Application Emails
+    # PHASE 3: Generate Cover Letters & Send Application Emails
+    - name: Phase 3 - Generate Cover Letters
+      if: ${{ github.event.inputs.scrape_only != 'true' }}
+      run: |
+        echo "📝 PHASE 3A: GENERATING COVER LETTERS"
+        python scripts/cover_letter_generator.py || true
+      env:
+        PYTHONPATH: ${{ github.workspace }}
+        YEARS_EXPERIENCE: '3+'
+        APPLICANT_ROLE: 'Software Engineer'
+
     - name: Phase 3 - Send Application Emails
       if: ${{ github.event.inputs.scrape_only != 'true' }}
       run: |
-        echo "📤 PHASE 3: SENDING APPLICATION EMAILS"
+        echo "📤 PHASE 3B: SENDING APPLICATION EMAILS"
         echo "   Max emails: ${{ github.event.inputs.max_emails || '15' }}"
+        echo "   Using email verification for quality control..."
         python scripts/email_sender.py
       env:
         PYTHONPATH: ${{ github.workspace }}
         SENDER_PASSWORD: ${{ secrets.SENDER_PASSWORD }}
         MAX_EMAILS: ${{ github.event.inputs.max_emails || '15' }}
 
-    # PHASE 4: Send Follow-Up Emails
-    - name: Phase 4 - Send Follow-Up Emails
+    # PHASE 4: Send Smart Follow-Up Emails
+    - name: Phase 4 - Send Multi-Stage Follow-Ups
       if: ${{ github.event.inputs.scrape_only != 'true' && github.event.inputs.send_followups != 'false' }}
       run: |
-        echo "🔄 PHASE 4: SENDING FOLLOW-UP EMAILS"
+        echo "🔄 PHASE 4: SMART MULTI-STAGE FOLLOW-UPS"
+        echo "   Stage 1: Day 3 - Gentle Reminder"
+        echo "   Stage 2: Day 7 - Value-Add Message"
+        echo "   Stage 3: Day 14 - Final Follow-up"
         python scripts/followup_sender.py
       env:
         PYTHONPATH: ${{ github.workspace }}
         SENDER_PASSWORD: ${{ secrets.SENDER_PASSWORD }}
-        MAX_FOLLOWUPS: '10'
+        MAX_FOLLOWUPS: '15'
 
     # PHASE 5: Check for Bounces and Update Email Quality
     - name: Phase 5 - Check Email Bounces
@@ -169,7 +200,10 @@ jobs:
           data/verified_hr_emails.csv
           data/known_bad_emails.csv
           data/email_verification_log.csv
-        key: job-data-${{ runner.os }}-v3-${{ github.run_number }}
+          data/naukri_jobs.csv
+          data/resume_match_report.csv
+          cover_letters/*.txt
+        key: job-data-${{ runner.os }}-v4-${{ github.run_number }}
 
     - name: Upload Results
       uses: actions/upload-artifact@v4
@@ -185,7 +219,10 @@ jobs:
           data/verified_hr_emails.csv
           data/problematic_emails.csv
           data/email_verification_log.csv
+          data/naukri_jobs.csv
+          data/resume_match_report.csv
           data/*.json
+          cover_letters/*.txt
         retention-days: 30
       if: always()
 
@@ -193,11 +230,15 @@ jobs:
       run: |
         echo ""
         echo "📊 =============================================="
-        echo "📊 JOB APPLICATION SUMMARY REPORT"
+        echo "📊 ENHANCED JOB APPLICATION SUMMARY"
         echo "📊 =============================================="
         if [ -f data/jobs_today.csv ]; then
           JOBS=$(wc -l < data/jobs_today.csv)
           echo "🔍 Jobs Scraped: $((JOBS - 1))"
+        fi
+        if [ -f data/naukri_jobs.csv ]; then
+          NAUKRI=$(wc -l < data/naukri_jobs.csv)
+          echo "🇮🇳 Naukri Jobs: $((NAUKRI - 1))"
         fi
         if [ -f data/all_hr_emails.csv ]; then
           EMAILS=$(wc -l < data/all_hr_emails.csv)
@@ -219,4 +260,10 @@ jobs:
           VERIFIED=$(wc -l < data/verified_hr_emails.csv)
           echo "✅ Verified HR Emails: $((VERIFIED - 1))"
         fi
+        if [ -d cover_letters ]; then
+          COVERS=$(ls cover_letters/*.txt 2>/dev/null | wc -l)
+          echo "📝 Cover Letters Generated: $COVERS"
+        fi
+        echo "📊 =============================================="
+        echo "💡 TIP: Check artifacts for detailed reports"
         echo "📊 =============================================="

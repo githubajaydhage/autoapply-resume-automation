@@ -5,9 +5,18 @@ requests
 beautifulsoup4
 lxml
 
-# Email validation
+# Email validation & verification
 dnspython
 
 # Resume/PDF handling
 python-docx
 PyMuPDF
+
+# Date/time handling (already in stdlib, but useful)
+# datetime - built-in
+
+# SSL handling (already in stdlib)
+# ssl - built-in
+
+# IMAP for bounce checking (already in stdlib)
+# imaplib - built-in

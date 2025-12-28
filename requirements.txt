@@ -1,8 +1,10 @@
-playwright
-python-docx
+# Job scraping
 feedparser
 pandas
 requests
 beautifulsoup4
 lxml
+
+# Resume/PDF handling
+python-docx
 PyMuPDF

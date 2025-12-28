@@ -1,8 +1,7 @@
-name: Optimized Job Application System
+name: Job Application System (Email Outreach)
 
-# Production-grade workflow with 34x performance improvement
-# Features: Simultaneous applications, anti-detection, fast scraping
-# Execution time: ~2-3 minutes (was 25+ minutes)
+# WORKING SYSTEM - Uses public job scraping + cold email outreach
+# Browser automation is DISABLED (LinkedIn/Naukri/Indeed block it)
 
 on:
   workflow_dispatch:
@@ -14,21 +13,31 @@ on:
         type: choice
         options:
         - Bangalore
+        - Mumbai
+        - Delhi
+        - Hyderabad
+        - Pune
         - Remote
-        - Hybrid
-        - Any
-      job_freshness:
-        description: 'Job Freshness'
+      max_emails:
+        description: 'Max emails to send'
         required: true
-        default: 'Last 24 hours'
+        default: '10'
         type: choice
         options:
-        - Last 24 hours
-        - Last 3 days
-        - Last 7 days
-        - Any
+        - '5'
+        - '10'
+        - '20'
+        - '50'
+      scrape_only:
+        description: 'Only scrape (no emails)'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+        - 'false'
+        - 'true'
   schedule:
-    - cron: '0 * * * *' # Runs every hour
+    - cron: '0 9 * * 1-5'  # 9 AM UTC weekdays (2:30 PM IST)
 
 jobs:
   apply:
@@ -48,47 +57,79 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
 
-    - name: Install Playwright browsers
-      run: playwright install chromium
-
-    - name: Restore Browser Session Cache
+    - name: Restore Previous Data
       uses: actions/cache@v3
       with:
         path: |
-          data/playwright_user_data_linkedin
-          data/playwright_user_data_naukri
-          data/playwright_user_data_indeed
-        key: browser-session-${{ runner.os }}-v1
+          data/sent_emails_log.csv
+          data/all_hr_emails.csv
+          data/jobs_today.csv
+        key: job-data-${{ runner.os }}-v2
         restore-keys: |
-          browser-session-${{ runner.os }}-
+          job-data-${{ runner.os }}-
 
-    - name: Run Complete Pipeline with Real Job Scraping
+    - name: Step 1 - Scrape Jobs from Public Pages
       run: |
-        echo "🚀 STARTING COMPLETE PIPELINE WITH REAL JOBS"
-        echo "Step 1: Scraping real jobs from Indeed, LinkedIn, Naukri, Company portals"
-        python scripts/scrape_jobs.py || echo "Job scraping completed with available sources"
-        echo "Step 2: Running production applications with real jobs"
-        python scripts/production_app_runner.py
+        echo "🔍 PHASE 1: Scraping jobs from public career pages"
+        echo "   LinkedIn, Naukri public listings (no login needed)"
+        python scripts/linkedin_public_scraper.py
       env:
         PYTHONPATH: ${{ github.workspace }}
         JOB_LOCATION: ${{ github.event.inputs.job_location || 'Bangalore' }}
-        JOB_FRESHNESS: ${{ github.event.inputs.job_freshness || 'Last 24 hours' }}
-        LINKEDIN_EMAIL: ${{ secrets.LINKEDIN_EMAIL }}
-        LINKEDIN_PASSWORD: ${{ secrets.LINKEDIN_PASSWORD }}
-        INDEED_EMAIL: ${{ secrets.INDEED_EMAIL }}
-        INDEED_PASSWORD: ${{ secrets.INDEED_PASSWORD }}
-        NAUKRI_EMAIL: ${{ secrets.NAUKRI_EMAIL }}
-        NAUKRI_PASSWORD: ${{ secrets.NAUKRI_PASSWORD }}
 
-    - name: Upload Application Logs
+    - name: Step 2 - Scrape HR Emails
+      run: |
+        echo "📧 PHASE 2: Scraping HR/recruiter emails from job postings"
+        python scripts/email_scraper.py
+      env:
+        PYTHONPATH: ${{ github.workspace }}
+
+    - name: Step 3 - Send Application Emails
+      if: ${{ github.event.inputs.scrape_only != 'true' }}
+      run: |
+        echo "📤 PHASE 3: Sending personalized application emails"
+        python scripts/email_sender.py
+      env:
+        PYTHONPATH: ${{ github.workspace }}
+        SENDER_PASSWORD: ${{ secrets.SENDER_PASSWORD }}
+        MAX_EMAILS: ${{ github.event.inputs.max_emails || '10' }}
+
+    - name: Save Data Cache
+      uses: actions/cache/save@v3
+      with:
+        path: |
+          data/sent_emails_log.csv
+          data/all_hr_emails.csv
+          data/jobs_today.csv
+        key: job-data-${{ runner.os }}-v2-${{ github.run_number }}
+
+    - name: Upload Logs
       uses: actions/upload-artifact@v4
       with:
         name: application-logs
         path: |
-          data/applied_log.csv
-          data/errors.log
-          data/main.log
-          data/production_applications.log
-          data/prioritized_jobs_today.csv
-          data/*.png
+          data/jobs_today.csv
+          data/all_hr_emails.csv
+          data/sent_emails_log.csv
+          data/*.log
+          data/*.json
       if: always()
+
+    - name: Summary
+      run: |
+        echo "📊 ============================================"
+        echo "📊 JOB APPLICATION SUMMARY"
+        echo "📊 ============================================"
+        if [ -f data/jobs_today.csv ]; then
+          JOBS=$(wc -l < data/jobs_today.csv)
+          echo "   Jobs scraped: $((JOBS - 1))"
+        fi
+        if [ -f data/all_hr_emails.csv ]; then
+          EMAILS=$(wc -l < data/all_hr_emails.csv)
+          echo "   HR emails found: $((EMAILS - 1))"
+        fi
+        if [ -f data/sent_emails_log.csv ]; then
+          SENT=$(wc -l < data/sent_emails_log.csv)
+          echo "   Emails sent (total): $((SENT - 1))"
+        fi
+        echo "📊 ============================================"

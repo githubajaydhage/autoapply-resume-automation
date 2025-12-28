@@ -42,7 +42,7 @@ class BaseApplicator(ABC):
         logging.info(f"--- {self.portal_name.capitalize()} Application Process Finished ---")
 
     def login(self, page: Page) -> bool:
-        """Handles the login process for the portal."""
+        """Handles the login process for the portal with retry logic."""
         logging.info(f"Attempting to log in to {self.portal_name}...")
         
         email = os.getenv(self.config["credentials"]["email_env"])
@@ -52,25 +52,65 @@ class BaseApplicator(ABC):
             logging.error(f"Credentials for {self.portal_name} not found in environment variables.")
             return False
 
-        try:
-            page.goto(self.config["login_url"], timeout=60000)
-            
-            page.fill(self.config["selectors"]["email_input"], email)
-            time.sleep(random.uniform(1, 2))
-            page.fill(self.config["selectors"]["password_input"], password)
-            time.sleep(random.uniform(1, 2))
-            page.click(self.config["selectors"]["login_button"])
-
-            page.wait_for_selector(self.config["selectors"]["login_success_indicator"], timeout=60000)
-            logging.info(f"Login to {self.portal_name} successful.")
-            return True
-        except PlaywrightTimeoutError:
-            logging.error(f"Login to {self.portal_name} failed or took too long.")
-            page.screenshot(path=os.path.join("data", f"login_failure_{self.portal_name}.png"))
-            return False
-        except Exception as e:
-            logging.error(f"An unexpected error occurred during login for {self.portal_name}: {e}")
-            return False
+        max_retries = 2
+        for attempt in range(max_retries):
+            try:
+                logging.info(f"Login attempt {attempt + 1}/{max_retries} for {self.portal_name}")
+                
+                # Navigate with extended timeout
+                page.goto(self.config["login_url"], timeout=90000, wait_until="domcontentloaded")
+                time.sleep(random.uniform(2, 4))  # Human-like delay
+                
+                # Check if already logged in (persistent context may have session)
+                try:
+                    page.wait_for_selector(self.config["selectors"]["login_success_indicator"], timeout=5000)
+                    logging.info(f"Already logged in to {self.portal_name} (session restored).")
+                    return True
+                except PlaywrightTimeoutError:
+                    pass  # Not logged in, continue with login flow
+                
+                # Type credentials slowly like a human
+                email_input = page.locator(self.config["selectors"]["email_input"])
+                if email_input.count() > 0:
+                    email_input.click()
+                    time.sleep(random.uniform(0.5, 1))
+                    email_input.fill("")  # Clear first
+                    for char in email:
+                        email_input.type(char, delay=random.randint(50, 150))
+                    time.sleep(random.uniform(1, 2))
+                
+                password_input = page.locator(self.config["selectors"]["password_input"])
+                if password_input.count() > 0:
+                    password_input.click()
+                    time.sleep(random.uniform(0.5, 1))
+                    password_input.fill("")  # Clear first
+                    for char in password:
+                        password_input.type(char, delay=random.randint(50, 150))
+                    time.sleep(random.uniform(1, 2))
+                
+                # Click login button
+                page.click(self.config["selectors"]["login_button"])
+                time.sleep(random.uniform(2, 4))
+                
+                # Wait for login success with extended timeout
+                page.wait_for_selector(self.config["selectors"]["login_success_indicator"], timeout=120000)
+                logging.info(f"Login to {self.portal_name} successful.")
+                return True
+                
+            except PlaywrightTimeoutError:
+                logging.warning(f"Login attempt {attempt + 1} timed out for {self.portal_name}.")
+                page.screenshot(path=os.path.join("data", f"login_failure_{self.portal_name}_attempt{attempt+1}.png"))
+                if attempt < max_retries - 1:
+                    time.sleep(5)
+                    continue
+            except Exception as e:
+                logging.error(f"Error during login attempt {attempt + 1} for {self.portal_name}: {e}")
+                if attempt < max_retries - 1:
+                    time.sleep(5)
+                    continue
+        
+        logging.error(f"All login attempts failed for {self.portal_name}.")
+        return False
 
     @abstractmethod
     def apply_to_job(self, page: Page, job: dict):

@@ -69,15 +69,34 @@ class BaseApplicator(ABC):
             logging.error(f"Password env var: {self.config['credentials']['password_env']} = {'SET' if password else 'NOT SET'}")
             return False
 
+        # Get list of login URLs to try (main + alternatives)
+        login_urls = [self.config["login_url"]]
+        if "login_url_alternatives" in self.config:
+            login_urls = self.config["login_url_alternatives"]
+
         max_retries = 2
         for attempt in range(max_retries):
+            # Try each login URL
+            login_url = login_urls[attempt % len(login_urls)]
+            
             try:
                 logging.info(f"Login attempt {attempt + 1}/{max_retries} for {self.portal_name}")
                 
                 # Navigate with extended timeout
-                logging.info(f"Navigating to: {self.config['login_url']}")
-                page.goto(self.config["login_url"], timeout=90000, wait_until="domcontentloaded")
+                logging.info(f"Navigating to: {login_url}")
+                page.goto(login_url, timeout=90000, wait_until="domcontentloaded")
                 time.sleep(random.uniform(2, 4))  # Human-like delay
+                
+                # Check immediately for Access Denied
+                page_title = page.title().lower()
+                page_content = page.content().lower()[:1000]
+                
+                if 'access denied' in page_title or 'access denied' in page_content or 'blocked' in page_title:
+                    logging.error(f"❌ ACCESS DENIED by {self.portal_name.upper()} on URL: {login_url}")
+                    logging.error("The site is blocking automated access from this IP/browser.")
+                    page.screenshot(path=os.path.join("data", f"access_denied_{self.portal_name}_{attempt}.png"))
+                    logging.info(f"📸 Screenshot saved: access_denied_{self.portal_name}_{attempt}.png")
+                    continue  # Try next URL/attempt
                 
                 # Screenshot: Login page loaded
                 page.screenshot(path=os.path.join("data", f"1_login_page_{self.portal_name}.png"))
@@ -154,25 +173,61 @@ class BaseApplicator(ABC):
                 page_title = page.title()
                 logging.info(f"Page title: {page_title}")
                 
-                # Check for common error messages
+                # Check for Access Denied (Naukri blocks headless browsers)
+                if 'access denied' in page_title.lower() or 'access denied' in page.content().lower():
+                    logging.error(f"❌ ACCESS DENIED by {self.portal_name.upper()}! Site is blocking automated access.")
+                    logging.error("This usually means the site detected the headless browser.")
+                    page.screenshot(path=os.path.join("data", f"access_denied_{self.portal_name}.png"))
+                    continue  # Try next attempt
+                
+                # Check for common error messages - more comprehensive
                 error_selectors = [
+                    # LinkedIn specific errors
+                    '#error-for-password',  # LinkedIn password error
+                    '#error-for-username',  # LinkedIn username error
+                    '.form__label--error',  # LinkedIn form error
+                    '[data-error]',  # Generic data error
+                    'span:has-text("wrong password")',
+                    'span:has-text("incorrect")',
+                    'p:has-text("password")',  # Error paragraph
+                    # Generic
                     'text=wrong password',
                     'text=incorrect password', 
                     'text=invalid credentials',
                     'text=account locked',
                     'text=too many attempts',
                     'text=please try again',
+                    'text=doesn\'t match',
                     '.error-message',
+                    '.alert-error',
+                    '.error',
                     '[role="alert"]',
                 ]
+                
+                error_found = False
                 for err_sel in error_selectors:
                     try:
-                        if page.locator(err_sel).first.is_visible(timeout=1000):
+                        err_elem = page.locator(err_sel).first
+                        if err_elem.is_visible(timeout=1000):
+                            error_text = err_elem.text_content()
                             logging.error(f"❌ Login error detected: {err_sel}")
+                            logging.error(f"❌ Error text: {error_text}")
                             page.screenshot(path=os.path.join("data", f"login_error_{self.portal_name}.png"))
+                            error_found = True
                             break
                     except:
                         continue
+                
+                # If still on login page after clicking login, something went wrong
+                if not error_found and 'login' in current_url.lower():
+                    logging.warning("⚠️ Still on login page after clicking login - checking page content")
+                    # Get any visible text that might indicate an error
+                    try:
+                        body_text = page.locator('body').text_content()[:500]
+                        if any(x in body_text.lower() for x in ['error', 'incorrect', 'invalid', 'wrong', 'failed']):
+                            logging.error(f"❌ Page contains error text: {body_text[:200]}")
+                    except:
+                        pass
                 
                 # Check for verification/checkpoint page (both LinkedIn and Naukri)
                 checkpoint_selectors = [

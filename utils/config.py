@@ -75,6 +75,12 @@ PORTAL_CONFIGS = {
     "naukri": {
         "domain": "naukri.com",
         "login_url": "https://www.naukri.com/nlogin/login",
+        # Alternative login URLs to try if main one is blocked
+        "login_url_alternatives": [
+            "https://www.naukri.com/nlogin/login",
+            "https://login.naukri.com/",
+            "https://www.naukri.com/registration/createAccount",
+        ],
         "user_data_dir": os.path.join(DATA_DIR, "playwright_user_data_naukri"),
         "credentials": {
             "email_env": "NAUKRI_EMAIL",
@@ -82,10 +88,10 @@ PORTAL_CONFIGS = {
         },
         "selectors": {
             # Multiple fallback selectors for email input
-            "email_input": 'input[placeholder*="Email"], input[placeholder*="email"], input[type="text"][name*="email"], input#usernameField, input[placeholder*="Username"]',
+            "email_input": 'input[placeholder*="Email"], input[placeholder*="email"], input[type="text"][name*="email"], input#usernameField, input[placeholder*="Username"], input[name="usernameField"]',
             # Multiple fallback selectors for password input  
-            "password_input": 'input[placeholder*="password"], input[placeholder*="Password"], input[type="password"], input#passwordField',
-            "login_button": 'button[type="submit"], button:has-text("Login"), button:has-text("Sign in")',
+            "password_input": 'input[placeholder*="password"], input[placeholder*="Password"], input[type="password"], input#passwordField, input[name="passwordField"]',
+            "login_button": 'button[type="submit"], button:has-text("Login"), button:has-text("Sign in"), div:has-text("Login"):not(:has(*))',
             # Multiple indicators for successful login
             "login_success_indicator": 'a[href*="mynaukri"], .nI-gNb-menuItems, img[class*="avatar"], .nI-gNb-drawer__toggle, div[class*="user-profile"]',
             "apply_button": 'button:has-text("Apply"), button:has-text("Apply on company site")',

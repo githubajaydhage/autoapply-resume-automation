@@ -48,18 +48,82 @@ class BrowserManager:
         
         self.page = self.context.new_page()
         
-        # Additional anti-detection: override webdriver property
+        # Comprehensive anti-detection script
         self.page.add_init_script("""
+            // Hide webdriver
             Object.defineProperty(navigator, 'webdriver', {
                 get: () => undefined
             });
+            
+            // Override plugins
             Object.defineProperty(navigator, 'plugins', {
-                get: () => [1, 2, 3, 4, 5]
+                get: () => {
+                    return [
+                        { name: 'Chrome PDF Plugin', filename: 'internal-pdf-viewer' },
+                        { name: 'Chrome PDF Viewer', filename: 'mhjfbmdgcfjbbpaeojofohoefgiehjai' },
+                        { name: 'Native Client', filename: 'internal-nacl-plugin' }
+                    ];
+                }
             });
+            
+            // Override languages
             Object.defineProperty(navigator, 'languages', {
-                get: () => ['en-US', 'en']
+                get: () => ['en-US', 'en', 'en-IN']
             });
-            window.chrome = { runtime: {} };
+            
+            // Add chrome object
+            window.chrome = {
+                runtime: {},
+                loadTimes: function() {},
+                csi: function() {},
+                app: {}
+            };
+            
+            // Override permissions
+            const originalQuery = window.navigator.permissions.query;
+            window.navigator.permissions.query = (parameters) => (
+                parameters.name === 'notifications' ?
+                    Promise.resolve({ state: Notification.permission }) :
+                    originalQuery(parameters)
+            );
+            
+            // Hide automation indicators
+            delete navigator.__proto__.webdriver;
+            
+            // Override User-Agent Client Hints
+            if (navigator.userAgentData) {
+                Object.defineProperty(navigator, 'userAgentData', {
+                    get: () => ({
+                        brands: [
+                            { brand: 'Not_A Brand', version: '8' },
+                            { brand: 'Chromium', version: '120' },
+                            { brand: 'Google Chrome', version: '120' }
+                        ],
+                        mobile: false,
+                        platform: 'Windows'
+                    })
+                });
+            }
+            
+            // Override connection
+            Object.defineProperty(navigator, 'connection', {
+                get: () => ({
+                    effectiveType: '4g',
+                    rtt: 50,
+                    downlink: 10,
+                    saveData: false
+                })
+            });
+            
+            // Canvas fingerprint randomization
+            const getImageData = CanvasRenderingContext2D.prototype.getImageData;
+            CanvasRenderingContext2D.prototype.getImageData = function() {
+                const imageData = getImageData.apply(this, arguments);
+                for (let i = 0; i < imageData.data.length; i += 100) {
+                    imageData.data[i] = imageData.data[i] ^ (Math.random() * 2 | 0);
+                }
+                return imageData;
+            };
         """)
         
         logging.info("Browser started successfully with anti-detection measures.")

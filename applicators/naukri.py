@@ -14,8 +14,13 @@ class NaukriApplicator(BaseApplicator):
     def apply_to_job(self, page: Page, job: dict):
         """Applies to a single Naukri job."""
         try:
+            job_url = job.get('url', job.get('link', ''))
+            if not job_url:
+                logging.error(f"No URL found for job: {job.get('title', 'Unknown')}")
+                return
+            
             logging.info(f"Applying to: {job['title']} at {job['company']}")
-            page.goto(job['link'], timeout=60000)
+            page.goto(job_url, timeout=60000)
             time.sleep(4)
 
             apply_button = page.locator(self.config["selectors"]["apply_button"]).first
@@ -29,12 +34,12 @@ class NaukriApplicator(BaseApplicator):
             # Naukri can sometimes auto-submit if the profile is complete.
             if page.locator(self.config["selectors"]["application_sent_indicator"]).is_visible():
                 logging.info("Application submitted successfully on Naukri (auto-submit).")
-                tracker.track_application(job['title'], job['company'], job['link'])
+                tracker.track_application(job['title'], job['company'], job_url)
             else:
                 # If not auto-submitted, it may require more steps.
                 logging.info(f"Application for {job['title']} may require manual steps.")
                 # For now, we track it as "attempted".
-                tracker.track_application(job['title'], job['company'], job['link'])
+                tracker.track_application(job['title'], job['company'], job_url)
 
         except PlaywrightTimeoutError:
             logging.error(f"Timeout while applying for {job['title']}.")

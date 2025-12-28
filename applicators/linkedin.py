@@ -14,8 +14,13 @@ class LinkedInApplicator(BaseApplicator):
     def apply_to_job(self, page: Page, job: dict):
         """Applies to a single LinkedIn job."""
         try:
+            job_url = job.get('url', job.get('link', ''))
+            if not job_url:
+                logging.error(f"No URL found for job: {job.get('title', 'Unknown')}")
+                return
+            
             logging.info(f"Applying to: {job['title']} at {job['company']}")
-            page.goto(job['link'], timeout=60000)
+            page.goto(job_url, timeout=60000)
             time.sleep(3)
 
             apply_button = page.locator(self.config["selectors"]["apply_button"]).first
@@ -45,7 +50,7 @@ class LinkedInApplicator(BaseApplicator):
                     # Check if application was submitted
                     if page.locator("text=Application sent").is_visible(timeout=5000):
                         logging.info(f"✅ Successfully applied to {job['title']} at {job['company']}")
-                        tracker.track_application(job['title'], job['company'], job.get('link', job.get('url', '')))
+                        tracker.track_application(job['title'], job['company'], job.get('url', job.get('link', '')))
                         return True
                     break
                 

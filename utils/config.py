@@ -43,10 +43,11 @@ PORTAL_CONFIGS = {
             "password_env": "LINKEDIN_PASSWORD",
         },
         "selectors": {
-            "email_input": 'input[name="session_key"]',
-            "password_input": 'input[name="session_password"]',
-            "login_button": 'button[type="submit"]',
-            "login_success_indicator": '#global-nav-search',
+            "email_input": 'input[name="session_key"], input#username',
+            "password_input": 'input[name="session_password"], input#password',
+            "login_button": 'button[type="submit"], button:has-text("Sign in")',
+            # Multiple indicators for successful login
+            "login_success_indicator": '#global-nav-search, .global-nav, .feed-identity-module, .search-global-typeahead, nav[aria-label*="Primary"]',
             "apply_button": 'button:has-text("Easy Apply"), button:has-text("Apply")',
             "upload_resume_input": 'input[type="file"]',
             "submit_application_button": 'button:has-text("Submit application")',
@@ -80,12 +81,15 @@ PORTAL_CONFIGS = {
             "password_env": "NAUKRI_PASSWORD",
         },
         "selectors": {
-            "email_input": 'input[placeholder="Enter your active Email ID / Username"]',
-            "password_input": 'input[placeholder="Enter your password"]',
-            "login_button": 'button[type="submit"]',
-            "login_success_indicator": 'a[href*="mynaukri"]',
-            "apply_button": 'button:has-text("Apply")',
-            "application_sent_indicator": 'text="Your application has been sent"',
+            # Multiple fallback selectors for email input
+            "email_input": 'input[placeholder*="Email"], input[placeholder*="email"], input[type="text"][name*="email"], input#usernameField, input[placeholder*="Username"]',
+            # Multiple fallback selectors for password input  
+            "password_input": 'input[placeholder*="password"], input[placeholder*="Password"], input[type="password"], input#passwordField',
+            "login_button": 'button[type="submit"], button:has-text("Login"), button:has-text("Sign in")',
+            # Multiple indicators for successful login
+            "login_success_indicator": 'a[href*="mynaukri"], .nI-gNb-menuItems, img[class*="avatar"], .nI-gNb-drawer__toggle, div[class*="user-profile"]',
+            "apply_button": 'button:has-text("Apply"), button:has-text("Apply on company site")',
+            "application_sent_indicator": 'text="Your application has been sent", text="Applied successfully", text="Already applied"',
         }
     },
 }

@@ -19,14 +19,21 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] %(me
 class HREmailScraper:
     """Scrapes HR/recruiter emails from job postings and company websites."""
     
+    # Rotating User-Agents to avoid detection
+    USER_AGENTS = [
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36',
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:121.0) Gecko/20100101 Firefox/121.0',
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.2 Safari/605.1.15',
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 Edg/120.0.0.0',
+        'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Safari/537.36',
+    ]
+    
     def __init__(self):
         self.session = requests.Session()
-        self.session.headers.update({
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-            'Accept-Language': 'en-US,en;q=0.5',
-            'Connection': 'keep-alive',
-        })
+        self._update_headers()
         
         # Email pattern
         self.email_pattern = re.compile(
@@ -48,6 +55,25 @@ class HREmailScraper:
         ]
         
         self.scraped_emails = []
+    
+    def _update_headers(self):
+        """Update session with fresh randomized headers."""
+        self.session.headers.update({
+            'User-Agent': random.choice(self.USER_AGENTS),
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
+            'Accept-Language': 'en-US,en;q=0.9,en-IN;q=0.8',
+            'Accept-Encoding': 'gzip, deflate, br',
+            'Connection': 'keep-alive',
+            'Upgrade-Insecure-Requests': '1',
+            'Sec-Fetch-Dest': 'document',
+            'Sec-Fetch-Mode': 'navigate',
+            'Sec-Fetch-Site': 'none',
+            'Sec-Fetch-User': '?1',
+            'Sec-Ch-Ua': '"Not_A Brand";v="8", "Chromium";v="120", "Google Chrome";v="120"',
+            'Sec-Ch-Ua-Mobile': '?0',
+            'Sec-Ch-Ua-Platform': '"Windows"',
+            'Cache-Control': 'max-age=0',
+        })
         
     def is_valid_hr_email(self, email: str, company_domain: str = None) -> bool:
         """Check if email looks like an HR/recruiter email."""
@@ -95,9 +121,24 @@ class HREmailScraper:
         return list(set(valid_emails))
     
     def scrape_page(self, url: str, company_name: str = None) -> list:
-        """Scrape a single page for emails."""
+        """Scrape a single page for emails with anti-detection measures."""
         try:
+            # Rotate headers before each request
+            self._update_headers()
+            
+            # Add small random delay to appear more human-like
+            time.sleep(random.uniform(0.5, 2))
+            
             response = self.session.get(url, timeout=15)
+            
+            # Handle 403 Forbidden - retry with fresh session
+            if response.status_code == 403:
+                logging.debug(f"Got 403 for {url}, retrying with fresh session...")
+                self.session = requests.Session()
+                self._update_headers()
+                time.sleep(random.uniform(2, 4))
+                response = self.session.get(url, timeout=15)
+            
             response.raise_for_status()
             
             soup = BeautifulSoup(response.text, 'html.parser')

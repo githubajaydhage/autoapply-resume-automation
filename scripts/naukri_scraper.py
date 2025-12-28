@@ -26,15 +26,38 @@ class NaukriScraper:
     
     BASE_URL = "https://www.naukri.com"
     
-    # Headers to mimic browser
-    HEADERS = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-        'Accept-Language': 'en-US,en;q=0.5',
-        'Accept-Encoding': 'gzip, deflate, br',
-        'Connection': 'keep-alive',
-        'Upgrade-Insecure-Requests': '1',
-    }
+    # Rotating User-Agents to avoid detection
+    USER_AGENTS = [
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36',
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:121.0) Gecko/20100101 Firefox/121.0',
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.2 Safari/605.1.15',
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 Edg/120.0.0.0',
+        'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Safari/537.36',
+    ]
+    
+    # Advanced headers to mimic real browser
+    def _get_headers(self):
+        """Get randomized headers to avoid detection."""
+        return {
+            'User-Agent': random.choice(self.USER_AGENTS),
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
+            'Accept-Language': 'en-US,en;q=0.9,en-IN;q=0.8',
+            'Accept-Encoding': 'gzip, deflate, br',
+            'Connection': 'keep-alive',
+            'Upgrade-Insecure-Requests': '1',
+            'Sec-Fetch-Dest': 'document',
+            'Sec-Fetch-Mode': 'navigate',
+            'Sec-Fetch-Site': 'none',
+            'Sec-Fetch-User': '?1',
+            'Sec-Ch-Ua': '"Not_A Brand";v="8", "Chromium";v="120", "Google Chrome";v="120"',
+            'Sec-Ch-Ua-Mobile': '?0',
+            'Sec-Ch-Ua-Platform': '"Windows"',
+            'Cache-Control': 'max-age=0',
+            'Referer': 'https://www.google.com/',
+        }
     
     # Popular job locations in India
     LOCATIONS = {
@@ -62,11 +85,69 @@ class NaukriScraper:
     def __init__(self, output_dir: str = 'data'):
         """Initialize the scraper."""
         self.session = requests.Session()
-        self.session.headers.update(self.HEADERS)
         self.output_dir = output_dir
         os.makedirs(output_dir, exist_ok=True)
         
+        # Rotate headers on each request
+        self._update_session_headers()
+        
         logging.info("🔍 Naukri.com Job Scraper initialized")
+    
+    def _update_session_headers(self):
+        """Update session with fresh randomized headers."""
+        self.session.headers.update(self._get_headers())
+    
+    def _try_naukri_api(self, keywords: str, location: str = 'bangalore', experience: str = '3') -> List[Dict]:
+        """Try Naukri's internal API for better results."""
+        jobs = []
+        try:
+            # Naukri uses an internal API that's more reliable
+            api_url = "https://www.naukri.com/jobapi/v3/search"
+            
+            params = {
+                'noOfResults': 50,
+                'urlType': 'search_by_keyword',
+                'searchType': 'adv',
+                'keyword': keywords,
+                'location': location,
+                'experience': experience,
+                'sort': 'relevance',
+                'pageNo': 1,
+            }
+            
+            self._update_session_headers()
+            self.session.headers.update({
+                'appid': '109',
+                'systemid': 'Starter',
+                'Accept': 'application/json',
+            })
+            
+            response = self.session.get(api_url, params=params, timeout=15)
+            
+            if response.status_code == 200:
+                data = response.json()
+                job_details = data.get('jobDetails', [])
+                
+                for job_data in job_details:
+                    job = {
+                        'title': job_data.get('title', ''),
+                        'company': job_data.get('companyName', ''),
+                        'location': job_data.get('placeholders', [{}])[1].get('label', '') if len(job_data.get('placeholders', [])) > 1 else '',
+                        'experience': job_data.get('placeholders', [{}])[0].get('label', '') if job_data.get('placeholders') else '',
+                        'salary': job_data.get('placeholders', [{}])[2].get('label', '') if len(job_data.get('placeholders', [])) > 2 else '',
+                        'link': f"https://www.naukri.com{job_data.get('jdURL', '')}",
+                        'skills': ', '.join(job_data.get('tagsAndSkills', '').split(',')[:10]),
+                        'source': 'naukri.com',
+                        'scraped_at': datetime.now().isoformat(),
+                    }
+                    if job['title'] and job['company']:
+                        jobs.append(job)
+                        
+                logging.info(f"   ✅ API returned {len(jobs)} jobs")
+        except Exception as e:
+            logging.debug(f"API approach failed: {e}")
+        
+        return jobs
     
     def build_search_url(self, 
                          keywords: List[str],
@@ -166,8 +247,22 @@ class NaukriScraper:
         jobs = []
         
         try:
+            # Rotate headers before each request
+            self._update_session_headers()
+            
+            # Add random delay to appear more human-like
+            time.sleep(random.uniform(1, 3))
+            
             logging.info(f"🌐 Fetching: {url[:80]}...")
             response = self.session.get(url, timeout=15)
+            
+            if response.status_code == 403:
+                logging.warning("⚠️ Access blocked - trying alternative approach...")
+                # Try with fresh session
+                self.session = requests.Session()
+                self._update_session_headers()
+                time.sleep(random.uniform(3, 5))
+                response = self.session.get(url, timeout=15)
             
             if response.status_code != 200:
                 logging.warning(f"⚠️ Got status {response.status_code}")
@@ -212,24 +307,39 @@ class NaukriScraper:
         if experience:
             logging.info(f"👤 Experience: {experience}")
         
-        for page in range(1, max_pages + 1):
-            url = self.build_search_url(keywords, location, experience, page)
-            
-            jobs = self.scrape_page(url)
-            all_jobs.extend(jobs)
-            
-            logging.info(f"📊 Page {page}: Got {len(jobs)} jobs (Total: {len(all_jobs)})")
-            
-            if len(all_jobs) >= max_jobs:
-                all_jobs = all_jobs[:max_jobs]
-                break
-            
-            if not jobs:
-                break
-            
-            # Be polite - random delay between pages
-            delay = random.uniform(2, 4)
-            time.sleep(delay)
+        # Try API approach first (more reliable)
+        exp_code = self.EXPERIENCE_MAPPING.get(experience.lower(), '3') if experience else '3'
+        api_jobs = self._try_naukri_api(
+            keywords=' '.join(keywords),
+            location=location or 'bangalore',
+            experience=exp_code
+        )
+        
+        if api_jobs:
+            all_jobs.extend(api_jobs)
+            logging.info(f"📊 API: Got {len(api_jobs)} jobs")
+        
+        # Fallback to HTML scraping if API didn't work
+        if not api_jobs:
+            logging.info("📡 API unavailable, trying HTML scraping...")
+            for page in range(1, max_pages + 1):
+                url = self.build_search_url(keywords, location, experience, page)
+                
+                jobs = self.scrape_page(url)
+                all_jobs.extend(jobs)
+                
+                logging.info(f"📊 Page {page}: Got {len(jobs)} jobs (Total: {len(all_jobs)})")
+                
+                if len(all_jobs) >= max_jobs:
+                    all_jobs = all_jobs[:max_jobs]
+                    break
+                
+                if not jobs:
+                    break
+                
+                # Be polite - random delay between pages
+                delay = random.uniform(2, 4)
+                time.sleep(delay)
         
         return all_jobs
     

@@ -32,6 +32,18 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] %(me
 class RealHREmailFinder:
     """Finds REAL HR emails from actual job postings - NO guessing."""
     
+    # Rotating User-Agents to avoid detection
+    USER_AGENTS = [
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36',
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:121.0) Gecko/20100101 Firefox/121.0',
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.2 Safari/605.1.15',
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 Edg/120.0.0.0',
+        'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Safari/537.36',
+    ]
+    
     # Email pattern to find in HTML
     EMAIL_REGEX = re.compile(r'[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}')
     
@@ -44,13 +56,28 @@ class RealHREmailFinder:
     
     def __init__(self):
         self.session = requests.Session()
-        self.session.headers.update({
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-            'Accept-Language': 'en-US,en;q=0.9',
-        })
+        self._update_headers()
         self.found_emails = []
         self.dns_cache = {}
+    
+    def _update_headers(self):
+        """Update session headers with a random User-Agent for anti-detection."""
+        ua = random.choice(self.USER_AGENTS)
+        self.session.headers.update({
+            'User-Agent': ua,
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
+            'Accept-Language': 'en-US,en;q=0.9',
+            'Accept-Encoding': 'gzip, deflate, br',
+            'Sec-Ch-Ua': '"Not_A Brand";v="8", "Chromium";v="120", "Google Chrome";v="120"',
+            'Sec-Ch-Ua-Mobile': '?0',
+            'Sec-Ch-Ua-Platform': '"Windows"',
+            'Sec-Fetch-Dest': 'document',
+            'Sec-Fetch-Mode': 'navigate',
+            'Sec-Fetch-Site': 'none',
+            'Sec-Fetch-User': '?1',
+            'Upgrade-Insecure-Requests': '1',
+            'Cache-Control': 'max-age=0',
+        })
         
     def find_real_hr_emails(self) -> pd.DataFrame:
         """Find real HR emails from multiple sources."""
@@ -83,17 +110,32 @@ class RealHREmailFinder:
         return df
     
     def _scrape_naukri_emails(self):
-        """Scrape real recruiter emails from Naukri job listings."""
+        """Scrape real recruiter emails from Naukri job listings with anti-detection."""
         logging.info("📡 Scraping Naukri for recruiter emails...")
         
         keywords = ["data analyst bangalore", "business analyst bangalore", "python developer bangalore"]
         
         for keyword in keywords:
             try:
+                # Rotate headers for each request
+                self._update_headers()
+                
+                # Add random delay
+                time.sleep(random.uniform(2, 4))
+                
                 # Naukri search URL
                 url = f"https://www.naukri.com/{keyword.replace(' ', '-')}-jobs"
                 
                 response = self.session.get(url, timeout=15)
+                
+                # Handle 403 - retry with fresh session
+                if response.status_code == 403:
+                    logging.debug(f"Naukri 403, retrying with fresh session...")
+                    time.sleep(random.uniform(3, 6))
+                    self.session = requests.Session()
+                    self._update_headers()
+                    response = self.session.get(url, timeout=15)
+                
                 if response.status_code == 200:
                     soup = BeautifulSoup(response.text, 'html.parser')
                     
@@ -116,8 +158,6 @@ class RealHREmailFinder:
                             if self._is_valid_hr_email(email):
                                 company = self._extract_company(card)
                                 self._add_email(email, company, 'naukri', keyword)
-                
-                time.sleep(random.uniform(2, 4))
                 
             except Exception as e:
                 logging.debug(f"Naukri error for {keyword}: {e}")
@@ -161,7 +201,7 @@ class RealHREmailFinder:
         logging.info(f"   Found {len([e for e in self.found_emails if e['source'] == 'indeed'])} emails from Indeed")
     
     def _scrape_career_pages(self):
-        """Scrape emails from company career pages."""
+        """Scrape emails from company career pages with anti-detection."""
         logging.info("📡 Scraping company career pages...")
         
         # Real career page URLs with known HR emails
@@ -181,16 +221,29 @@ class RealHREmailFinder:
             ("Swiggy", "https://careers.swiggy.com/"),
             ("Zomato", "https://www.zomato.com/careers"),
             ("PhonePe", "https://www.phonepe.com/careers/"),
-            ("CRED", "https://careers.cred.club/"),
             ("Meesho", "https://www.meesho.com/careers"),
             ("Groww", "https://groww.in/careers"),
-            ("Flipkart", "https://www.flipkartcareers.com/"),
-            ("Amazon India", "https://www.amazon.jobs/en/locations/india"),
         ]
         
         for company, url in career_pages:
             try:
+                # Rotate headers before each request
+                self._update_headers()
+                
+                # Add random delay to appear more human-like
+                time.sleep(random.uniform(1, 3))
+                
                 response = self.session.get(url, timeout=10)
+                
+                # Handle 403 - retry with fresh headers
+                if response.status_code == 403:
+                    logging.debug(f"403 from {company}, retrying with fresh headers...")
+                    time.sleep(random.uniform(2, 5))
+                    self._update_headers()
+                    self.session = requests.Session()  # Fresh session
+                    self._update_headers()
+                    response = self.session.get(url, timeout=10)
+                
                 if response.status_code == 200:
                     soup = BeautifulSoup(response.text, 'html.parser')
                     
@@ -209,8 +262,6 @@ class RealHREmailFinder:
                         for email in emails:
                             if self._is_valid_hr_email(email):
                                 self._add_email(email, company, 'career_page', 'direct')
-                
-                time.sleep(random.uniform(1, 2))
                 
             except Exception as e:
                 logging.debug(f"Career page error for {company}: {e}")

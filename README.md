@@ -15,7 +15,8 @@ This system automatically sends personalized job application emails to HR/recrui
 | 🔄 **Automatic Follow-ups** | Sends follow-up emails 5 days after initial contact |
 | 📎 **Resume Attachment** | Attaches your resume to every email |
 | 🚫 **No Duplicates** | Tracks all sent emails, never emails the same person twice |
-| ⏰ **Daily Automation** | Runs automatically on weekdays at 2:30 PM IST |
+| ⏰ **3x Daily Automation** | Runs automatically 3 times per day on weekdays (9:30 AM, 2:30 PM, 7:30 PM IST) |
+| 🏠 **Work Preference** | Mentions Remote/Hybrid preference while being open to all options |
 
 ---
 
@@ -103,7 +104,7 @@ When running the workflow manually:
 | Option | Description | Default |
 |--------|-------------|---------|
 | **Job Location** | Target city for job search | Bangalore |
-| **Max Emails** | Maximum new emails to send per run | 15 |
+| **Max Emails** | Maximum new emails to send per run | 30 |
 | **Send Follow-ups** | Send follow-up emails to past contacts | Yes |
 | **Scrape Only** | Just scrape jobs, don't send emails | No |
 
@@ -138,7 +139,7 @@ Based on cold email best practices:
 
 | Metric | Expected Range |
 |--------|----------------|
-| **Emails Sent** | 15-50 per day |
+| **Emails Sent** | 30-90 per day (3 runs × 30 emails) |
 | **Open Rate** | 15-25% |
 | **Response Rate** | 5-15% |
 | **Interview Calls** | 1-3 per 100 emails |

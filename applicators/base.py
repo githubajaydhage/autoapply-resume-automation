@@ -65,6 +65,8 @@ class BaseApplicator(ABC):
 
         if not email or not password:
             logging.error(f"Credentials for {self.portal_name} not found in environment variables.")
+            logging.error(f"Email env var: {self.config['credentials']['email_env']} = {'SET' if email else 'NOT SET'}")
+            logging.error(f"Password env var: {self.config['credentials']['password_env']} = {'SET' if password else 'NOT SET'}")
             return False
 
         max_retries = 2
@@ -73,47 +75,104 @@ class BaseApplicator(ABC):
                 logging.info(f"Login attempt {attempt + 1}/{max_retries} for {self.portal_name}")
                 
                 # Navigate with extended timeout
+                logging.info(f"Navigating to: {self.config['login_url']}")
                 page.goto(self.config["login_url"], timeout=90000, wait_until="domcontentloaded")
                 time.sleep(random.uniform(2, 4))  # Human-like delay
+                
+                # Screenshot: Login page loaded
+                page.screenshot(path=os.path.join("data", f"1_login_page_{self.portal_name}.png"))
+                logging.info(f"📸 Screenshot saved: 1_login_page_{self.portal_name}.png")
+                logging.info(f"Current URL: {page.url}")
                 
                 # Check if already logged in (persistent context may have session)
                 try:
                     page.wait_for_selector(self.config["selectors"]["login_success_indicator"], timeout=5000)
                     logging.info(f"Already logged in to {self.portal_name} (session restored).")
+                    page.screenshot(path=os.path.join("data", f"already_logged_in_{self.portal_name}.png"))
                     return True
                 except PlaywrightTimeoutError:
-                    pass  # Not logged in, continue with login flow
+                    logging.info("Not logged in yet, proceeding with login...")
                 
-                # Type credentials slowly like a human
-                email_input = page.locator(self.config["selectors"]["email_input"])
+                # Find and fill email
+                logging.info(f"Looking for email input: {self.config['selectors']['email_input']}")
+                email_input = page.locator(self.config["selectors"]["email_input"]).first
                 if email_input.count() > 0:
+                    logging.info("✅ Email input found")
                     email_input.click()
                     time.sleep(random.uniform(0.5, 1))
                     email_input.fill("")  # Clear first
                     for char in email:
                         email_input.type(char, delay=random.randint(50, 150))
                     time.sleep(random.uniform(1, 2))
+                    logging.info("✅ Email entered")
+                else:
+                    logging.error("❌ Email input NOT found!")
+                    page.screenshot(path=os.path.join("data", f"email_not_found_{self.portal_name}.png"))
                 
-                password_input = page.locator(self.config["selectors"]["password_input"])
+                # Find and fill password
+                logging.info(f"Looking for password input: {self.config['selectors']['password_input']}")
+                password_input = page.locator(self.config["selectors"]["password_input"]).first
                 if password_input.count() > 0:
+                    logging.info("✅ Password input found")
                     password_input.click()
                     time.sleep(random.uniform(0.5, 1))
                     password_input.fill("")  # Clear first
                     for char in password:
                         password_input.type(char, delay=random.randint(50, 150))
                     time.sleep(random.uniform(1, 2))
+                    logging.info("✅ Password entered")
+                else:
+                    logging.error("❌ Password input NOT found!")
+                    page.screenshot(path=os.path.join("data", f"password_not_found_{self.portal_name}.png"))
+                
+                # Screenshot before clicking login
+                page.screenshot(path=os.path.join("data", f"2_before_login_click_{self.portal_name}.png"))
+                logging.info(f"📸 Screenshot saved: 2_before_login_click_{self.portal_name}.png")
                 
                 # Click login button
-                page.click(self.config["selectors"]["login_button"])
+                logging.info(f"Looking for login button: {self.config['selectors']['login_button']}")
+                login_btn = page.locator(self.config["selectors"]["login_button"]).first
+                if login_btn.count() > 0:
+                    logging.info("✅ Login button found, clicking...")
+                    login_btn.click()
+                else:
+                    logging.error("❌ Login button NOT found!")
+                    page.screenshot(path=os.path.join("data", f"login_btn_not_found_{self.portal_name}.png"))
+                
                 time.sleep(random.uniform(3, 5))
                 
                 # Take screenshot after clicking login
-                page.screenshot(path=os.path.join("data", f"after_login_click_{self.portal_name}.png"))
-                logging.info(f"Screenshot saved: after_login_click_{self.portal_name}.png")
+                page.screenshot(path=os.path.join("data", f"3_after_login_click_{self.portal_name}.png"))
+                logging.info(f"📸 Screenshot saved: 3_after_login_click_{self.portal_name}.png")
                 
                 # Log current URL for debugging
                 current_url = page.url
                 logging.info(f"Current URL after login click: {current_url}")
+                
+                # Log page title for debugging
+                page.wait_for_load_state("domcontentloaded", timeout=10000)
+                page_title = page.title()
+                logging.info(f"Page title: {page_title}")
+                
+                # Check for common error messages
+                error_selectors = [
+                    'text=wrong password',
+                    'text=incorrect password', 
+                    'text=invalid credentials',
+                    'text=account locked',
+                    'text=too many attempts',
+                    'text=please try again',
+                    '.error-message',
+                    '[role="alert"]',
+                ]
+                for err_sel in error_selectors:
+                    try:
+                        if page.locator(err_sel).first.is_visible(timeout=1000):
+                            logging.error(f"❌ Login error detected: {err_sel}")
+                            page.screenshot(path=os.path.join("data", f"login_error_{self.portal_name}.png"))
+                            break
+                    except:
+                        continue
                 
                 # Check for verification/checkpoint page (both LinkedIn and Naukri)
                 checkpoint_selectors = [

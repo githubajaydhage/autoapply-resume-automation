@@ -34,15 +34,38 @@ class LinkedInApplicator(BaseApplicator):
                     upload_input.set_input_files(resume_path)
                     logging.info("Uploaded tailored resume.")
             
-            # This is a simplification. Real-world scenarios require navigating
-            # multiple steps in the modal.
-            submit_button = page.locator(self.config["selectors"]["submit_application_button"]).first
-            if submit_button.is_visible():
-                # submit_button.click() # Use with caution
-                logging.info("Simulating final submission click (currently commented out).")
-                tracker.track_application(job['title'], job['company'], job['link'])
-            else:
-                logging.warning("Could not find the final submit button.")
+            # Handle multi-step Easy Apply modal
+            max_steps = 10
+            for step in range(max_steps):
+                # Check for review/submit button
+                submit_button = page.locator(self.config["selectors"]["submit_application_button"]).first
+                if submit_button.is_visible():
+                    submit_button.click()
+                    time.sleep(2)
+                    # Check if application was submitted
+                    if page.locator("text=Application sent").is_visible(timeout=5000):
+                        logging.info(f"✅ Successfully applied to {job['title']} at {job['company']}")
+                        tracker.track_application(job['title'], job['company'], job.get('link', job.get('url', '')))
+                        return True
+                    break
+                
+                # Check for Next button to proceed through steps
+                next_button = page.locator('button[aria-label="Continue to next step"]').first
+                if next_button.is_visible():
+                    next_button.click()
+                    time.sleep(1)
+                    continue
+                    
+                # Try alternative next button
+                next_alt = page.locator('button:has-text("Next")').first
+                if next_alt.is_visible():
+                    next_alt.click()
+                    time.sleep(1)
+                    continue
+                    
+                break
+            
+            logging.warning(f"Could not complete application for {job['title']}")
 
         except PlaywrightTimeoutError:
             logging.error(f"Timeout while applying for {job['title']}.")

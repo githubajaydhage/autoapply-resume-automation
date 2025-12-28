@@ -377,12 +377,38 @@ if __name__ == "__main__":
         all_jobs.append({
             "title": job["title"],
             "company": job["company"],
-            "link": job["link"],
-            "summary": job.get("summary", ""),
-            "portal": job.get("portal", "RSS"),
-            "location": job.get("location", "Bangalore"),
-            "posted_date": job.get("published", "Recent")
-        })
+    # Step 4: If no jobs from RSS (all blocked), try public scraper
+    if not rss_jobs:
+        logging.info("📡 RSS feeds blocked, trying public page scraping...")
+        try:
+            from scripts.linkedin_public_scraper import scrape_jobs_public
+            public_jobs_df = scrape_jobs_public(location=location)
+            if not public_jobs_df.empty:
+                for _, job in public_jobs_df.iterrows():
+                    all_jobs.append({
+                        "title": job.get("title", "Unknown"),
+                        "company": job.get("company", "Unknown"),
+                        "link": job.get("url", ""),
+                        "summary": job.get("description", ""),
+                        "portal": job.get("source", "public"),
+                        "location": job.get("location", location),
+                        "posted_date": job.get("scraped_at", "Recent")
+                    })
+                logging.info(f"✅ Found {len(public_jobs_df)} jobs via public scraping")
+        except Exception as e:
+            logging.warning(f"Public scraper error: {e}")
+    else:
+        # Add RSS jobs
+        for job in rss_jobs:
+            all_jobs.append({
+                "title": job["title"],
+                "company": job["company"],
+                "link": job["link"],
+                "summary": job.get("summary", ""),
+                "portal": job.get("portal", "RSS"),
+                "location": job.get("location", "Bangalore"),
+                "posted_date": job.get("published", "Recent")
+            })
     
     # Add company jobs  
     for job in company_jobs:
@@ -396,7 +422,7 @@ if __name__ == "__main__":
             "posted_date": job.get("posted_date", "Recent")
         })
     
-    # Step 4: Save results
+    # Step 5: Save results
     if all_jobs:
         save_jobs_to_csv(all_jobs)
         total_time = time.time() - start_rss

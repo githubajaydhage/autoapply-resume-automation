@@ -1,7 +1,18 @@
-name: Job Application System (Email Outreach)
+name: Job Application System (Production Ready)
 
-# WORKING SYSTEM - Uses public job scraping + cold email outreach
-# Browser automation is DISABLED (LinkedIn/Naukri/Indeed block it)
+# =================================================================
+# PRODUCTION READY - Maximum Application Outreach System
+# =================================================================
+# Features:
+# ✅ Multiple reliable job sources (RemoteOK API, career pages, RSS)
+# ✅ Curated HR email database (100+ verified company emails)
+# ✅ Personalized cold email outreach
+# ✅ Automatic follow-up emails (5 days after initial contact)
+# ✅ Duplicate prevention and tracking
+# ✅ Resume attachment
+# =================================================================
+# ONLY 1 SECRET NEEDED: SENDER_PASSWORD (Gmail App Password)
+# =================================================================
 
 on:
   workflow_dispatch:
@@ -17,17 +28,29 @@ on:
         - Delhi
         - Hyderabad
         - Pune
+        - Chennai
         - Remote
+        - India
       max_emails:
-        description: 'Max emails to send'
+        description: 'Max new emails to send'
         required: true
-        default: '10'
+        default: '15'
         type: choice
         options:
         - '5'
         - '10'
+        - '15'
         - '20'
+        - '30'
         - '50'
+      send_followups:
+        description: 'Send follow-up emails?'
+        required: false
+        default: 'true'
+        type: choice
+        options:
+        - 'true'
+        - 'false'
       scrape_only:
         description: 'Only scrape (no emails)'
         required: false
@@ -36,8 +59,10 @@ on:
         options:
         - 'false'
         - 'true'
+        
   schedule:
-    - cron: '0 9 * * 1-5'  # 9 AM UTC weekdays (2:30 PM IST)
+    # Runs at 9 AM UTC weekdays (2:30 PM IST)
+    - cron: '0 9 * * 1-5'
 
 jobs:
   apply:
@@ -62,74 +87,104 @@ jobs:
       with:
         path: |
           data/sent_emails_log.csv
+          data/followup_log.csv
           data/all_hr_emails.csv
           data/jobs_today.csv
-        key: job-data-${{ runner.os }}-v2
+          data/curated_hr_emails.csv
+        key: job-data-${{ runner.os }}-v3
         restore-keys: |
           job-data-${{ runner.os }}-
 
-    - name: Step 1 - Scrape Jobs from Public Pages
+    # PHASE 1: Scrape Jobs
+    - name: Phase 1 - Scrape Jobs (Multiple Sources)
       run: |
-        echo "🔍 PHASE 1: Scraping jobs from public career pages"
-        echo "   LinkedIn, Naukri public listings (no login needed)"
-        python scripts/linkedin_public_scraper.py
+        echo "🔍 PHASE 1: SCRAPING JOBS FROM RELIABLE SOURCES"
+        echo "   Sources: RemoteOK API, Company Career Pages, Job Aggregators"
+        python scripts/reliable_job_scraper.py
       env:
         PYTHONPATH: ${{ github.workspace }}
         JOB_LOCATION: ${{ github.event.inputs.job_location || 'Bangalore' }}
 
-    - name: Step 2 - Scrape HR Emails
+    # PHASE 2: Load HR Emails
+    - name: Phase 2 - Load HR Email Database
       run: |
-        echo "📧 PHASE 2: Scraping HR/recruiter emails from job postings"
-        python scripts/email_scraper.py
+        echo "📧 PHASE 2: LOADING HR EMAIL DATABASE"
+        echo "   100+ verified company HR/recruitment emails"
+        python scripts/curated_hr_database.py
+        echo ""
+        echo "   Also scraping additional emails from job postings..."
+        python scripts/email_scraper.py || true
       env:
         PYTHONPATH: ${{ github.workspace }}
 
-    - name: Step 3 - Send Application Emails
+    # PHASE 3: Send Application Emails
+    - name: Phase 3 - Send Application Emails
       if: ${{ github.event.inputs.scrape_only != 'true' }}
       run: |
-        echo "📤 PHASE 3: Sending personalized application emails"
+        echo "📤 PHASE 3: SENDING APPLICATION EMAILS"
+        echo "   Max emails: ${{ github.event.inputs.max_emails || '15' }}"
         python scripts/email_sender.py
       env:
         PYTHONPATH: ${{ github.workspace }}
         SENDER_PASSWORD: ${{ secrets.SENDER_PASSWORD }}
-        MAX_EMAILS: ${{ github.event.inputs.max_emails || '10' }}
+        MAX_EMAILS: ${{ github.event.inputs.max_emails || '15' }}
+
+    # PHASE 4: Send Follow-Up Emails
+    - name: Phase 4 - Send Follow-Up Emails
+      if: ${{ github.event.inputs.scrape_only != 'true' && github.event.inputs.send_followups != 'false' }}
+      run: |
+        echo "🔄 PHASE 4: SENDING FOLLOW-UP EMAILS"
+        python scripts/followup_sender.py
+      env:
+        PYTHONPATH: ${{ github.workspace }}
+        SENDER_PASSWORD: ${{ secrets.SENDER_PASSWORD }}
+        MAX_FOLLOWUPS: '10'
 
     - name: Save Data Cache
       uses: actions/cache/save@v3
       with:
         path: |
           data/sent_emails_log.csv
+          data/followup_log.csv
           data/all_hr_emails.csv
           data/jobs_today.csv
-        key: job-data-${{ runner.os }}-v2-${{ github.run_number }}
+          data/curated_hr_emails.csv
+        key: job-data-${{ runner.os }}-v3-${{ github.run_number }}
 
-    - name: Upload Logs
+    - name: Upload Results
       uses: actions/upload-artifact@v4
       with:
-        name: application-logs
+        name: application-results-${{ github.run_number }}
         path: |
           data/jobs_today.csv
           data/all_hr_emails.csv
+          data/curated_hr_emails.csv
           data/sent_emails_log.csv
-          data/*.log
+          data/followup_log.csv
           data/*.json
+        retention-days: 30
       if: always()
 
-    - name: Summary
+    - name: Summary Report
       run: |
-        echo "📊 ============================================"
-        echo "📊 JOB APPLICATION SUMMARY"
-        echo "📊 ============================================"
+        echo ""
+        echo "📊 =============================================="
+        echo "📊 JOB APPLICATION SUMMARY REPORT"
+        echo "📊 =============================================="
         if [ -f data/jobs_today.csv ]; then
           JOBS=$(wc -l < data/jobs_today.csv)
-          echo "   Jobs scraped: $((JOBS - 1))"
+          echo "🔍 Jobs Scraped: $((JOBS - 1))"
         fi
         if [ -f data/all_hr_emails.csv ]; then
           EMAILS=$(wc -l < data/all_hr_emails.csv)
-          echo "   HR emails found: $((EMAILS - 1))"
+          echo "📧 HR Emails Available: $((EMAILS - 1))"
         fi
         if [ -f data/sent_emails_log.csv ]; then
           SENT=$(wc -l < data/sent_emails_log.csv)
-          echo "   Emails sent (total): $((SENT - 1))"
+          echo "✉️  Total Emails Sent: $((SENT - 1))"
         fi
-        echo "📊 ============================================"
+        if [ -f data/followup_log.csv ]; then
+          FOLLOWUPS=$(wc -l < data/followup_log.csv)
+          echo "🔄 Follow-ups Sent: $((FOLLOWUPS - 1))"
+        fi
+        echo "📊 =============================================="

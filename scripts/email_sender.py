@@ -89,13 +89,20 @@ class PersonalizedEmailSender:
         self.sent_emails.add(recipient_email.lower())
     
     def generate_email_subject(self, job_title: str, company: str) -> str:
-        """Generate a personalized email subject."""
+        """Generate a personalized email subject - optimized for high open rates."""
+        # Subject lines with higher open rates (data-driven best practices)
         subjects = [
-            f"Application for {job_title} Position at {company}",
-            f"Experienced Professional Seeking {job_title} Role at {company}",
-            f"{job_title} Opportunity at {company} - {self.applicant_name}",
-            f"Interest in {job_title} Position - {self.applicant_experience}+ Years Experience",
-            f"Application: {job_title} at {company}",
+            # Direct and specific (highest open rates)
+            f"Application: {job_title} - {self.applicant_experience}+ Years Experience",
+            f"{job_title} Application - {self.applicant_name}",
+            
+            # Creates urgency/interest
+            f"Immediate Availability: {job_title} Role",
+            f"Quick Question About {job_title} Opening",
+            
+            # Personal touch
+            f"Interested in Contributing to {company}'s Team",
+            f"Connecting for {job_title} Opportunity",
         ]
         return random.choice(subjects)
     
@@ -315,20 +322,44 @@ ${phone}"""
 
 def main():
     """Main function to send personalized emails."""
+    logging.info("="*60)
+    logging.info("📧 PERSONALIZED EMAIL SENDER")
+    logging.info("="*60)
+    
     sender = PersonalizedEmailSender()
     
-    # Load HR emails
-    emails_path = os.path.join(os.path.dirname(__file__), '..', 'data', 'all_hr_emails.csv')
+    # Try multiple sources for HR emails
+    emails_df = pd.DataFrame()
     
-    if not os.path.exists(emails_path):
-        logging.error(f"❌ HR emails file not found: {emails_path}")
-        logging.info("Run email_scraper.py first to collect HR emails.")
+    # Source 1: Curated HR database (most reliable)
+    curated_path = os.path.join(os.path.dirname(__file__), '..', 'data', 'curated_hr_emails.csv')
+    if os.path.exists(curated_path):
+        curated_df = pd.read_csv(curated_path)
+        # Rename 'email' to 'hr_email' for compatibility
+        if 'email' in curated_df.columns:
+            curated_df = curated_df.rename(columns={'email': 'hr_email'})
+        curated_df['job_title'] = 'Data Analyst / Business Analyst'  # Default
+        emails_df = pd.concat([emails_df, curated_df], ignore_index=True)
+        logging.info(f"📋 Loaded {len(curated_df)} curated HR emails")
+    
+    # Source 2: Scraped emails
+    scraped_path = os.path.join(os.path.dirname(__file__), '..', 'data', 'all_hr_emails.csv')
+    if os.path.exists(scraped_path):
+        scraped_df = pd.read_csv(scraped_path)
+        if 'hr_email' in scraped_df.columns:
+            emails_df = pd.concat([emails_df, scraped_df], ignore_index=True)
+            logging.info(f"🔍 Loaded {len(scraped_df)} scraped HR emails")
+    
+    if emails_df.empty:
+        logging.error("❌ No HR emails found!")
+        logging.info("Run curated_hr_database.py or email_scraper.py first.")
         return
     
-    emails_df = pd.read_csv(emails_path)
+    # Clean and dedupe
     emails_df = emails_df[emails_df['hr_email'].notna()]
+    emails_df = emails_df.drop_duplicates(subset=['hr_email'], keep='first')
     
-    logging.info(f"📊 Loaded {len(emails_df)} HR email contacts")
+    logging.info(f"📊 Total unique HR contacts: {len(emails_df)}")
     
     # Check for password - only thing needed from secrets!
     if not os.getenv('SENDER_PASSWORD'):
@@ -349,11 +380,13 @@ def main():
     # Send emails
     stats = sender.send_bulk_emails(
         emails_df,
-        max_emails=max_emails,  # Limit per run to avoid spam flags
+        max_emails=max_emails,
         delay_range=(45, 90)  # 45-90 seconds between emails
     )
     
-    logging.info("\n✅ Email campaign completed!")
+    logging.info("="*60)
+    logging.info("✅ Email campaign completed!")
+    logging.info("="*60)
 
 
 if __name__ == "__main__":

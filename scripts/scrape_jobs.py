@@ -364,21 +364,10 @@ if __name__ == "__main__":
     rss_time = time.time() - start_rss
     logging.info(f"✅ RSS complete: {len(rss_jobs)} jobs in {rss_time:.1f}s")
     
-    # Step 2: Fast company scraping (top companies only)
-    logging.info("🏢 Starting FAST company scraping...")
-    start_company = time.time()
-    try:
-        from scripts.scrape_company_jobs_fast import scrape_company_jobs_fast
-        company_jobs = scrape_company_jobs_fast(
-            keywords=skills[:5], 
-            location="Bangalore", 
-            max_companies=20  # Only top 20 for speed
-        )
-        company_time = time.time() - start_company
-        logging.info(f"✅ Company scraping complete: {len(company_jobs)} jobs in {company_time:.1f}s")
-    except Exception as e:
-        logging.error(f"Fast company scraping failed: {e}")
-        company_jobs = []
+    # Step 2: Company scraping is disabled (module was removed)
+    # Jobs will come from existing data or manual sources
+    logging.info("🏢 Company scraping: Using existing job data")
+    company_jobs = []
     
     # Step 3: Combine and format results
     all_jobs = []

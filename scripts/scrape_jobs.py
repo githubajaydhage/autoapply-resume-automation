@@ -309,11 +309,24 @@ def save_jobs_to_csv(jobs_list):
         return
 
     new_jobs_df = pd.DataFrame(jobs_list)
+    
+    # Normalize column names: handle both 'link' and 'url' as the same field
+    if 'link' in new_jobs_df.columns and 'url' not in new_jobs_df.columns:
+        new_jobs_df = new_jobs_df.rename(columns={'link': 'url'})
 
     if os.path.exists(JOBS_CSV_PATH):
         try:
             existing_jobs_df = pd.read_csv(JOBS_CSV_PATH)
-            new_jobs_df = new_jobs_df[~new_jobs_df['link'].isin(existing_jobs_df['link'])]
+            # Normalize existing CSV column names too
+            if 'link' in existing_jobs_df.columns and 'url' not in existing_jobs_df.columns:
+                existing_jobs_df = existing_jobs_df.rename(columns={'link': 'url'})
+            
+            # Filter duplicates using 'url' column if it exists
+            if 'url' in new_jobs_df.columns and 'url' in existing_jobs_df.columns:
+                new_jobs_df = new_jobs_df[~new_jobs_df['url'].isin(existing_jobs_df['url'])]
+            elif 'url' in new_jobs_df.columns:
+                # No url column in existing, all new jobs are unique
+                pass
         except pd.errors.EmptyDataError:
             existing_jobs_df = pd.DataFrame()
     else:

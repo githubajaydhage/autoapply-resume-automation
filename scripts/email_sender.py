@@ -265,16 +265,16 @@ class PersonalizedEmailSender:
         # Subject lines with higher open rates (data-driven best practices)
         subjects = [
             # Direct and specific (highest open rates)
-            f"Application: {job_title} - {self.applicant_experience}+ Years Experience",
-            f"{job_title} Application - {self.applicant_name}",
+            f"Application: {job_title} (Bangalore) - {self.applicant_experience}+ Years Experience",
+            f"{job_title} Application - Bangalore - {self.applicant_name}",
             
             # Creates urgency/interest
-            f"Immediate Availability: {job_title} Role",
-            f"Quick Question About {job_title} Opening",
+            f"Immediate Availability: {job_title} Role - Bangalore",
+            f"Bangalore-Based Candidate for {job_title} Opening",
             
             # Personal touch
-            f"Interested in Contributing to {company}'s Team",
-            f"Connecting for {job_title} Opportunity",
+            f"Interested in {job_title} at {company}'s Bangalore Office",
+            f"Connecting for {job_title} Opportunity - Bangalore",
         ]
         return random.choice(subjects)
     
@@ -286,13 +286,14 @@ class PersonalizedEmailSender:
             # Template 1 - Professional and direct
             """Dear Hiring Manager,
 
-I am writing to express my strong interest in the ${job_title} position at ${company}. With ${experience}+ years of experience in ${skills_area}, I am confident in my ability to contribute effectively to your team.
+I am writing to express my strong interest in the ${job_title} position at ${company}'s Bangalore office. With ${experience}+ years of experience in ${skills_area}, I am confident in my ability to contribute effectively to your team.
 
 My key qualifications include:
 • Proficient in ${skills}
 • Strong analytical and problem-solving abilities
 • Excellent communication and collaboration skills
 • Proven track record of delivering results
+• Currently based in Bangalore and immediately available
 
 I am particularly drawn to ${company}'s reputation for innovation and excellence in the industry. I believe my skills and experience align well with the requirements of this role.
 
@@ -302,13 +303,14 @@ Thank you for considering my application. I look forward to hearing from you.
 
 Best regards,
 ${name}
+📍 Location: Bangalore, Karnataka
 📞 ${phone}
 🔗 LinkedIn: ${linkedin}""",
 
             # Template 2 - Enthusiastic
             """Dear HR Team,
 
-I recently came across the ${job_title} opening at ${company}, and I am excited to submit my application for this role.
+I recently came across the ${job_title} opening at ${company}, and I am excited to submit my application for this role in Bangalore.
 
 As a professional with ${experience}+ years of experience, I have developed strong expertise in ${skills}. I am passionate about leveraging data and technology to drive business insights and decisions.
 
@@ -317,31 +319,34 @@ What excites me about ${company}:
 • The opportunity to work on challenging projects
 • The collaborative and growth-oriented culture
 
-I am confident that my skills and enthusiasm make me a strong candidate for this position. Please find my resume attached for your consideration.
+I am based in Bangalore and immediately available to join. I am confident that my skills and enthusiasm make me a strong candidate for this position. Please find my resume attached for your consideration.
 
 I would appreciate the opportunity to discuss how I can contribute to your team's success.
 
 Warm regards,
 ${name}
+📍 Location: Bangalore, Karnataka
 📞 ${phone}
 🔗 LinkedIn: ${linkedin}""",
 
             # Template 3 - Concise
             """Dear Recruitment Team,
 
-I am applying for the ${job_title} position at ${company}.
+I am applying for the ${job_title} position at ${company} (Bangalore location).
 
 Profile Summary:
 • Experience: ${experience}+ years
 • Skills: ${skills}
-• Education: Relevant degree with continuous learning
+• Location: Bangalore, Karnataka (Preferred)
+• Availability: Immediate
 
-I am immediately available and excited about the opportunity to contribute to ${company}'s success.
+I am currently based in Bangalore and excited about the opportunity to contribute to ${company}'s success.
 
 Please review my attached resume. I look forward to discussing this opportunity with you.
 
 Best regards,
 ${name}
+📍 Location: Bangalore, Karnataka
 📞 ${phone}
 🔗 LinkedIn: ${linkedin}"""
         ]

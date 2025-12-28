@@ -136,7 +136,51 @@ class EmailValidator:
         if not self.has_valid_mx_record(email):
             return False, "Domain cannot receive email"
         
+        # Check if it's an HR/recruitment email (not random office emails)
+        if not self.is_hr_related_email(email):
+            return False, "Not an HR/recruitment email"
+        
         return True, "Valid"
+    
+    def is_hr_related_email(self, email: str) -> bool:
+        """Check if the email is HR/recruitment related."""
+        email_lower = email.lower()
+        local_part = email_lower.split('@')[0]
+        
+        # HR/recruitment keywords that should be in the email
+        hr_keywords = [
+            'career', 'careers', 'hr', 'recruit', 'recruiting', 'recruitment',
+            'hiring', 'jobs', 'job', 'talent', 'people', 'human', 'staffing',
+            'resume', 'resumes', 'apply', 'application', 'applications',
+            'india.recruiting', 'indiatalent', 'indiacareers', 'intalent',
+            'askhr', 'hrcare', 'in_careers'
+        ]
+        
+        # Check if local part contains HR keywords
+        for keyword in hr_keywords:
+            if keyword in local_part:
+                return True
+        
+        # Skip generic info/support emails (these are NOT HR)
+        non_hr_patterns = [
+            'info@', 'support@', 'contact@', 'help@', 'service@',
+            'sales@', 'marketing@', 'admin@', 'office@', 'press@',
+            'media@', 'legal@', 'finance@', 'billing@', 'accounts@',
+            'customer@', 'enquir', 'query', 'feedback@', 'complaints@',
+            'ombuds', 'federal@', 'serv', 'gsc@', 'cc@', 'szerviz@',
+            '.luxembourg', 'directo@'
+        ]
+        
+        for pattern in non_hr_patterns:
+            if pattern in email_lower:
+                return False
+        
+        # If from known valid domains AND not in non-HR patterns, accept
+        domain = email.split('@')[1].lower()
+        if domain in self.KNOWN_VALID_DOMAINS:
+            return True
+        
+        return False
 
 
 class PersonalizedEmailSender:
@@ -422,8 +466,15 @@ ${phone}"""
         emails_df = emails_df[~emails_df['hr_email'].str.lower().isin(self.sent_emails)]
         emails_df = emails_df[emails_df['hr_email'].notna()]
         
+        # CRITICAL: Filter to only HR-related emails (skip info@, support@, etc.)
+        hr_mask = emails_df['hr_email'].apply(self.validator.is_hr_related_email)
+        non_hr_count = len(emails_df) - hr_mask.sum()
+        if non_hr_count > 0:
+            logging.info(f"🚫 Filtered out {non_hr_count} non-HR emails (info@, support@, cc@, etc.)")
+        emails_df = emails_df[hr_mask]
+        
         if emails_df.empty:
-            logging.info("All emails have already been sent!")
+            logging.info("All emails have already been sent or filtered!")
             return {'sent': 0, 'failed': 0, 'skipped': 0}
         
         # Limit to max_emails

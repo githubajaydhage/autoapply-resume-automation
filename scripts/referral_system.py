@@ -199,9 +199,12 @@ ${my_name}
         self.my_email = os.getenv('SENDER_EMAIL', '')
         self.my_phone = os.getenv('APPLICANT_PHONE', '')
         self.my_linkedin = os.getenv('APPLICANT_LINKEDIN', '')
-        self.my_role = os.getenv('APPLICANT_ROLE', 'Software Engineer')
-        self.my_experience = os.getenv('YEARS_EXPERIENCE', '3+') + ' years'
-        self.my_skills = os.getenv('APPLICANT_SKILLS', 'software development')
+        # Use APPLICANT_TARGET_ROLE or first keyword from JOB_KEYWORDS
+        job_keywords = os.getenv('JOB_KEYWORDS', '')
+        default_role = job_keywords.split(',')[0].strip().title() if job_keywords else 'Professional'
+        self.my_role = os.getenv('APPLICANT_TARGET_ROLE', default_role)
+        self.my_experience = os.getenv('APPLICANT_EXPERIENCE', os.getenv('YEARS_EXPERIENCE', '3+')) + ' years'
+        self.my_skills = os.getenv('APPLICANT_SKILLS', os.getenv('JOB_KEYWORDS', 'professional skills'))
         
         self.sender_password = os.getenv('SENDER_PASSWORD', '')
         self.smtp_server = os.getenv('SMTP_SERVER', 'smtp.gmail.com')

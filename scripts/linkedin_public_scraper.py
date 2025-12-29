@@ -237,16 +237,13 @@ def scrape_jobs_public(keywords_list: list = None, location: str = "Bangalore") 
     """Scrape jobs from public pages of LinkedIn and Naukri."""
     
     if keywords_list is None:
-        keywords_list = [
-            "Data Analyst",
-            "Business Analyst", 
-            "Business Intelligence",
-            "Data Engineer",
-            "Analytics",
-            "SQL Developer",
-            "Tableau Developer",
-            "Power BI"
-        ]
+        # Get keywords from JOB_KEYWORDS environment variable - NO HARDCODED DEFAULTS
+        job_keywords = os.getenv('JOB_KEYWORDS', '')
+        if job_keywords:
+            keywords_list = [k.strip() for k in job_keywords.split(',') if k.strip()]
+        else:
+            logging.warning("⚠️ JOB_KEYWORDS not set in environment, using empty list")
+            keywords_list = []
     
     all_jobs = []
     

@@ -504,9 +504,12 @@ def main():
     
     scraper = NaukriScraper()
     
-    # Get search keywords from environment - check JOB_KEYWORDS first, then NAUKRI_KEYWORDS for backward compatibility
-    # Default: DevOps/SRE keywords for Ajay
-    keywords_env = os.getenv('JOB_KEYWORDS', '') or os.getenv('NAUKRI_KEYWORDS', 'devops engineer, site reliability engineer, platform engineer, cloud engineer, kubernetes, sre')
+    # Get search keywords from environment - check JOB_KEYWORDS first, then NAUKRI_KEYWORDS
+    # NO HARDCODED DEFAULTS - must be set in workflow file
+    keywords_env = os.getenv('JOB_KEYWORDS', '') or os.getenv('NAUKRI_KEYWORDS', '')
+    if not keywords_env:
+        logging.error("❌ JOB_KEYWORDS or NAUKRI_KEYWORDS must be set in workflow!")
+        return
     keywords_list = [k.strip() for k in keywords_env.split(',') if k.strip()]
     logging.info(f"📋 Using job keywords: {keywords_list}")
     

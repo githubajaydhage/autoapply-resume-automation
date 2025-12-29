@@ -326,10 +326,13 @@ class SmartJobMatcher:
     def get_unmatched_hr_for_general_outreach(self, hr_df: pd.DataFrame, matched_emails: set) -> pd.DataFrame:
         """
         Get HR emails that didn't match any specific job, for general outreach.
-        These will be sent generic "Data Analyst" applications.
+        Uses JOB_KEYWORDS from environment for role-specific applications.
         """
         unmatched = hr_df[~hr_df['hr_email'].isin(matched_emails)].copy()
-        unmatched['job_title'] = 'Data Analyst / Software Engineer'
+        # Use first JOB_KEYWORD instead of hardcoded role
+        job_keywords = os.getenv('JOB_KEYWORDS', '')
+        default_title = job_keywords.split(',')[0].strip().title() if job_keywords else 'Open Position'
+        unmatched['job_title'] = default_title
         unmatched['job_company'] = unmatched.get('company', 'Your Company')
         unmatched['job_url'] = ''
         unmatched['job_match_score'] = 50  # Neutral score

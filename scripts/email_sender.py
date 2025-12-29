@@ -746,6 +746,45 @@ def main():
                 emails_df = pd.concat([emails_df, scraped_df], ignore_index=True)
                 logging.info(f"🔍 Loaded {len(scraped_df)} scraped HR emails")
     
+    # ============================================
+    # NEW: Add Recruiting Agencies to email list
+    # ============================================
+    try:
+        from scripts.recruiting_agencies import get_agency_emails_for_profile
+        AGENCIES_AVAILABLE = True
+    except ImportError:
+        AGENCIES_AVAILABLE = False
+    
+    if AGENCIES_AVAILABLE and os.getenv('SEND_TO_AGENCIES', 'true').lower() == 'true':
+        logging.info("\n🏢 RECRUITING AGENCIES - Finding staffing firms for your profile...")
+        try:
+            job_keywords_str = os.environ.get('JOB_KEYWORDS', '')
+            job_keywords = [kw.strip() for kw in job_keywords_str.split(',') if kw.strip()]
+            
+            agencies = get_agency_emails_for_profile(job_keywords, max_agencies=20)
+            
+            if agencies:
+                agency_records = []
+                for agency in agencies:
+                    agency_records.append({
+                        'hr_email': agency['email'],
+                        'company': agency['name'],
+                        'job_title': f"Open Positions - {agency.get('specialization', 'General')}",
+                        'job_url': '',
+                        'source': 'recruiting_agency'
+                    })
+                
+                agency_df = pd.DataFrame(agency_records)
+                emails_df = pd.concat([emails_df, agency_df], ignore_index=True)
+                logging.info(f"🏢 Added {len(agencies)} recruiting agencies to send list")
+            else:
+                logging.info("⚠️ No recruiting agencies found for your profile")
+                
+        except Exception as e:
+            logging.warning(f"⚠️ Could not load recruiting agencies: {e}")
+    else:
+        logging.info("ℹ️ Recruiting agencies disabled (set SEND_TO_AGENCIES=true to enable)")
+    
     if emails_df.empty:
         logging.error("❌ No HR emails found!")
         logging.info("Run curated_hr_database.py or email_scraper.py first.")
@@ -763,6 +802,13 @@ def main():
         logging.info(f"🎯 Application types:")
         for match_type, count in match_stats.items():
             logging.info(f"   • {match_type}: {count}")
+    
+    # Show source breakdown
+    if 'source' in emails_df.columns:
+        source_stats = emails_df['source'].value_counts()
+        logging.info(f"📋 Email sources:")
+        for source, count in source_stats.items():
+            logging.info(f"   • {source}: {count}")
     
     # Get max emails from environment variable
     max_emails = int(os.getenv('MAX_EMAILS', '20'))

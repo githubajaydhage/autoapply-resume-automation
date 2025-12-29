@@ -22,6 +22,15 @@ class SlackNotifier:
         self.enabled = bool(self.webhook_url)
         self.channel = os.environ.get('SLACK_CHANNEL', '#job-alerts')
         
+        # GitHub Actions dashboard link
+        self.github_repo = os.environ.get('GITHUB_REPOSITORY', 'githubajaydhage/autoapply-resume-automation')
+        self.github_run_id = os.environ.get('GITHUB_RUN_ID', '')
+        self.dashboard_url = f"https://github.com/{self.github_repo}/actions"
+        if self.github_run_id:
+            self.run_url = f"https://github.com/{self.github_repo}/actions/runs/{self.github_run_id}"
+        else:
+            self.run_url = self.dashboard_url
+        
         if not self.enabled:
             logging.warning("⚠️ Slack webhook URL not configured. Notifications disabled.")
     
@@ -145,16 +154,20 @@ class SlackNotifier:
             {
                 "type": "section",
                 "fields": [
-                    {"type": "mrkdwn", "text": f"*📬 HR Replies:*\n{stats.get('hr_replies', 0)}"},
+                    {"type": "mrkdwn", "text": f"*🤝 Referrals Sent:*\n{stats.get('referrals_sent', 0)}"},
                     {"type": "mrkdwn", "text": f"*🎯 Interview Requests:*\n{stats.get('interviews', 0)}"}
                 ]
             },
             {
                 "type": "section",
                 "fields": [
-                    {"type": "mrkdwn", "text": f"*✅ Verified Emails:*\n{stats.get('verified_emails', 0)}"},
+                    {"type": "mrkdwn", "text": f"*📬 HR Replies:*\n{stats.get('hr_replies', 0)}"},
                     {"type": "mrkdwn", "text": f"*❌ Bounced:*\n{stats.get('bounced', 0)}"}
                 ]
+            },
+            {
+                "type": "section",
+                "text": {"type": "mrkdwn", "text": f"📊 *<{self.run_url}|View Full Dashboard & Reports>*"}
             },
             {
                 "type": "context",
@@ -248,6 +261,7 @@ def collect_stats(data_dir: str = "data") -> Dict:
     stats['interviews'] = count_lines(f"{data_dir}/interview_requests.csv")
     stats['verified_emails'] = count_lines(f"{data_dir}/verified_hr_emails.csv")
     stats['bounced'] = count_lines(f"{data_dir}/bounced_emails.csv")
+    stats['referrals_sent'] = count_lines(f"{data_dir}/referral_requests_log.csv")
     
     return stats
 

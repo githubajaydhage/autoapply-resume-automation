@@ -268,6 +268,9 @@ jobs:
       env:
         PYTHONPATH: ${{ github.workspace }}
         SENDER_PASSWORD: ${{ secrets.SENDER_PASSWORD }}
+        RESUME_PATH: resumes/Shweta_Biradar_Resume.pdf
+        MAX_REFERRAL_REQUESTS: '5'
+        MAX_REFERRALS_PER_COMPANY: '2'
 
     # PHASE 3.6: Check for HR Replies
     - name: Phase 3.6 - Detect HR Replies

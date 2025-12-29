@@ -17,7 +17,10 @@
 | 🎯 **Centralized Config** | All user settings in ONE place in workflow file |
 | 🔍 **Bot-Friendly Search** | DuckDuckGo/Bing instead of blocked Google/career pages |
 | 📧 **Multi-Source HR Discovery** | Curated database + DuckDuckGo + targeted generation |
-| ⚡ **Speed Optimized** | Reduced delays, limited jobs to 50, disabled slow APIs |
+| ⚡ **Speed Optimized** | Reduced delays (5-15s), limited jobs to 50, disabled slow APIs |
+| 🚫 **No Hardcoded Values** | ALL scripts read from `JOB_KEYWORDS` environment variable |
+| 🔧 **Fast Referrals** | 10 referrals max, 1 per company, 5-15s delays |
+| 🌐 **UTF-8 Email Support** | Proper encoding for emojis and special characters |
 
 ---
 
@@ -257,20 +260,22 @@ Click the "Fork" button to create your own copy.
 3. Go to [myaccount.google.com/apppasswords](https://myaccount.google.com/apppasswords)
 4. Create App Password → Copy the 16-character password
 
-### Step 3: Update Your Details (NEW: Centralized in Workflow!)
+### Step 3: Update Your Details (REQUIRED: All in Workflow File!)
 
-All user config is now in **ONE place** in the workflow file. Edit `.github/workflows/apply_jobs.yml`:
+⚠️ **IMPORTANT:** All scripts read from environment variables. **NO HARDCODED VALUES** in any Python files!
+
+All user config is in **ONE place** in the workflow file. Edit `.github/workflows/apply_jobs.yml`:
 
 ```yaml
 jobs:
   apply:
     env:
       # ============================================
-      # CENTRALIZED USER CONFIGURATION
-      # Change these values to switch users easily
+      # 🎯 CENTRALIZED USER CONFIGURATION
+      # ⚠️ REQUIRED - ALL SCRIPTS READ FROM HERE!
       # ============================================
       
-      # User Identity
+      # User Identity (Required)
       APPLICANT_NAME: 'Your Name'
       APPLICANT_EMAIL: 'your-email@gmail.com'
       APPLICANT_PHONE: '+91-XXXXXXXXXX'
@@ -278,15 +283,36 @@ jobs:
       APPLICANT_EXPERIENCE: '3'
       APPLICANT_TARGET_ROLE: 'Data Analyst, Business Analyst'
       
-      # Resume Configuration
+      # Resume Configuration (Required)
       RESUME_FILENAME: 'Your_Name_Resume.pdf'
       RESUME_PATH: 'resumes/Your_Name_Resume.pdf'
       
-      # Job Search Keywords
+      # ⚠️ JOB_KEYWORDS - MOST IMPORTANT! ⚠️
+      # All job scrapers, email senders, and referral systems use this!
       JOB_KEYWORDS: 'data analyst, business analyst, sql, python, tableau'
+      
+      # Optional Settings
+      SEND_TO_AGENCIES: 'true'          # Send to recruiting agencies
+      MAX_REFERRAL_REQUESTS: '10'       # Max referrals per run
+      MAX_REFERRALS_PER_COMPANY: '1'    # Contacts per company
 ```
 
-> **Note:** The old `utils/config.py` still works as fallback, but workflow env vars take priority.
+### Environment Variables Reference
+
+| Variable | Required | Description | Example |
+|----------|----------|-------------|---------|
+| `APPLICANT_NAME` | ✅ | Your full name | `'Yogeshwari Mane'` |
+| `APPLICANT_EMAIL` | ✅ | Gmail for sending | `'your@gmail.com'` |
+| `APPLICANT_PHONE` | ✅ | Contact number | `'+91-8147693539'` |
+| `APPLICANT_LINKEDIN` | ✅ | LinkedIn profile URL | `'https://linkedin.com/in/...'` |
+| `APPLICANT_EXPERIENCE` | ✅ | Years of experience | `'3.5'` |
+| `APPLICANT_TARGET_ROLE` | ✅ | Target job titles | `'AutoCAD Designer, Interior Designer'` |
+| `RESUME_PATH` | ✅ | Path to resume PDF | `'resumes/Your_Resume.pdf'` |
+| **`JOB_KEYWORDS`** | ✅⚠️ | **Job search keywords** | `'autocad, interior designer, estimation'` |
+| `SEND_TO_AGENCIES` | ❌ | Send to recruiting agencies | `'true'` |
+| `MAX_REFERRAL_REQUESTS` | ❌ | Max referrals per run | `'10'` |
+
+> **⚠️ CRITICAL:** If `JOB_KEYWORDS` is not set, job scraping and email sending will fail!
 
 ### Step 4: Add Your Resume
 
@@ -297,6 +323,71 @@ Replace the resume file in `resumes/` folder with your resume PDF (named to matc
 1. Go to **Actions** tab
 2. Click **Job Application System (Ultimate v7)**
 3. Click **Run workflow** → Configure options → **Run**
+
+---
+
+## 🆕 Creating Your Own Workflow (For New Users)
+
+If you're a new user and want to set up your own workflow, copy the main workflow and customize it:
+
+### Option A: Edit Existing Workflow
+1. Edit `.github/workflows/apply_jobs.yml`
+2. Update the `env:` block with your details
+3. Add your resume to `resumes/` folder
+4. Add `SENDER_PASSWORD` secret with your Gmail App Password
+
+### Option B: Create New User Workflow
+1. Copy `apply_jobs.yml` to `apply_jobs_yourname.yml`
+2. Update the workflow name at the top
+3. Change the branch name (if using separate branches)
+4. Update all environment variables in the `env:` block
+
+**Example: New User "Rahul Sharma" (Data Scientist)**
+
+```yaml
+name: Job Application - Rahul Sharma (Data Science)
+
+on:
+  workflow_dispatch:
+    inputs:
+      job_location:
+        description: 'Job Location'
+        default: 'Bangalore'
+        # ... keep other inputs same ...
+  schedule:
+    - cron: '0 4,9,14 * * *'  # 9:30 AM, 2:30 PM, 7:30 PM IST
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    env:
+      # User Identity
+      APPLICANT_NAME: 'Rahul Sharma'
+      APPLICANT_EMAIL: 'rahul.sharma@gmail.com'
+      APPLICANT_PHONE: '+91-9876543210'
+      APPLICANT_LINKEDIN: 'https://linkedin.com/in/rahulsharma'
+      APPLICANT_EXPERIENCE: '5'
+      APPLICANT_TARGET_ROLE: 'Data Scientist, ML Engineer'
+      
+      # Resume
+      RESUME_FILENAME: 'Rahul_Sharma_Resume.pdf'
+      RESUME_PATH: 'resumes/Rahul_Sharma_Resume.pdf'
+      
+      # ⚠️ JOB KEYWORDS - CRITICAL!
+      JOB_KEYWORDS: 'data scientist, machine learning, python, tensorflow, nlp, deep learning'
+      
+      # Optional
+      SEND_TO_AGENCIES: 'true'
+      MAX_REFERRAL_REQUESTS: '10'
+      
+    steps:
+      # ... keep all steps same ...
+```
+
+### Step 6: Add Your Secret
+1. Go to **Settings** → **Secrets** → **Actions**
+2. Add `SENDER_PASSWORD` = Your Gmail App Password
+3. (Or `SENDER_PASSWORD_RAHUL` if using user-specific secrets)
 
 ---
 

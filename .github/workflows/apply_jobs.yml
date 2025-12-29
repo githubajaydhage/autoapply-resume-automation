@@ -121,6 +121,22 @@ on:
         options:
         - 'false'
         - 'true'
+      enable_whatsapp:
+        description: 'Enable WhatsApp (requires WHATSAPP_PHONE, CALLMEBOT_API_KEY secrets)'
+        required: false
+        default: 'true'
+        type: choice
+        options:
+        - 'true'
+        - 'false'
+      enable_telegram:
+        description: 'Enable Telegram (requires TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID secrets)'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+        - 'false'
+        - 'true'
       enable_open_tracking:
         description: 'Track email opens?'
         required: false
@@ -444,10 +460,10 @@ jobs:
         python scripts/mobile_alerts.py || true
       env:
         PYTHONPATH: ${{ github.workspace }}
-        ENABLE_WHATSAPP: ${{ secrets.ENABLE_WHATSAPP }}
+        ENABLE_WHATSAPP: ${{ github.event.inputs.enable_whatsapp }}
         WHATSAPP_PHONE: ${{ secrets.WHATSAPP_PHONE }}
         CALLMEBOT_API_KEY: ${{ secrets.CALLMEBOT_API_KEY }}
-        ENABLE_TELEGRAM: ${{ secrets.ENABLE_TELEGRAM }}
+        ENABLE_TELEGRAM: ${{ github.event.inputs.enable_telegram }}
         TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
         TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
 

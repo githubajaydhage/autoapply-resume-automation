@@ -138,9 +138,12 @@ class EmailOpenTracker:
             
             now = datetime.now().isoformat()
             
-            # Update first open if not set
-            if pd.isna(df.loc[mask, 'first_opened'].values[0]) or df.loc[mask, 'first_opened'].values[0] == '':
-                df.loc[mask, 'first_opened'] = now
+            # Update first open if not set - with safe access
+            first_opened_values = df.loc[mask, 'first_opened'].values
+            if len(first_opened_values) > 0:
+                first_opened = first_opened_values[0]
+                if pd.isna(first_opened) or first_opened == '':
+                    df.loc[mask, 'first_opened'] = now
             
             # Increment open count
             df.loc[mask, 'open_count'] = df.loc[mask, 'open_count'].fillna(0).astype(int) + 1

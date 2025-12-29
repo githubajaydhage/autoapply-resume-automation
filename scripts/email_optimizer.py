@@ -343,9 +343,13 @@ class SubjectLineOptimizer:
         if template_id in self.stats['subject_template'].values:
             idx = self.stats['subject_template'] == template_id
             self.stats.loc[idx, 'reply_count'] += 1
-            sent = self.stats.loc[idx, 'sent_count'].values[0]
-            replies = self.stats.loc[idx, 'reply_count'].values[0]
-            self.stats.loc[idx, 'reply_rate'] = (replies / sent) * 100 if sent > 0 else 0
+            # Safely access values with bounds checking
+            sent_values = self.stats.loc[idx, 'sent_count'].values
+            replies_values = self.stats.loc[idx, 'reply_count'].values
+            if len(sent_values) > 0 and len(replies_values) > 0:
+                sent = sent_values[0]
+                replies = replies_values[0]
+                self.stats.loc[idx, 'reply_rate'] = (replies / sent) * 100 if sent > 0 else 0
             self._save_stats()
 
 

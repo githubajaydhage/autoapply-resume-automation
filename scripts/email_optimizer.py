@@ -442,12 +442,26 @@ class EmailOptimizer:
                                applicant_phone: str,
                                applicant_linkedin: str,
                                applicant_experience: str,
-                               applicant_skills: str) -> str:
-        """Generate a fully optimized email body."""
+                               applicant_skills: str,
+                               applicant_github: str = '',
+                               applicant_portfolio: str = '',
+                               applicant_projects: str = '') -> str:
+        """Generate a fully optimized email body with portfolio links."""
         
         optimization = self.optimize_email(
             recipient_email, company, job_title, applicant_experience
         )
+        
+        # Build portfolio section if links available
+        portfolio_section = ""
+        if applicant_github or applicant_portfolio or applicant_projects:
+            portfolio_section = "\n📂 View my work:\n"
+            if applicant_github:
+                portfolio_section += f"   • GitHub: {applicant_github}\n"
+            if applicant_portfolio:
+                portfolio_section += f"   • Portfolio: {applicant_portfolio}\n"
+            if applicant_projects:
+                portfolio_section += f"   • Key Projects: {applicant_projects}\n"
         
         body = f"""{optimization['greeting']}
 
@@ -462,7 +476,7 @@ My key qualifications include:
 • Strong analytical and problem-solving abilities
 • Excellent communication and collaboration skills
 • Proven track record of delivering results
-
+{portfolio_section}
 I am based in Bangalore and immediately available. I prefer Remote/Hybrid work arrangements but am flexible and open to all options.
 
 I have attached my resume for your review. I would welcome the opportunity to discuss how my background and skills can benefit {company}.

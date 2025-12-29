@@ -243,7 +243,12 @@ class PersonalizedEmailSender:
         self.applicant_phone = USER_DETAILS.get('phone', '+91-7676294009')
         self.applicant_linkedin = USER_DETAILS.get('linkedin_url', '')
         self.applicant_experience = USER_DETAILS.get('years_experience', '3')
-        self.applicant_skills = 'Data Analysis, Python, SQL, Excel, Tableau, Power BI'
+        self.applicant_skills = USER_DETAILS.get('key_skills', 'Data Analysis, Python, SQL, Excel, Tableau, Power BI')
+        
+        # Portfolio links for higher response rates
+        self.applicant_github = USER_DETAILS.get('github_url', '')
+        self.applicant_portfolio = USER_DETAILS.get('portfolio_url', '')
+        self.applicant_projects = USER_DETAILS.get('key_projects', '')
         
         # Resume path from config
         self.resume_path = BASE_RESUME_PATH
@@ -368,7 +373,10 @@ class PersonalizedEmailSender:
                 applicant_phone=self.applicant_phone,
                 applicant_linkedin=self.applicant_linkedin,
                 applicant_experience=self.applicant_experience,
-                applicant_skills=self.applicant_skills
+                applicant_skills=self.applicant_skills,
+                applicant_github=self.applicant_github,
+                applicant_portfolio=self.applicant_portfolio,
+                applicant_projects=self.applicant_projects
             )
         
         # Fallback to standard templates

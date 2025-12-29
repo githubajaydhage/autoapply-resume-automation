@@ -28,6 +28,16 @@ USER_DETAILS = {
     "work_authorization": os.getenv("APPLICANT_WORK_AUTH", "Authorized to work in India"),
     "linkedin_url": os.getenv("APPLICANT_LINKEDIN", "https://www.linkedin.com/in/shweta-biradar-1b5001257/"),
     "years_experience": os.getenv("APPLICANT_EXPERIENCE", "3"),
+    # Portfolio & Project Links - Add your links here for higher response rates!
+    "github_url": os.getenv("APPLICANT_GITHUB", ""),  # e.g., https://github.com/username
+    "portfolio_url": os.getenv("APPLICANT_PORTFOLIO", ""),  # e.g., https://yourportfolio.com
+    "kaggle_url": os.getenv("APPLICANT_KAGGLE", ""),  # e.g., https://kaggle.com/username
+    # Key projects to highlight in emails
+    "key_projects": os.getenv("APPLICANT_PROJECTS", ""),  # e.g., "Sales Dashboard, Customer Churn Model"
+    # Target role for better job matching
+    "target_role": os.getenv("APPLICANT_TARGET_ROLE", "Data Analyst"),
+    # Key skills for matching
+    "key_skills": os.getenv("APPLICANT_SKILLS", "Python, SQL, Tableau, Power BI, Excel, Data Visualization"),
 }
 
 

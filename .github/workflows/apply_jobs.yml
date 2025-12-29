@@ -239,6 +239,17 @@ jobs:
       env:
         PYTHONPATH: ${{ github.workspace }}
 
+    # PHASE 7: Interview Success Suite
+    - name: Phase 7 - Interview Prep & Weekly Summary
+      if: ${{ github.event.inputs.scrape_only != 'true' }}
+      run: |
+        echo "🎯 PHASE 7: INTERVIEW SUCCESS SUITE"
+        echo "   Generating interview prep docs for detected interviews..."
+        echo "   Creating weekly activity summary..."
+        python scripts/interview_success_suite.py || true
+      env:
+        PYTHONPATH: ${{ github.workspace }}
+
     - name: Save Data Cache
       uses: actions/cache/save@v3
       with:
@@ -261,8 +272,11 @@ jobs:
           data/subject_line_stats.csv
           data/company_insights_cache.json
           data/referral_requests_log.csv
+          data/thank_you_log.csv
+          data/weekly_summary_*.txt
           cover_letters/*.txt
-        key: job-data-${{ runner.os }}-v5-${{ github.run_number }}
+          interview_prep/*.txt
+        key: job-data-${{ runner.os }}-v6-${{ github.run_number }}
 
     - name: Upload Results
       uses: actions/upload-artifact@v4
@@ -284,8 +298,12 @@ jobs:
           data/hr_replies.csv
           data/interview_requests.csv
           data/enhanced_jobs.csv
+          data/subject_line_stats.csv
+          data/thank_you_log.csv
+          data/weekly_summary_*.txt
           data/*.json
           cover_letters/*.txt
+          interview_prep/*.txt
         retention-days: 30
       if: always()
 
@@ -293,7 +311,7 @@ jobs:
       run: |
         echo ""
         echo "📊 =============================================="
-        echo "📊 ENHANCED JOB APPLICATION SUMMARY v2"
+        echo "📊 JOB APPLICATION SUMMARY v3 - MAXIMUM INTERVIEWS"
         echo "📊 =============================================="
         if [ -f data/jobs_today.csv ]; then
           JOBS=$(wc -l < data/jobs_today.csv)

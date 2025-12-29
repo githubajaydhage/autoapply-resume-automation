@@ -14,23 +14,9 @@ from urllib3.util.retry import Retry
 import random
 
 # --- Configuration ---
-# Job roles to search for
-JOB_ROLES = [
-    "Data Analyst",
-    "Business Intelligence Analyst",
-    "BI Developer",
-    "Business Analyst",
-    "Data Engineer",
-    "Analytics Engineer",
-    "Technical Support Engineer",
-    "Technical Analyst",
-    "Systems Analyst",
-    "IT Analyst",
-    "Support Engineer",
-    "Technical Support",
-    "Application Support",
-    "Data Operations Analyst"
-]
+# Job roles from JOB_KEYWORDS environment variable - NO HARDCODED DEFAULTS
+_job_keywords_env = os.getenv('JOB_KEYWORDS', '')
+JOB_ROLES = [k.strip() for k in _job_keywords_env.split(',') if k.strip()] if _job_keywords_env else []
 
 # Base search URL for Indeed
 INDEED_BASE_URL = "https://www.indeed.com/rss"

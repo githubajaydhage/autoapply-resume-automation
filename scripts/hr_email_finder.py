@@ -190,15 +190,20 @@ class RealHREmailFinder:
         """Scrape real recruiter emails from Naukri job listings with anti-detection."""
         logging.info("📡 Scraping Naukri for recruiter emails...")
         
-        keywords = ["data analyst bangalore", "business analyst bangalore", "python developer bangalore"]
+        # Use JOB_KEYWORDS if available, otherwise use interior design defaults
+        keywords_env = os.getenv('JOB_KEYWORDS', '')
+        if keywords_env:
+            keywords = [k.strip() + " bangalore" for k in keywords_env.split(',')[:3]]  # Limit to 3
+        else:
+            keywords = ["interior designer bangalore", "autocad designer bangalore"]
         
         for keyword in keywords:
             try:
                 # Rotate headers for each request
                 self._update_headers()
                 
-                # Add random delay
-                time.sleep(random.uniform(2, 4))
+                # Reduced delay for speed
+                time.sleep(random.uniform(0.5, 1.0))
                 
                 # Naukri search URL
                 url = f"https://www.naukri.com/{keyword.replace(' ', '-')}-jobs"
@@ -245,13 +250,18 @@ class RealHREmailFinder:
         """Scrape recruiter emails from Indeed job listings."""
         logging.info("📡 Scraping Indeed for recruiter emails...")
         
-        keywords = ["data+analyst", "business+analyst", "python"]
+        # Use JOB_KEYWORDS if available
+        keywords_env = os.getenv('JOB_KEYWORDS', '')
+        if keywords_env:
+            keywords = [k.strip().replace(' ', '+') for k in keywords_env.split(',')[:2]]  # Limit to 2
+        else:
+            keywords = ["interior+designer", "autocad+designer"]
         
         for keyword in keywords:
             try:
                 url = f"https://in.indeed.com/jobs?q={keyword}&l=Bangalore"
                 
-                response = self.session.get(url, timeout=15)
+                response = self.session.get(url, timeout=10)
                 if response.status_code == 200:
                     soup = BeautifulSoup(response.text, 'html.parser')
                     
@@ -270,7 +280,8 @@ class RealHREmailFinder:
                         if self._is_valid_hr_email(email):
                             self._add_email(email, 'Unknown', 'indeed', keyword)
                 
-                time.sleep(random.uniform(2, 4))
+                # Reduced delay
+                time.sleep(random.uniform(0.5, 1.0))
                 
             except Exception as e:
                 logging.debug(f"Indeed error: {e}")
@@ -281,25 +292,26 @@ class RealHREmailFinder:
         """Scrape emails from company career pages with anti-detection."""
         logging.info("📡 Scraping company career pages...")
         
-        # Real career page URLs with known HR emails
+        # Interior Design, Architecture & Construction companies in Bangalore
         career_pages = [
-            ("Infosys", "https://www.infosys.com/careers/"),
-            ("TCS", "https://www.tcs.com/careers"),
+            # Interior Design Firms
+            ("Livspace", "https://www.livspace.com/in/careers"),
+            ("HomeLane", "https://www.homelane.com/careers"),
+            ("Design Cafe", "https://www.designcafe.com/careers"),
+            ("Bonito Designs", "https://www.bonito.in/careers"),
+            ("Decorpot", "https://www.decorpot.com/careers"),
+            # Real Estate & Construction
+            ("Prestige Group", "https://www.prestigeconstructions.com/careers"),
+            ("Brigade Group", "https://www.brigadegroup.com/careers"),
+            ("Sobha Limited", "https://www.sobha.com/careers/"),
+            ("L&T Construction", "https://www.lntecc.com/careers/"),
+            # Engineering Consultants
+            ("Jacobs", "https://www.jacobs.com/careers"),
+            ("AECOM", "https://www.aecom.com/careers/"),
+            # IT Companies with facility roles
             ("Wipro", "https://careers.wipro.com/"),
-            ("HCL", "https://www.hcltech.com/careers"),
-            ("Tech Mahindra", "https://careers.techmahindra.com/"),
-            ("Mindtree", "https://www.ltimindtree.com/careers/"),
             ("Mphasis", "https://careers.mphasis.com/"),
-            ("Cognizant", "https://careers.cognizant.com/"),
-            ("Capgemini", "https://www.capgemini.com/in-en/careers/"),
-            ("Accenture", "https://www.accenture.com/in-en/careers"),
-            ("Deloitte", "https://www2.deloitte.com/in/en/careers.html"),
-            ("Razorpay", "https://razorpay.com/jobs/"),
-            ("Swiggy", "https://careers.swiggy.com/"),
-            ("Zomato", "https://www.zomato.com/careers"),
-            ("PhonePe", "https://www.phonepe.com/careers/"),
-            ("Meesho", "https://www.meesho.com/careers"),
-            ("Groww", "https://groww.in/careers"),
+            ("Infosys", "https://www.infosys.com/careers.html"),
         ]
         
         for company, url in career_pages:
@@ -307,8 +319,8 @@ class RealHREmailFinder:
                 # Rotate headers before each request
                 self._update_headers()
                 
-                # Add random delay to appear more human-like
-                time.sleep(random.uniform(1, 3))
+                # Reduced delay for speed
+                time.sleep(random.uniform(0.3, 0.8))
                 
                 response = self.session.get(url, timeout=10)
                 
@@ -349,14 +361,18 @@ class RealHREmailFinder:
         """Scrape emails from LinkedIn public job listings."""
         logging.info("📡 Checking LinkedIn public job pages...")
         
-        # LinkedIn public job search (no login needed)
-        keywords = ["data analyst india", "business analyst bangalore"]
+        # Use JOB_KEYWORDS if available - limit to 1 for speed
+        keywords_env = os.getenv('JOB_KEYWORDS', '')
+        if keywords_env:
+            keywords = [keywords_env.split(',')[0].strip() + " india"]
+        else:
+            keywords = ["interior designer india"]
         
         for keyword in keywords:
             try:
                 url = f"https://www.linkedin.com/jobs/search?keywords={quote_plus(keyword)}&location=India"
                 
-                response = self.session.get(url, timeout=15)
+                response = self.session.get(url, timeout=10)
                 if response.status_code == 200:
                     soup = BeautifulSoup(response.text, 'html.parser')
                     
@@ -368,7 +384,8 @@ class RealHREmailFinder:
                         if self._is_valid_hr_email(email):
                             self._add_email(email, 'Unknown', 'linkedin_jobs', keyword)
                 
-                time.sleep(random.uniform(3, 5))
+                # Reduced delay
+                time.sleep(random.uniform(0.5, 1.0))
                 
             except Exception as e:
                 logging.debug(f"LinkedIn error: {e}")
@@ -380,9 +397,15 @@ class RealHREmailFinder:
         logging.info("📡 Checking Glassdoor job listings...")
         
         try:
-            url = "https://www.glassdoor.co.in/Job/bangalore-data-analyst-jobs-SRCH_IL.0,9_IC2940587_KO10,22.htm"
+            # Use first keyword from JOB_KEYWORDS - NO HARDCODED DEFAULT
+            keywords_env = os.getenv('JOB_KEYWORDS', '')
+            if not keywords_env:
+                logging.warning("⚠️ JOB_KEYWORDS not set, skipping Glassdoor")
+                return
+            keyword = keywords_env.split(',')[0].strip().replace(' ', '-')
+            url = f"https://www.glassdoor.co.in/Job/bangalore-{keyword}-jobs-SRCH_IL.0,9_IC2940587.htm"
             
-            response = self.session.get(url, timeout=15)
+            response = self.session.get(url, timeout=10)
             if response.status_code == 200:
                 soup = BeautifulSoup(response.text, 'html.parser')
                 
@@ -392,7 +415,7 @@ class RealHREmailFinder:
                 
                 for email in emails:
                     if self._is_valid_hr_email(email):
-                        self._add_email(email, 'Unknown', 'glassdoor', 'data analyst')
+                        self._add_email(email, 'Unknown', 'glassdoor', keyword)
             
         except Exception as e:
             logging.debug(f"Glassdoor error: {e}")
@@ -404,14 +427,18 @@ class RealHREmailFinder:
         logging.info("📡 Checking Internshala job listings...")
         
         try:
+            # Use JOB_KEYWORDS - NO HARDCODED DEFAULT
+            keywords_env = os.getenv('JOB_KEYWORDS', '')
+            if not keywords_env:
+                logging.warning("⚠️ JOB_KEYWORDS not set, skipping Internshala")
+                return
+            keyword = keywords_env.split(',')[0].strip().replace(' ', '-')
             urls = [
-                "https://internshala.com/jobs/data-analyst-jobs-in-bangalore/",
-                "https://internshala.com/jobs/business-analyst-jobs/",
-                "https://internshala.com/jobs/python-jobs-in-bangalore/",
+                f"https://internshala.com/jobs/{keyword}-jobs-in-bangalore/",
             ]
             
             for url in urls:
-                response = self.session.get(url, timeout=15)
+                response = self.session.get(url, timeout=10)
                 if response.status_code == 200:
                     soup = BeautifulSoup(response.text, 'html.parser')
                     
@@ -430,7 +457,8 @@ class RealHREmailFinder:
                         if self._is_valid_hr_email(email):
                             self._add_email(email, 'Unknown', 'internshala', 'fresher')
                 
-                time.sleep(random.uniform(2, 3))
+                # Reduced delay
+                time.sleep(random.uniform(0.5, 1.0))
             
         except Exception as e:
             logging.debug(f"Internshala error: {e}")

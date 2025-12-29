@@ -39,18 +39,25 @@ class ReliableJobScraper:
         })
         self.all_jobs = []
         
-        # Target keywords for jobs
-        self.search_keywords = [
-            "data analyst",
-            "business analyst", 
-            "data scientist",
-            "python developer",
-            "sql developer",
-            "analytics",
-            "BI analyst",
-            "power bi",
-            "tableau",
-        ]
+        # Target keywords for jobs - read from environment variable or use defaults
+        # JOB_KEYWORDS should be comma-separated: "data analyst, python developer, sql developer"
+        keywords_env = os.getenv('JOB_KEYWORDS', '')
+        if keywords_env:
+            self.search_keywords = [k.strip() for k in keywords_env.split(',') if k.strip()]
+            logging.info(f"📋 Using job keywords from environment: {self.search_keywords}")
+        else:
+            # Default fallback for backward compatibility
+            self.search_keywords = [
+                "data analyst",
+                "business analyst", 
+                "data scientist",
+                "python developer",
+                "sql developer",
+                "analytics",
+                "BI analyst",
+                "power bi",
+                "tableau",
+            ]
         
     def scrape_all_sources(self) -> list:
         """Scrape from all reliable sources."""

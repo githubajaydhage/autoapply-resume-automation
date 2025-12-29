@@ -11,8 +11,9 @@ from typing import Dict, Optional
 class JobTitleStandardizer:
     """Standardizes job titles to consistent naming conventions for resume matching."""
     
-    # Mapping of keywords to standardized titles
-    TITLE_MAPPINGS = {
+    # Default mapping of keywords to standardized titles
+    # This can be extended at runtime via environment variable
+    DEFAULT_TITLE_MAPPINGS = {
         # Data roles
         'data analyst': 'Data Analyst',
         'senior data analyst': 'Data Analyst',  # Standardize to base title
@@ -32,7 +33,66 @@ class JobTitleStandardizer:
         'tableau analyst': 'Data Analyst',
         'sql developer': 'Data Analyst',
         'analytics consultant': 'Data Analyst',
+        
+        # DevOps/SRE roles
+        'devops engineer': 'DevOps Engineer',
+        'senior devops engineer': 'DevOps Engineer',
+        'site reliability engineer': 'SRE Engineer',
+        'sre': 'SRE Engineer',
+        'platform engineer': 'Platform Engineer',
+        'cloud engineer': 'Cloud Engineer',
+        'infrastructure engineer': 'DevOps Engineer',
+        'kubernetes engineer': 'DevOps Engineer',
+        'devsecops engineer': 'DevOps Engineer',
+        
+        # Interior Design/Architecture roles
+        'interior designer': 'Interior Designer',
+        'autocad designer': 'AutoCAD Designer',
+        'junior interior designer': 'Interior Designer',
+        'senior interior designer': 'Interior Designer',
+        'estimation engineer': 'Estimation Engineer',
+        'quantity surveyor': 'Quantity Surveyor',
+        'revit specialist': 'Interior Designer',
+        '3d visualizer': 'Interior Designer',
     }
+    
+    # Class-level cache for custom mappings
+    _title_mappings = None
+    
+    @classmethod
+    def _get_title_mappings(cls) -> dict:
+        """Get title mappings, including any from environment variable."""
+        if cls._title_mappings is None:
+            cls._title_mappings = cls.DEFAULT_TITLE_MAPPINGS.copy()
+            
+            # Check for custom mappings from environment
+            # Format: "keyword1:Standard Title 1,keyword2:Standard Title 2"
+            custom_mappings = os.getenv('JOB_TITLE_MAPPINGS', '')
+            if custom_mappings:
+                for mapping in custom_mappings.split(','):
+                    if ':' in mapping:
+                        keyword, standardized = mapping.split(':', 1)
+                        cls._title_mappings[keyword.strip().lower()] = standardized.strip()
+                        
+            # Also use APPLICANT_TARGET_ROLE as default fallback
+            target_role = os.getenv('APPLICANT_TARGET_ROLE', '')
+            if target_role:
+                cls._default_role = target_role.split(',')[0].strip()
+            else:
+                cls._default_role = 'Data Analyst'
+                
+        return cls._title_mappings
+    
+    # Keep backward compatibility
+    TITLE_MAPPINGS = property(lambda self: self._get_title_mappings())
+    
+    @classmethod
+    def _get_default_role(cls) -> str:
+        """Get default role from environment or fallback."""
+        target_role = os.getenv('APPLICANT_TARGET_ROLE', '')
+        if target_role:
+            return target_role.split(',')[0].strip()
+        return 'Data Analyst'
     
     @classmethod
     def standardize_title(cls, original_title: str) -> str:
@@ -46,18 +106,21 @@ class JobTitleStandardizer:
             Standardized job title
         """
         if not original_title:
-            return "Data Analyst"  # Default fallback
+            return cls._get_default_role()  # Dynamic default fallback
             
         # Clean the title - remove company suffixes and special chars
         cleaned_title = cls._clean_title(original_title)
         
+        # Get title mappings (includes custom ones from env)
+        title_mappings = cls._get_title_mappings()
+        
         # Check for exact matches first
         title_lower = cleaned_title.lower()
-        if title_lower in cls.TITLE_MAPPINGS:
-            return cls.TITLE_MAPPINGS[title_lower]
+        if title_lower in title_mappings:
+            return title_mappings[title_lower]
         
         # Check for partial matches
-        for keyword, standardized in cls.TITLE_MAPPINGS.items():
+        for keyword, standardized in title_mappings.items():
             if keyword in title_lower:
                 return standardized
         
@@ -86,6 +149,12 @@ class JobTitleStandardizer:
         # Priority order for role detection
         if 'scientist' in title_lower:
             return 'Data Scientist'
+        elif 'devops' in title_lower or 'sre' in title_lower or 'reliability' in title_lower:
+            return 'DevOps Engineer'
+        elif 'cloud' in title_lower:
+            return 'Cloud Engineer'
+        elif 'interior' in title_lower or 'autocad' in title_lower or 'revit' in title_lower:
+            return 'Interior Designer'
         elif 'engineer' in title_lower:
             return 'Data Engineer'
         elif 'business' in title_lower and 'analyst' in title_lower:
@@ -95,7 +164,7 @@ class JobTitleStandardizer:
         elif 'analyst' in title_lower:
             return 'Data Analyst'
         else:
-            return 'Data Analyst'  # Default fallback
+            return cls._get_default_role()  # Dynamic default fallback
 
 
 class ResumeNamingManager:

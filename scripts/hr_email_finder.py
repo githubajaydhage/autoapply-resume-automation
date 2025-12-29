@@ -92,25 +92,99 @@ class RealHREmailFinder:
         # Source 2: Indeed job postings
         self._scrape_indeed_emails()
         
-        # Source 3: Company career pages - DISABLED (too many 404/403 errors)
-        # Career page scraping is unreliable - most sites block bots or have changed URLs
-        # Using curated_hr_database.py instead which has verified emails
-        # self._scrape_career_pages()
-        logging.info("📡 Skipping career page scraping (using curated HR database instead)")
+        # Source 3: Bot-friendly search engines (DuckDuckGo, Bing) for career emails
+        self._search_career_emails_duckduckgo()
         
         # Source 4: LinkedIn public job posts
         self._scrape_linkedin_jobs()
         
-        # Source 5: Glassdoor job listings - DISABLED (403 Forbidden)
-        # self._scrape_glassdoor_emails()
-        
-        # Source 6: Internshala (for fresher jobs)
+        # Source 5: Internshala (for fresher jobs)
         self._scrape_internshala_emails()
         
         # Deduplicate and validate
         df = self._process_results()
         
         return df
+    
+    def _search_career_emails_duckduckgo(self):
+        """Search for career/HR emails using DuckDuckGo (bot-friendly)."""
+        logging.info("📡 Searching career emails via DuckDuckGo (bot-friendly)...")
+        
+        # Get keywords from environment or use defaults
+        keywords_env = os.getenv('JOB_KEYWORDS', '')
+        if keywords_env:
+            # Extract company-related terms from job keywords
+            search_terms = [k.strip() for k in keywords_env.split(',')[:3]]
+        else:
+            search_terms = ["interior designer", "autocad designer"]
+        
+        # Search for career page emails
+        for term in search_terms:
+            try:
+                self._update_headers()
+                
+                # DuckDuckGo HTML search (no API key needed, bot-friendly)
+                search_query = f'{term} bangalore careers email contact hr'
+                search_url = f"https://html.duckduckgo.com/html/?q={quote_plus(search_query)}"
+                
+                response = self.session.get(search_url, timeout=10)
+                
+                if response.status_code == 200:
+                    soup = BeautifulSoup(response.text, 'html.parser')
+                    
+                    # Extract emails from search results
+                    page_text = soup.get_text()
+                    emails = self.EMAIL_REGEX.findall(page_text)
+                    
+                    for email in emails:
+                        if self._is_valid_hr_email(email):
+                            self._add_email(email, 'Unknown', 'duckduckgo_search', term)
+                    
+                    # Also check result snippets for company career emails
+                    for result in soup.find_all('a', class_='result__a'):
+                        result_text = result.get_text()
+                        result_emails = self.EMAIL_REGEX.findall(result_text)
+                        for email in result_emails:
+                            if self._is_valid_hr_email(email):
+                                self._add_email(email, 'Unknown', 'duckduckgo_search', term)
+                
+                time.sleep(random.uniform(1, 2))
+                
+            except Exception as e:
+                logging.debug(f"DuckDuckGo search error: {e}")
+        
+        # Also try Bing as a backup (more bot-friendly than Google)
+        self._search_career_emails_bing(search_terms)
+        
+        logging.info(f"   Found {len([e for e in self.found_emails if e['source'] == 'duckduckgo_search'])} emails from DuckDuckGo")
+        logging.info(f"   Found {len([e for e in self.found_emails if e['source'] == 'bing_search'])} emails from Bing")
+    
+    def _search_career_emails_bing(self, search_terms: list):
+        """Search for career/HR emails using Bing (more bot-friendly than Google)."""
+        for term in search_terms[:2]:  # Limit to 2 terms
+            try:
+                self._update_headers()
+                
+                search_query = f'{term} bangalore careers hr email'
+                search_url = f"https://www.bing.com/search?q={quote_plus(search_query)}"
+                
+                response = self.session.get(search_url, timeout=10)
+                
+                if response.status_code == 200:
+                    soup = BeautifulSoup(response.text, 'html.parser')
+                    
+                    # Extract emails from search results
+                    page_text = soup.get_text()
+                    emails = self.EMAIL_REGEX.findall(page_text)
+                    
+                    for email in emails:
+                        if self._is_valid_hr_email(email):
+                            self._add_email(email, 'Unknown', 'bing_search', term)
+                
+                time.sleep(random.uniform(1, 2))
+                
+            except Exception as e:
+                logging.debug(f"Bing search error: {e}")
     
     def _scrape_naukri_emails(self):
         """Scrape real recruiter emails from Naukri job listings with anti-detection."""

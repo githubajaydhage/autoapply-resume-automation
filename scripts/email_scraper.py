@@ -380,6 +380,48 @@ TARGET_COMPANIES = [
 ]
 
 
+def search_emails_duckduckgo(scraper, search_terms: list) -> pd.DataFrame:
+    """Search for HR emails using DuckDuckGo (bot-friendly alternative to direct scraping)."""
+    logging.info("🔍 Searching for HR emails via DuckDuckGo (bot-friendly)...")
+    
+    results = []
+    
+    for term in search_terms[:5]:  # Limit to 5 terms
+        try:
+            scraper._update_headers()
+            
+            # DuckDuckGo HTML search (bot-friendly, no API key needed)
+            search_query = f'{term} bangalore careers hr email contact'
+            search_url = f"https://html.duckduckgo.com/html/?q={search_query.replace(' ', '+')}"
+            
+            response = scraper.session.get(search_url, timeout=10)
+            
+            if response.status_code == 200:
+                soup = BeautifulSoup(response.text, 'html.parser')
+                
+                # Extract emails from search results
+                page_text = soup.get_text()
+                emails = scraper.email_pattern.findall(page_text)
+                
+                for email in emails:
+                    if scraper.is_valid_hr_email(email):
+                        results.append({
+                            'company': 'Unknown',
+                            'hr_email': email.lower(),
+                            'source': 'duckduckgo_search',
+                            'search_term': term,
+                            'scraped_at': pd.Timestamp.now().isoformat()
+                        })
+            
+            time.sleep(random.uniform(1, 2))
+            
+        except Exception as e:
+            logging.debug(f"DuckDuckGo search error for '{term}': {e}")
+    
+    logging.info(f"   Found {len(results)} emails from DuckDuckGo")
+    return pd.DataFrame(results)
+
+
 def main():
     """Main function to run the email scraper."""
     scraper = HREmailScraper()
@@ -398,17 +440,25 @@ def main():
     else:
         jobs_emails_df = pd.DataFrame()
     
-    # DISABLED: Target company career page scraping
-    # Most company websites block bots (403 Forbidden) or have moved URLs (404 Not Found)
-    # Using curated_hr_database.py instead for reliable, verified email addresses
-    logging.info("🏢 Skipping career page scraping (using curated HR database instead)")
-    logging.info("   ℹ️  Career page URLs are unreliable (404/403 errors)")
-    logging.info("   ✅ Using verified emails from curated_hr_database.py")
-    companies_emails_df = pd.DataFrame()
+    # Use bot-friendly search engines instead of direct career page scraping
+    # Get search terms from JOB_KEYWORDS environment variable
+    keywords_env = os.getenv('JOB_KEYWORDS', '')
+    if keywords_env:
+        search_terms = [k.strip() for k in keywords_env.split(',')]
+    else:
+        search_terms = ["interior designer", "autocad designer", "civil engineer"]
+    
+    logging.info("🏢 Searching for company HR emails via bot-friendly engines...")
+    companies_emails_df = search_emails_duckduckgo(scraper, search_terms)
+    
+    if not companies_emails_df.empty:
+        output_path = os.path.join(os.path.dirname(__file__), '..', 'data', 'hr_emails_from_companies.csv')
+        companies_emails_df.to_csv(output_path, index=False)
+        logging.info(f"✅ Saved {len(companies_emails_df)} records to {output_path}")
     
     # Combine all emails
     all_emails = pd.concat([
-        jobs_emails_df if 'jobs_emails_df' in dir() and not jobs_emails_df.empty else pd.DataFrame(),
+        jobs_emails_df if not jobs_emails_df.empty else pd.DataFrame(),
         companies_emails_df if not companies_emails_df.empty else pd.DataFrame()
     ], ignore_index=True)
     

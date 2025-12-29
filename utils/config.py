@@ -24,7 +24,7 @@ USER_DETAILS = {
     "full_name": os.getenv("APPLICANT_NAME", "Ajay Dhage"),
     "first_name": os.getenv("APPLICANT_FIRST_NAME", "Ajay"),
     "last_name": os.getenv("APPLICANT_LAST_NAME", "Dhage"),
-    "email": os.getenv("APPLICANT_EMAIL", "dhageajay044@gmail.com"),
+    "email": os.getenv("APPLICANT_EMAIL", "dhageajay012@gmail.com"),
     "phone": os.getenv("APPLICANT_PHONE", "+91-7847019704"),
     "location": os.getenv("APPLICANT_LOCATION", "Bengaluru, Karnataka, India"),
     "city": os.getenv("APPLICANT_CITY", "Bengaluru"),

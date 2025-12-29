@@ -136,43 +136,11 @@ class ReliableJobScraper:
         time.sleep(0.3)
     
     def _scrape_himalayas(self):
-        """Himalayas.app - Free API for remote jobs."""
-        # DISABLED: This API consistently returns 403 Forbidden, wasting time
+        """Himalayas.app - DISABLED due to consistent 403 blocks."""
+        # Himalayas is consistently blocking requests with 403 Forbidden
+        # Skipping to save time and avoid wasted API calls
         logging.info("📡 Skipping Himalayas API (blocked, returns 403)")
         return
-        try:
-            logging.info("📡 Scraping Himalayas API (free, remote jobs)...")
-            url = "https://himalayas.app/jobs/api?limit=50"
-            response = self.session.get(url, timeout=15)
-            
-            if response.status_code == 200:
-                data = response.json()
-                jobs_data = data.get('jobs', [])
-                count = 0
-                
-                for job in jobs_data:
-                    job_entry = {
-                        'title': job.get('title', ''),
-                        'company': job.get('companyName', ''),
-                        'location': job.get('locationRestrictions', ['Remote'])[0] if job.get('locationRestrictions') else 'Remote',
-                        'url': f"https://himalayas.app/jobs/{job.get('slug', '')}",
-                        'description': job.get('excerpt', '')[:500],
-                        'source': 'himalayas',
-                        'scraped_at': datetime.now().isoformat(),
-                        'salary': job.get('salary', ''),
-                        'category': job.get('categories', [''])[0] if job.get('categories') else ''
-                    }
-                    
-                    if job_entry['title'] and job_entry['company']:
-                        self.all_jobs.append(job_entry)
-                        count += 1
-                        
-                logging.info(f"   ✅ Found {count} jobs from Himalayas")
-                
-        except Exception as e:
-            logging.warning(f"   ⚠️ Himalayas error: {e}")
-        
-        time.sleep(0.3)
     
     def _scrape_jobicy(self):
         """Jobicy - Free remote jobs API."""

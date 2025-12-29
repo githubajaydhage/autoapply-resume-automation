@@ -13,7 +13,9 @@ TAILORED_RESUMES_DIR = os.path.join(RESUMES_DIR, "tailored")
 # AJAY DHAGE - DevOps Engineer / SRE / Technical Lead
 # Branch: v.1.3.0-ajay
 # ============================================
-BASE_RESUME_PATH = os.path.join(RESUMES_DIR, "Ajay_Dhage_Resume.pdf")
+# Resume filename from environment variable (set in workflow) or default
+RESUME_FILENAME = os.getenv("RESUME_FILENAME", "Ajay_Dhage_Resume.pdf")
+BASE_RESUME_PATH = os.path.join(RESUMES_DIR, RESUME_FILENAME)
 JOBS_CSV_PATH = os.path.join(DATA_DIR, "jobs_today.csv")
 APPLIED_LOG_PATH = os.path.join(DATA_DIR, "applied_log.csv")
 ERROR_LOG_PATH = os.path.join(DATA_DIR, "errors.log")

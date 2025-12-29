@@ -1,0 +1,253 @@
+# =================================================================
+# JOB APPLICATION WORKFLOW TEMPLATE
+# =================================================================
+# INSTRUCTIONS: Copy this file and rename to: apply_jobs_YOURNAME.yml
+# Then fill in the USER CONFIGURATION section below - NO OTHER CHANGES NEEDED!
+# =================================================================
+
+name: Job Application - YOUR_NAME (YOUR_ROLE)
+
+# =================================================================
+# =================== USER CONFIGURATION ===================
+# Change ONLY this section - everything else works automatically!
+# =================================================================
+env:
+  # ===== REQUIRED: User Details =====
+  APPLICANT_NAME: "Your Full Name"
+  APPLICANT_FIRST_NAME: "YourFirst"
+  APPLICANT_LAST_NAME: "YourLast"
+  APPLICANT_EMAIL: "your.email@gmail.com"
+  APPLICANT_PHONE: "+91-XXXXXXXXXX"
+  APPLICANT_LOCATION: "Bangalore, Karnataka, India"
+  APPLICANT_CITY: "Bangalore"
+  APPLICANT_EXPERIENCE: "3"
+  APPLICANT_LINKEDIN: "https://www.linkedin.com/in/your-profile/"
+  
+  # ===== REQUIRED: Resume =====
+  # Place your resume in resumes/ folder with this exact filename
+  RESUME_FILENAME: "Your_Name_Resume.pdf"
+  
+  # ===== REQUIRED: Job Search Keywords =====
+  # Comma-separated list of job titles to search for
+  JOB_KEYWORDS: "data analyst, business analyst, python developer, sql developer"
+  
+  # ===== REQUIRED: Target Role =====
+  # Primary role(s) you're applying for (comma-separated)
+  APPLICANT_TARGET_ROLE: "Data Analyst, Business Analyst"
+  
+  # ===== REQUIRED: Key Skills =====
+  # Your key skills for matching (comma-separated)
+  APPLICANT_SKILLS: "Python, SQL, Tableau, Power BI, Excel, Data Visualization"
+  
+  # ===== OPTIONAL: Portfolio Links =====
+  APPLICANT_GITHUB: ""
+  APPLICANT_PORTFOLIO: ""
+  APPLICANT_KAGGLE: ""
+  APPLICANT_PROJECTS: ""
+  
+  # ===== REQUIRED: Branch Name =====
+  # Your personal branch name (e.g., v.1.2.0-yourname)
+  USER_BRANCH: "v.1.x.0-yourname"
+  
+  # ===== REQUIRED: Password Secret Name =====
+  # Create this secret in GitHub: Settings → Secrets → Actions
+  PASSWORD_SECRET: "SENDER_PASSWORD_YOURNAME"
+
+# =================================================================
+# =================== END USER CONFIGURATION ===================
+# DO NOT MODIFY ANYTHING BELOW THIS LINE
+# =================================================================
+
+on:
+  workflow_dispatch:
+    inputs:
+      job_location:
+        description: 'Job Location'
+        required: true
+        default: 'Bangalore'
+        type: choice
+        options:
+        - Bangalore
+        - Mumbai
+        - Delhi
+        - Hyderabad
+        - Pune
+        - Chennai
+        - Remote
+        - India
+      max_emails:
+        description: 'Max new emails to send'
+        required: true
+        default: '15'
+        type: choice
+        options:
+        - '5'
+        - '10'
+        - '15'
+        - '20'
+        - '30'
+        - '50'
+      send_followups:
+        description: 'Send follow-up emails?'
+        required: false
+        default: 'true'
+        type: choice
+        options:
+        - 'true'
+        - 'false'
+      scrape_only:
+        description: 'Only scrape (no emails)'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+        - 'false'
+        - 'true'
+      include_portfolio_links:
+        description: 'Include GitHub/Portfolio links in emails?'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+        - 'false'
+        - 'true'
+      send_slack_notifications:
+        description: 'Send Slack notifications?'
+        required: false
+        default: 'true'
+        type: choice
+        options:
+        - 'true'
+        - 'false'
+
+  schedule:
+    # Runs 3 times per day (IST: 10:30 AM, 3:30 PM, 8:30 PM)
+    # UNCOMMENT the line below to enable auto-run
+    # - cron: '0 5,10,15 * * *'
+    - cron: '0 0 1 1 *'  # Placeholder - never runs (Jan 1 midnight)
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    # Inherit all env vars defined above
+    env:
+      PYTHONPATH: ${{ github.workspace }}
+      SENDER_PASSWORD: ${{ secrets[env.PASSWORD_SECRET] }}
+      MAX_EMAILS: ${{ github.event.inputs.max_emails || '15' }}
+      JOB_LOCATION: ${{ github.event.inputs.job_location || 'Bangalore' }}
+      INCLUDE_PORTFOLIO_LINKS: ${{ github.event.inputs.include_portfolio_links || 'false' }}
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+      with:
+        ref: ${{ env.USER_BRANCH }}
+
+    - name: Display Configuration
+      run: |
+        echo "=============================================="
+        echo "👤 USER: $APPLICANT_NAME"
+        echo "📧 EMAIL: $APPLICANT_EMAIL"
+        echo "🎯 TARGET ROLE: $APPLICANT_TARGET_ROLE"
+        echo "🔍 JOB KEYWORDS: $JOB_KEYWORDS"
+        echo "📄 RESUME: $RESUME_FILENAME"
+        echo "🌿 BRANCH: $USER_BRANCH"
+        echo "=============================================="
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Restore Previous Data
+      uses: actions/cache@v3
+      with:
+        path: |
+          data/sent_emails_log.csv
+          data/followup_log.csv
+          data/all_hr_emails.csv
+          data/jobs_today.csv
+          data/curated_hr_emails.csv
+        key: job-data-${{ env.APPLICANT_EMAIL }}-v3
+        restore-keys: |
+          job-data-${{ env.APPLICANT_EMAIL }}-
+
+    # PHASE 1: Scrape Jobs
+    - name: Phase 1A - Scrape Jobs from Multiple Sources
+      run: |
+        echo "🔍 PHASE 1A: SCRAPING JOBS"
+        echo "   Keywords: $JOB_KEYWORDS"
+        echo "   Location: $JOB_LOCATION"
+        python scripts/reliable_job_scraper.py
+        python scripts/naukri_scraper.py || true
+        python scripts/linkedin_public_scraper.py || true
+        python scripts/scrape_jobs.py || true
+
+    - name: Phase 1B - Analyze Resume Match
+      run: |
+        echo "📄 PHASE 1B: ANALYZING RESUME MATCH SCORES"
+        python scripts/resume_optimizer.py || true
+
+    # PHASE 2: Load HR Emails
+    - name: Phase 2 - Load HR Email Database
+      run: |
+        echo "📧 PHASE 2: LOADING HR EMAIL DATABASE"
+        python scripts/curated_hr_database.py
+        python scripts/hr_email_finder.py
+        python scripts/email_scraper.py || true
+
+    # PHASE 3: Generate Cover Letters & Send Emails
+    - name: Phase 3A - Generate Cover Letters
+      if: ${{ github.event.inputs.scrape_only != 'true' }}
+      run: |
+        echo "📝 PHASE 3A: GENERATING COVER LETTERS"
+        python scripts/cover_letter_generator.py || true
+
+    - name: Phase 3B - Send Application Emails
+      if: ${{ github.event.inputs.scrape_only != 'true' }}
+      run: |
+        echo "📤 PHASE 3B: SENDING APPLICATION EMAILS"
+        echo "   Max emails: $MAX_EMAILS"
+        echo "   Portfolio links: $INCLUDE_PORTFOLIO_LINKS"
+        python scripts/email_sender.py
+
+    # PHASE 4: Follow-ups
+    - name: Phase 4 - Send Follow-ups
+      if: ${{ github.event.inputs.send_followups == 'true' && github.event.inputs.scrape_only != 'true' }}
+      run: |
+        echo "📬 PHASE 4: SENDING FOLLOW-UP EMAILS"
+        python scripts/followup_sender.py || true
+
+    # PHASE 5: Notifications
+    - name: Phase 5 - Send Slack Summary
+      if: ${{ github.event.inputs.send_slack_notifications == 'true' && always() }}
+      run: |
+        echo "📊 PHASE 5: SENDING NOTIFICATIONS"
+        python scripts/tracker.py || true
+      env:
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+    - name: Save Data Cache
+      uses: actions/cache/save@v3
+      with:
+        path: |
+          data/sent_emails_log.csv
+          data/followup_log.csv
+          data/all_hr_emails.csv
+          data/jobs_today.csv
+          data/curated_hr_emails.csv
+        key: job-data-${{ env.APPLICANT_EMAIL }}-v3
+
+    - name: Upload Artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: job-application-logs-${{ env.APPLICANT_NAME }}
+        path: |
+          data/*.csv
+          data/*.log
+        retention-days: 30

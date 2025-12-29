@@ -800,7 +800,47 @@ flowchart TB
 
 ---
 
-### 📝 Step-by-Step Guide
+### ⚡ Quick Setup (Recommended - v2.0)
+
+**New streamlined approach!** All user configuration is now centralized in the workflow file. No need to edit multiple Python files!
+
+#### What Changed?
+- `config.py`, `reliable_job_scraper.py`, `naukri_scraper.py`, and `resume_naming.py` now read from **environment variables**
+- All user settings are defined in **ONE place** - the workflow file
+- Python code is now **shared/reusable** - no modifications needed per user!
+
+#### Quick Steps:
+
+```bash
+# 1. Create branch
+git checkout -b v.1.x.0-yourname
+
+# 2. Copy workflow template
+cp .github/workflows/TEMPLATE_new_user.yml.example .github/workflows/apply_jobs_yourname.yml
+
+# 3. Add your resume to resumes/ folder
+
+# 4. Edit ONLY the USER CONFIGURATION section in your new workflow file
+
+# 5. Commit and push
+git add .
+git commit -m "Add yourname automation"
+git push origin v.1.x.0-yourname
+
+# 6. Add GitHub Secret: SENDER_PASSWORD_YOURNAME (your Gmail App Password)
+```
+
+#### Template Location:
+`.github/workflows/TEMPLATE_new_user.yml.example`
+
+This template has clearly marked sections - edit only the `USER CONFIGURATION` block at the top!
+
+---
+
+### 📝 Manual Step-by-Step Guide (Legacy Method)
+
+<details>
+<summary>Click to expand legacy multi-file setup instructions</summary>
 
 #### Step 1: Create a New Branch
 
@@ -1059,6 +1099,8 @@ git checkout v.1.2.0-username  # Switch back
 │                                                                    │
 └────────────────────────────────────────────────────────────────────┘
 ```
+
+</details>
 
 ---
 

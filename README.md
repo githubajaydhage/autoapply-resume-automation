@@ -258,7 +258,27 @@ Replace the resume file in `resumes/` folder with your resume PDF.
 
 ---
 
-## 📁 Project Structure
+## � Configuration Options
+
+When running the workflow manually:
+
+| Option | Description | Default |
+|--------|-------------|--------|
+| **Job Location** | Target city for job search | Bangalore |
+| **Max Emails** | Maximum new emails to send per run | 15 |
+| **Send Follow-ups** | Send follow-up emails to past contacts | true |
+| **Scrape Only** | Just scrape jobs, don't send emails | false |
+| **Include Portfolio Links** | Add GitHub/Portfolio links in emails | false |
+| **Send Slack Notifications** | Slack alerts for interviews/summaries | true |
+| **Enable Mobile Alerts** | WhatsApp/Telegram notifications | false |
+| **Enable WhatsApp** | WhatsApp via CallMeBot | false |
+| **Enable Telegram** | Telegram Bot notifications | false |
+| **Track Email Opens** | Track if HR opened your email | true |
+| **Auto-Retry Failed Emails** | Retry bounced emails with alternates | true |
+
+---
+
+## �📁 Project Structure
 
 ```
 job-automation/
@@ -356,34 +376,100 @@ job-automation/
 
 ---
 
-## 📱 Notification Setup
+## 📱 Feature Setup Guide
 
-### Slack (Recommended)
-```
-1. Create app at api.slack.com/apps
-2. Enable Incoming Webhooks
-3. Add webhook URL to SLACK_WEBHOOK_URL secret
-```
+### 1. Slack Notifications (Recommended)
+Get instant Slack alerts when you receive interview requests or HR replies.
+
+**Setup:**
+1. Go to [api.slack.com/apps](https://api.slack.com/apps) → Create New App
+2. Choose "From scratch" → Name it "Job Alerts" → Select workspace
+3. Go to **Incoming Webhooks** → Enable → **Add New Webhook**
+4. Select a channel → Copy the Webhook URL
+5. Add secret: `SLACK_WEBHOOK_URL` = your webhook URL
 
 **You'll receive:**
-- 📊 Daily summary with dashboard link
-- 🎯 Interview request alerts
+- 📊 Daily summary with clickable dashboard link
+- 🎯 Interview request alerts (high priority)
 - 📬 HR reply notifications
-- 🤝 Referral stats
+- 🤝 Referral request stats
 
-### WhatsApp (Free via CallMeBot)
-```
-1. Save +34 644 51 95 23 as "CallMeBot"
-2. Send: "I allow callmebot to send me messages"
-3. Add WHATSAPP_PHONE and CALLMEBOT_API_KEY secrets
-```
+---
 
-### Telegram
-```
-1. Create bot via @BotFather
-2. Get chat ID via @userinfobot
-3. Add TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID secrets
-```
+### 2. WhatsApp Alerts (Free via CallMeBot)
+Get instant WhatsApp messages for interviews and daily summaries.
+
+**Is it safe?** ✅ Yes!
+- No app installation needed
+- Only sends messages TO you (can't read your chats)
+- No password shared, just phone number + API key
+- Block the number anytime to stop
+
+**Setup:**
+1. Save **+34 644 51 95 23** in your contacts as "CallMeBot"
+2. Send this WhatsApp message to that number:
+   ```
+   I allow callmebot to send me messages
+   ```
+3. You'll receive an API key (save it!)
+4. Add secrets in GitHub:
+   - `WHATSAPP_PHONE` = Your phone with country code (e.g., `+919876543210`)
+   - `CALLMEBOT_API_KEY` = The API key you received
+
+**Enable:** Set `enable_mobile_alerts` → `true` and `enable_whatsapp` → `true`
+
+---
+
+### 3. Telegram Alerts
+Get Telegram notifications for interviews and summaries.
+
+**Setup:**
+1. Message [@BotFather](https://t.me/BotFather) on Telegram
+2. Send `/newbot` and follow prompts to create your bot
+3. Copy the **Bot Token** you receive
+4. Message your new bot (just say "hi")
+5. Message [@userinfobot](https://t.me/userinfobot) to get your **Chat ID**
+6. Add secrets in GitHub:
+   - `TELEGRAM_BOT_TOKEN` = Your bot token
+   - `TELEGRAM_CHAT_ID` = Your chat ID
+
+**Enable:** Set `enable_mobile_alerts` → `true` and `enable_telegram` → `true`
+
+---
+
+### 4. Email Open Tracking (Optional)
+Know when HR opens your email (requires your own tracking endpoint).
+
+**How it works:**
+- Invisible 1x1 pixel is added to emails
+- When HR opens email, pixel loads and logs the open
+- You can see open rates and who read your emails
+
+**Setup (Advanced):**
+1. Set up a tracking endpoint (Vercel, Netlify, or your server)
+2. Add secret: `TRACKING_PIXEL_URL` = Your endpoint URL
+
+**Enable:** Set `enable_open_tracking` → `true`
+
+**Alternative (Simpler):** Use [Mailtrack](https://mailtrack.io/) browser extension for Gmail.
+
+---
+
+### 5. Auto-Retry Failed Emails (Enabled by Default)
+Automatically retries bounced emails with verified alternate addresses.
+
+**How it works:**
+1. Detects bounced/failed emails
+2. Finds alternate HR emails for the same company
+3. **Verifies alternates before retry:**
+   - DNS MX record check (domain exists)
+   - Disposable email detection (rejects temp emails)
+   - Corporate domain verification
+   - Requires 60+ verification score
+4. Retries with verified alternate (max 2 per company)
+
+**Enable:** Set `enable_auto_retry` → `true` (default)
+**Disable:** Set `enable_auto_retry` → `false`
 
 ---
 
@@ -417,16 +503,21 @@ After each run, you can access:
 
 ## 🏢 Companies in Database
 
+The system includes verified HR emails from 100+ companies:
+
 ### Indian IT Giants
 Infosys, TCS, Wipro, HCL Tech, Tech Mahindra, Cognizant, Capgemini, Accenture, Deloitte
 
 ### Startups (India)
-Razorpay, Zerodha, Swiggy, Zomato, CRED, PhonePe, Paytm, Flipkart, Meesho, Groww, Ola, Myntra
+Razorpay, Zerodha, Swiggy, Zomato, CRED, PhonePe, Paytm, Flipkart, Meesho, Groww, Ola, Myntra, Cred
 
-### Global Tech
+### Global Tech Giants
 Google, Microsoft, Amazon, Meta, Apple, Netflix, Uber, Salesforce, Adobe, Oracle, IBM
 
-### Consulting
+### Banks & Finance
+HDFC Bank, ICICI Bank, Kotak, Axis Bank, Bajaj Finance, Yes Bank
+
+### Consulting & Analytics
 McKinsey, BCG, Bain, Fractal Analytics, Mu Sigma, Tiger Analytics
 
 *See full list in `scripts/curated_hr_database.py`*
@@ -435,21 +526,64 @@ McKinsey, BCG, Bain, Fractal Analytics, Mu Sigma, Tiger Analytics
 
 ## 🛠️ Troubleshooting
 
-| Issue | Solution |
-|-------|----------|
-| Authentication failed | Use Gmail App Password, not regular password |
-| No emails sent | Check SENDER_PASSWORD secret is set |
-| Referrals not sending | Normal if no real employees found (only sends to verified) |
-| Slack not working | Verify SLACK_WEBHOOK_URL secret |
+### "Authentication failed" error
+- Make sure you're using Gmail App Password, not regular password
+- Ensure 2FA is enabled on your Google account
+
+### No emails being sent
+- Check if `SENDER_PASSWORD` secret is set correctly
+- Look at workflow logs for specific errors
+
+### "No HR emails found" error
+- Run the workflow with "Scrape Only" first to populate data
+
+### Referrals not sending
+- Normal behavior if no real employees discovered via LinkedIn/Google
+- System only sends to verified real emails (no synthetic/guessed emails)
+
+### Slack not working
+- Verify `SLACK_WEBHOOK_URL` secret is set correctly
+- Test webhook URL in browser
+
+---
+
+## 📝 Adding More Companies
+
+Edit `scripts/curated_hr_database.py`:
+
+```python
+{"company": "New Company", "email": "careers@newcompany.com", "type": "general"},
+```
+
+---
+
+## 💡 Tips for Better Results
+
+- **Customize your resume** for target roles
+- **Update `USER_DETAILS`** with accurate experience
+- **Run daily** for consistent outreach
+- **Let follow-ups run automatically** - they increase response rate by 40%
+- **Enable Slack notifications** to catch interview requests immediately
+- **Add portfolio/GitHub links** if you have relevant projects
 
 ---
 
 ## ⚠️ Important Notes
 
-1. **Rate Limiting** - Built-in delays between emails
-2. **Gmail Limits** - Stay under 500 emails/day
-3. **Resume Size** - Keep PDF under 5MB
-4. **Responsible Use** - Don't spam, respect company policies
+1. **Use responsibly** - Don't spam. The system has built-in rate limiting.
+2. **Gmail App Password** - Regular password won't work. Must use App Password.
+3. **Email limits** - Gmail allows ~500 emails/day. Stay well under this.
+4. **Resume** - Keep PDF under 5MB for reliable attachment.
+
+---
+
+## ⚖️ Disclaimer
+
+This tool is for personal use only. Users are responsible for:
+- Complying with anti-spam laws
+- Respecting company policies
+- Not exceeding email sending limits
+- Using accurate personal information
 
 ---
 

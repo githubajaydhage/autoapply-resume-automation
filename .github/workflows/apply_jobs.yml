@@ -1,9 +1,14 @@
 name: Job Application System (Ultimate v5)
 
 # =================================================================
-# ULTIMATE PRODUCTION SYSTEM v5 - Maximum Interview Generation
+# ULTIMATE PRODUCTION SYSTEM v6 - Maximum Interview Generation
 # =================================================================
-# NEW FEATURES in v5 (High Impact):
+# NEW FEATURES in v6 (High Impact):
+# ✅ Email Open Tracking (know when HR reads your email)
+# ✅ WhatsApp/Telegram Alerts (instant mobile notifications)
+# ✅ Auto-Retry Failed Emails (verify & retry with alternates)
+# =================================================================
+# v5 Features:
 # ✅ ATS Keyword Optimizer (70%+ match filter)
 # ✅ Salary Intelligence System (market rate insights)
 # ✅ Job Priority Engine (urgent jobs first)
@@ -102,6 +107,30 @@ on:
         - 'true'
       send_slack_notifications:
         description: 'Send Slack notifications?'
+        required: false
+        default: 'true'
+        type: choice
+        options:
+        - 'true'
+        - 'false'
+      enable_mobile_alerts:
+        description: 'WhatsApp/Telegram alerts?'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+        - 'false'
+        - 'true'
+      enable_open_tracking:
+        description: 'Track email opens?'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+        - 'false'
+        - 'true'
+      enable_auto_retry:
+        description: 'Auto-retry failed emails?'
         required: false
         default: 'true'
         type: choice
@@ -324,9 +353,12 @@ jobs:
           data/analytics_dashboard.txt
           data/multi_channel_tracker.csv
           data/ats_report.txt
+          data/email_opens_log.csv
+          data/retry_log.csv
+          data/email_verification_cache.json
           cover_letters/*.txt
           interview_prep/*.txt
-        key: job-data-${{ runner.os }}-v7-${{ github.run_number }}
+        key: job-data-${{ runner.os }}-v8-${{ github.run_number }}
 
     - name: Upload Results
       uses: actions/upload-artifact@v4
@@ -357,6 +389,10 @@ jobs:
           data/analytics_dashboard.txt
           data/multi_channel_tracker.csv
           data/ats_report.txt
+          data/email_opens_log.csv
+          data/open_tracking_report.txt
+          data/retry_log.csv
+          data/email_verification_cache.json
           data/*.json
           cover_letters/*.txt
           interview_prep/*.txt
@@ -374,11 +410,52 @@ jobs:
         PYTHONPATH: ${{ github.workspace }}
         SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
+    # PHASE 12: Auto-Retry Failed Emails (verify first, then retry)
+    - name: Phase 12 - Auto-Retry Failed Emails
+      if: ${{ github.event.inputs.scrape_only != 'true' && github.event.inputs.enable_auto_retry != 'false' }}
+      run: |
+        echo "🔄 PHASE 12: AUTO-RETRY FAILED EMAILS"
+        echo "   Finding failed/bounced emails..."
+        echo "   Verifying alternate addresses before retry..."
+        echo "   Only retrying with genuine, validated emails..."
+        python scripts/auto_retry_emails.py || true
+      env:
+        PYTHONPATH: ${{ github.workspace }}
+        SENDER_PASSWORD: ${{ secrets.SENDER_PASSWORD }}
+
+    # PHASE 13: Email Open Tracking Report
+    - name: Phase 13 - Email Open Tracking
+      if: ${{ github.event.inputs.enable_open_tracking == 'true' }}
+      run: |
+        echo "📊 PHASE 13: EMAIL OPEN TRACKING"
+        echo "   Generating open tracking report..."
+        python scripts/email_open_tracker.py || true
+      env:
+        PYTHONPATH: ${{ github.workspace }}
+        ENABLE_OPEN_TRACKING: ${{ github.event.inputs.enable_open_tracking }}
+        TRACKING_PIXEL_URL: ${{ secrets.TRACKING_PIXEL_URL }}
+
+    # PHASE 14: Mobile Alerts (WhatsApp/Telegram)
+    - name: Phase 14 - Mobile Alerts
+      if: ${{ github.event.inputs.enable_mobile_alerts == 'true' }}
+      run: |
+        echo "📱 PHASE 14: MOBILE ALERTS (WhatsApp/Telegram)"
+        echo "   Sending instant notifications to your phone..."
+        python scripts/mobile_alerts.py || true
+      env:
+        PYTHONPATH: ${{ github.workspace }}
+        ENABLE_WHATSAPP: ${{ secrets.ENABLE_WHATSAPP }}
+        WHATSAPP_PHONE: ${{ secrets.WHATSAPP_PHONE }}
+        CALLMEBOT_API_KEY: ${{ secrets.CALLMEBOT_API_KEY }}
+        ENABLE_TELEGRAM: ${{ secrets.ENABLE_TELEGRAM }}
+        TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+        TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+
     - name: Summary Report
       run: |
         echo ""
         echo "📊 =============================================="
-        echo "📊 JOB APPLICATION SUMMARY v5 - ULTIMATE EDITION"
+        echo "📊 JOB APPLICATION SUMMARY v6 - ULTIMATE EDITION"
         echo "📊 =============================================="
         if [ -f data/jobs_today.csv ]; then
           JOBS=$(wc -l < data/jobs_today.csv)
@@ -440,6 +517,14 @@ jobs:
         fi
         if [ -f data/analytics_dashboard.txt ]; then
           echo "📊 Analytics Dashboard: Generated"
+        fi
+        if [ -f data/retry_log.csv ]; then
+          RETRIED=$(wc -l < data/retry_log.csv)
+          echo "🔄 Emails Auto-Retried: $((RETRIED - 1))"
+        fi
+        if [ -f data/email_opens_log.csv ]; then
+          OPENS=$(grep -c "open_count.*[1-9]" data/email_opens_log.csv 2>/dev/null || echo "0")
+          echo "👀 Emails Opened: $OPENS"
         fi
         if [ -d cover_letters ]; then
           COVERS=$(ls cover_letters/*.txt 2>/dev/null | wc -l)

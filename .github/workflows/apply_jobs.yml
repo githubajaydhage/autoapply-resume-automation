@@ -82,6 +82,22 @@ on:
         options:
         - 'false'
         - 'true'
+      enable_whatsapp:
+        description: 'Enable WhatsApp (requires WHATSAPP_PHONE, CALLMEBOT_API_KEY secrets)'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+        - 'false'
+        - 'true'
+      enable_telegram:
+        description: 'Enable Telegram (requires TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID secrets)'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+        - 'false'
+        - 'true'
         
   schedule:
     # Runs 3 times per day (IST: 9:30 AM, 2:30 PM, 7:30 PM)

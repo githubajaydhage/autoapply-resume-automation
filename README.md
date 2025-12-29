@@ -1,10 +1,23 @@
-# 🚀 Job Application Automation System v6 - Ultimate Edition
+# 🚀 Job Application Automation System v7 - Ultimate Edition
 
-**Production-Ready Automated Job Application System with Cold Email Outreach, Referral Requests, and Multi-Channel Notifications**
+**Production-Ready Automated Job Application System with Cold Email Outreach, Referral Requests, Recruiting Agencies, and Multi-Channel Notifications**
 
 [![GitHub Actions](https://img.shields.io/badge/GitHub%20Actions-Automated-2088FF?logo=github-actions&logoColor=white)](../../actions)
 [![Python 3.9](https://img.shields.io/badge/Python-3.9-blue.svg)](https://www.python.org/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+
+---
+
+## 🆕 What's New in v7
+
+| Feature | Description |
+|---------|-------------|
+| 🏢 **Recruiting Agencies** | Auto-send resumes to 50+ staffing firms (TeamLease, Randstad, etc.) |
+| 🔄 **New Job Detection** | Apply to NEW job openings at same company (tracks by email+job_title) |
+| 🎯 **Centralized Config** | All user settings in ONE place in workflow file |
+| 🔍 **Bot-Friendly Search** | DuckDuckGo/Bing instead of blocked Google/career pages |
+| 📧 **Multi-Source HR Discovery** | Curated database + DuckDuckGo + targeted generation |
+| ⚡ **Speed Optimized** | Reduced delays, limited jobs to 50, disabled slow APIs |
 
 ---
 
@@ -212,6 +225,17 @@ pie showData
 | 👁️ **Email Open Tracking** | Know when HR reads your email |
 | 🔄 **Auto-Retry** | Verify & retry failed emails |
 
+### Latest Features (v7)
+| Feature | Description |
+|---------|-------------|
+| 🏢 **Recruiting Agencies** | Auto-send resumes to 50+ staffing firms (TeamLease, Randstad, Adecco, Michael Page, etc.) |
+| 🔄 **New Job Detection** | Apply to NEW openings at same company (tracks email+job_title) |
+| 🎯 **Centralized Config** | All user settings (name, email, resume, keywords) in ONE place in workflow |
+| 🔍 **Bot-Friendly Search** | DuckDuckGo/Bing search instead of blocked Google/career pages |
+| 📧 **Multi-Source HR Discovery** | Curated DB + DuckDuckGo + targeted contact generation |
+| ⚡ **Speed Optimized** | 0.3s delays, max 50 jobs, disabled slow Himalayas API |
+| 🌐 **Industry-Specific Agencies** | Auto-selects agencies based on JOB_KEYWORDS (IT, Interior Design, etc.) |
+
 ---
 
 ## 🎯 Quick Start (5 Minutes)
@@ -233,35 +257,50 @@ Click the "Fork" button to create your own copy.
 3. Go to [myaccount.google.com/apppasswords](https://myaccount.google.com/apppasswords)
 4. Create App Password → Copy the 16-character password
 
-### Step 3: Update Your Details
+### Step 3: Update Your Details (NEW: Centralized in Workflow!)
 
-Edit `utils/config.py`:
+All user config is now in **ONE place** in the workflow file. Edit `.github/workflows/apply_jobs.yml`:
 
-```python
-USER_DETAILS = {
-    "full_name": "Your Name",
-    "email": "your-email@gmail.com",
-    "phone": "+91-XXXXXXXXXX",
-    "linkedin_url": "https://linkedin.com/in/your-profile",
-    "years_experience": "3",
-    "key_skills": "Python, SQL, Data Analysis",
-    "target_role": "Data Analyst",
-}
+```yaml
+jobs:
+  apply:
+    env:
+      # ============================================
+      # CENTRALIZED USER CONFIGURATION
+      # Change these values to switch users easily
+      # ============================================
+      
+      # User Identity
+      APPLICANT_NAME: 'Your Name'
+      APPLICANT_EMAIL: 'your-email@gmail.com'
+      APPLICANT_PHONE: '+91-XXXXXXXXXX'
+      APPLICANT_LINKEDIN: 'https://linkedin.com/in/your-profile'
+      APPLICANT_EXPERIENCE: '3'
+      APPLICANT_TARGET_ROLE: 'Data Analyst, Business Analyst'
+      
+      # Resume Configuration
+      RESUME_FILENAME: 'Your_Name_Resume.pdf'
+      RESUME_PATH: 'resumes/Your_Name_Resume.pdf'
+      
+      # Job Search Keywords
+      JOB_KEYWORDS: 'data analyst, business analyst, sql, python, tableau'
 ```
+
+> **Note:** The old `utils/config.py` still works as fallback, but workflow env vars take priority.
 
 ### Step 4: Add Your Resume
 
-Replace the resume file in `resumes/` folder with your resume PDF.
+Replace the resume file in `resumes/` folder with your resume PDF (named to match `RESUME_FILENAME`).
 
 ### Step 5: Run the Workflow!
 
 1. Go to **Actions** tab
-2. Click **Job Application System (Ultimate v5)**
+2. Click **Job Application System (Ultimate v7)**
 3. Click **Run workflow** → Configure options → **Run**
 
 ---
 
-## � Configuration Options
+## ⚙️ Configuration Options
 
 When running the workflow manually:
 
@@ -281,13 +320,15 @@ When running the workflow manually:
 
 ---
 
-## �📁 Project Structure
+## 📁 Project Structure
 
 ```
 job-automation/
 ├── .github/
 │   └── workflows/
-│       └── apply_jobs.yml          # Main GitHub Actions workflow (14 phases)
+│       ├── apply_jobs.yml              # Main workflow (Shweta - Data Analyst)
+│       ├── apply_jobs_yogeshwari.yml   # Yogeshwari workflow (Interior Design)
+│       └── apply_jobs_ajay.yml         # Ajay workflow (DevOps/SRE)
 │
 ├── scripts/
 │   ├── reliable_job_scraper.py     # Multi-source job scraper (RemoteOK, etc.)
@@ -295,8 +336,8 @@ job-automation/
 │   ├── enhanced_job_scraper.py     # LinkedIn, Wellfound, Instahyre
 │   ├── linkedin_public_scraper.py  # LinkedIn public job listings
 │   │
-│   ├── curated_hr_database.py      # 100+ verified HR emails
-│   ├── hr_email_finder.py          # Dynamic HR email discovery
+│   ├── curated_hr_database.py      # 170+ verified HR emails (IT + Interior Design)
+│   ├── hr_email_finder.py          # Dynamic HR email discovery (DuckDuckGo/Bing)
 │   ├── email_scraper.py            # Extract emails from job postings
 │   ├── email_verifier.py           # Verify email deliverability
 │   │
@@ -304,7 +345,8 @@ job-automation/
 │   ├── email_optimizer.py          # A/B testing, personalization
 │   ├── cover_letter_generator.py   # AI-powered cover letters
 │   │
-│   ├── referral_system.py          # Auto-referral requests (NEW!)
+│   ├── referral_system.py          # Auto-referral requests
+│   ├── recruiting_agencies.py      # 50+ staffing agencies (NEW v7!)
 │   ├── followup_sender.py          # Multi-stage follow-ups
 │   ├── bounce_checker.py           # Detect bounced emails
 │   ├── auto_retry_emails.py        # Retry failed emails
@@ -370,12 +412,46 @@ job-automation/
 | Secret | Required | Description |
 |--------|----------|-------------|
 | `SENDER_PASSWORD` | ✅ **Yes** | Gmail App Password (16 chars) |
+| `SENDER_PASSWORD_YOGESHWARI` | For branch | Yogeshwari's Gmail App Password |
+| `SENDER_PASSWORD_AJAY` | For branch | Ajay's Gmail App Password |
 | `SLACK_WEBHOOK_URL` | Optional | Slack notifications |
 | `WHATSAPP_PHONE` | Optional | Your phone: `+919876543210` |
 | `CALLMEBOT_API_KEY` | Optional | CallMeBot API key |
 | `TELEGRAM_BOT_TOKEN` | Optional | Telegram Bot token |
 | `TELEGRAM_CHAT_ID` | Optional | Your Telegram chat ID |
 | `TRACKING_PIXEL_URL` | Optional | Email open tracking endpoint |
+
+---
+
+## 🏢 Recruiting Agencies (NEW in v7!)
+
+The system now automatically sends your resume to 50+ recruiting agencies based on your JOB_KEYWORDS.
+
+### Agencies by Category
+
+| Category | Agencies |
+|----------|----------|
+| **General Staffing** | TeamLease, Randstad, Adecco, ManpowerGroup, Kelly Services, Quess Corp |
+| **IT/DevOps** | Experis, Cyient, Mastech Digital, Xoriant, Coforge, LTIMindtree |
+| **Interior Design** | JLL India, Colliers, Cushman Wakefield, Space Matrix, Design Avenue |
+| **Bangalore-Specific** | Careernet, CIEL HR, Michael Page, Robert Walters, Hays |
+| **Executive Search** | ABC Consultants, Wenger Watson, Antal International |
+
+### How It Works
+
+1. Set `SEND_TO_AGENCIES: 'true'` in workflow (enabled by default)
+2. System reads `JOB_KEYWORDS` to determine your industry
+3. Relevant agencies are selected automatically
+4. Resumes are sent with personalized cover letters
+5. Tracked in `sent_emails_log.csv` to avoid duplicates
+
+### Environment Variables
+
+```yaml
+env:
+  SEND_TO_AGENCIES: 'true'  # Enable/disable agency outreach
+  JOB_KEYWORDS: 'devops, kubernetes, aws'  # Determines agency selection
+```
 
 ---
 

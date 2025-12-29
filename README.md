@@ -557,7 +557,84 @@ Edit `scripts/curated_hr_database.py`:
 
 ---
 
-## 💡 Tips for Better Results
+## � Setting Up for Another Person
+
+If you want to use this automation for someone else (friend, family member, etc.), follow these steps:
+
+### Step 1: Update User Details in `utils/config.py`
+
+Edit the `USER_DETAILS` dictionary:
+
+```python
+USER_DETAILS = {
+    "full_name": "New Person Name",
+    "first_name": "First",
+    "last_name": "Last",
+    "email": "their.email@gmail.com",
+    "phone": "+91-9876543210",
+    "location": "Mumbai, Maharashtra, India",
+    "city": "Mumbai",
+    "country": "India",
+    "work_authorization": "Authorized to work in India",
+    "linkedin_url": "https://www.linkedin.com/in/their-profile/",
+    "years_experience": "5",
+    "github_url": "https://github.com/their-username",
+    "portfolio_url": "https://their-portfolio.com",
+    "kaggle_url": "",
+    "key_projects": "Project1, Project2",
+    "target_role": "Software Engineer",
+    "key_skills": "Java, Spring Boot, React, AWS, Docker",
+}
+```
+
+### Step 2: Update Resume Path in `utils/config.py`
+
+```python
+BASE_RESUME_PATH = os.path.join(RESUMES_DIR, "NewPerson_Resume.pdf")
+```
+
+### Step 3: Add Their Resume File
+
+1. Place their resume PDF in the `resumes/` folder
+2. Name it exactly as specified in `BASE_RESUME_PATH`
+
+### Step 4: Update GitHub Secrets (For GitHub Actions)
+
+| Secret | Value |
+|--------|-------|
+| `SENDER_EMAIL` | Their Gmail address |
+| `SENDER_PASSWORD` | Their Gmail App Password |
+| `APPLICANT_NAME` | Their full name |
+| `APPLICANT_EMAIL` | Their email |
+| `APPLICANT_PHONE` | Their phone number |
+| `APPLICANT_LINKEDIN` | Their LinkedIn URL |
+| `APPLICANT_EXPERIENCE` | Years of experience |
+| `APPLICANT_SKILLS` | Their key skills |
+| `APPLICANT_TARGET_ROLE` | Target job role |
+| `RESUME_PATH` | Path to resume (e.g., `resumes/NewPerson_Resume.pdf`) |
+
+### Step 5: (Optional) Update Notification Secrets
+
+If they want their own notifications:
+- `SLACK_WEBHOOK_URL` - Their Slack webhook
+- `WHATSAPP_PHONE` - Their phone number
+- `CALLMEBOT_API_KEY` - Their CallMeBot API key
+- `TELEGRAM_BOT_TOKEN` - Their Telegram bot token
+- `TELEGRAM_CHAT_ID` - Their Telegram chat ID
+
+### Quick Checklist ✅
+
+- [ ] Updated `USER_DETAILS` in `utils/config.py`
+- [ ] Updated `BASE_RESUME_PATH` in `utils/config.py`
+- [ ] Placed resume PDF in `resumes/` folder
+- [ ] Updated `SENDER_EMAIL` secret
+- [ ] Updated `SENDER_PASSWORD` secret (App Password)
+- [ ] Updated `APPLICANT_*` secrets in GitHub
+- [ ] (Optional) Updated notification secrets
+
+---
+
+## �💡 Tips for Better Results
 
 - **Customize your resume** for target roles
 - **Update `USER_DETAILS`** with accurate experience

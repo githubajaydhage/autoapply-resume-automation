@@ -207,7 +207,7 @@ jobs:
     - name: Phase 1 - Scrape Jobs (Multiple Sources)
       run: |
         echo "🔍 PHASE 1: SCRAPING DEVOPS/SRE JOBS FROM ALL SOURCES"
-        echo "   Sources: RemoteOK, Arbeitnow, Himalayas, Jobicy, Adzuna"
+        echo "   Sources: RemoteOK, Arbeitnow, Jobicy, Adzuna (Himalayas disabled)"
         python scripts/reliable_job_scraper.py
         echo ""
         echo "🇮🇳 Scraping Naukri.com..."
@@ -218,9 +218,11 @@ jobs:
       env:
         PYTHONPATH: ${{ github.workspace }}
         JOB_LOCATION: ${{ github.event.inputs.job_location || 'Bangalore' }}
+        JOB_KEYWORDS: 'devops engineer, site reliability engineer, platform engineer, cloud engineer, kubernetes, sre, aws engineer, infrastructure engineer, docker, terraform'
         NAUKRI_LOCATION: ${{ github.event.inputs.job_location || 'bangalore' }}
         NAUKRI_KEYWORDS: 'devops engineer, site reliability engineer, platform engineer, cloud engineer, kubernetes, sre'
         NAUKRI_EXPERIENCE: 'senior'
+        MAX_JOBS_TO_SCRAPE: '50'
 
     # PHASE 1.5: Resume Optimization & Job Matching
     - name: Phase 1.5 - Resume Optimization

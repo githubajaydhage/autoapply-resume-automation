@@ -246,12 +246,11 @@ ${my_name}
         
         logging.info(f"🔍 Auto-discovering employees at {company}...")
         
-        # Method 1: Search LinkedIn public profiles via Google
+        # Search LinkedIn public profiles via Google - only use REAL discovered emails
         employees.extend(self._search_linkedin_profiles(company, job_title))
         
-        # Method 2: Generate synthetic contacts based on common name patterns
-        if len(employees) < max_contacts:
-            employees.extend(self._generate_synthetic_contacts(company, job_title, max_contacts - len(employees)))
+        # NOTE: Synthetic contact generation disabled - only send to real discovered emails
+        # This ensures we only contact actual employees, not random guessed addresses
         
         # Remove duplicates and limit
         seen_emails = set()

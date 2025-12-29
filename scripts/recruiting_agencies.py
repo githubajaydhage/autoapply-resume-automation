@@ -101,16 +101,24 @@ class RecruitingAgencyFinder:
         """Determine which agency categories to use based on job keywords."""
         categories = ['general', 'bangalore']  # Always include these
         
+        keywords_str = ' '.join(self.job_keywords_lower)
+        
         # Interior design keywords
         interior_keywords = ['interior', 'design', 'architect', 'autocad', '3ds max', 
-                            'sketchup', 'revit', 'furniture', 'decor', 'space']
-        if any(kw in ' '.join(self.job_keywords_lower) for kw in interior_keywords):
+                            'sketchup', 'revit', 'furniture', 'decor', 'space',
+                            'estimation', 'quantity surveyor', 'billing engineer',
+                            'drafting', 'civil', 'construction']
+        is_interior = any(kw in keywords_str for kw in interior_keywords)
+        if is_interior:
             categories.append('interior_design')
             
-        # IT/DevOps keywords
+        # IT/DevOps keywords - only if NOT interior design
+        # The keyword 'engineer' alone should NOT trigger IT for estimation/billing engineers
         it_keywords = ['devops', 'cloud', 'aws', 'azure', 'kubernetes', 'docker',
-                      'python', 'java', 'developer', 'engineer', 'sre', 'platform']
-        if any(kw in ' '.join(self.job_keywords_lower) for kw in it_keywords):
+                      'python', 'java', 'developer', 'sre', 'platform', 'software',
+                      'backend', 'frontend', 'fullstack', 'data engineer', 'ml engineer']
+        is_it = any(kw in keywords_str for kw in it_keywords)
+        if is_it and not is_interior:
             categories.append('it_devops')
             
         return list(set(categories))

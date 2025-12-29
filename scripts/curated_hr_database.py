@@ -139,14 +139,68 @@ CURATED_HR_EMAILS = [
 class CuratedHRDatabase:
     """Provides curated, pre-verified HR contact emails."""
     
+    # Industry keywords mapping
+    INDUSTRY_KEYWORDS = {
+        'interior_design': ['interior', 'design', 'architect', 'autocad', 'revit', 'sketchup',
+                           'estimation', 'quantity surveyor', 'billing', 'drafting', 'civil',
+                           'construction', '3ds max', 'furniture', 'decor'],
+        'it_tech': ['software', 'developer', 'devops', 'cloud', 'data', 'python', 'java',
+                   'engineer', 'backend', 'frontend', 'fullstack', 'sre', 'kubernetes', 'aws'],
+        'finance': ['finance', 'banking', 'analyst', 'accounting', 'audit'],
+    }
+    
+    # Companies by industry
+    INTERIOR_DESIGN_COMPANIES = [
+        'livspace', 'homelane', 'designcafe', 'bonito', 'urbanclap', 'decorpot',
+        'infini home', 'interior company', 'arrivae', 'godrej interio', 'asian paints',
+        'sleek', 'wooden street', 'urban ladder', 'pepperfry', 'nilkamal', 'hafele',
+        'hettich', 'prestige', 'sobha', 'brigade', 'puravankara', 'godrej properties',
+        'dlf', 'l&t realty', 'mahindra lifespace', 'lodha', 'oberoi realty', 'shapoorji',
+        'embassy', 'bengaluru development', 'total environment', 'mantri', 'salarpuria',
+        'century real estate', 'sumadhura', 'vaishnavi', 'shriram properties', 'birla estates',
+        'tata housing', 'rohan builders', 'nahar', 'hm constructions', 'hiranandani',
+        'kalpataru', 'l&t construction', 'simplex', 'nagarjuna construction', 'ultratech',
+        'acc cement', 'ambuja cement', 'dalmia cement', 'jk cement', 'saint-gobain',
+        'nippon paint', 'kansai nerolac', 'berger paints', 'indigo paints'
+    ]
+    
     def __init__(self):
         self.emails = CURATED_HR_EMAILS
+        self.job_keywords = os.environ.get('JOB_KEYWORDS', '').lower()
+        
+    def _detect_industry(self) -> str:
+        """Detect which industry the user is targeting based on JOB_KEYWORDS."""
+        if not self.job_keywords:
+            return 'all'
+        
+        for industry, keywords in self.INDUSTRY_KEYWORDS.items():
+            if any(kw in self.job_keywords for kw in keywords):
+                return industry
+        return 'all'
+    
+    def _is_interior_design_company(self, company_name: str) -> bool:
+        """Check if company is in interior design/construction industry."""
+        company_lower = company_name.lower()
+        return any(ic in company_lower for ic in self.INTERIOR_DESIGN_COMPANIES)
         
     def get_all_emails(self) -> pd.DataFrame:
-        """Get all curated HR emails as DataFrame."""
+        """Get all curated HR emails as DataFrame, prioritized by industry."""
         df = pd.DataFrame(self.emails)
         df['source'] = 'curated_database'
         df['scraped_at'] = datetime.now().isoformat()
+        
+        # Detect industry and prioritize
+        industry = self._detect_industry()
+        logging.info(f"🎯 Detected industry from JOB_KEYWORDS: {industry}")
+        
+        if industry == 'interior_design':
+            # Add priority column - interior design companies first
+            df['is_priority'] = df['company'].apply(self._is_interior_design_company)
+            df = df.sort_values('is_priority', ascending=False).reset_index(drop=True)
+            priority_count = df['is_priority'].sum()
+            logging.info(f"📊 Prioritized {priority_count} interior design companies to the top")
+            df = df.drop(columns=['is_priority'])
+        
         return df
     
     def get_emails_for_company(self, company_name: str) -> list:

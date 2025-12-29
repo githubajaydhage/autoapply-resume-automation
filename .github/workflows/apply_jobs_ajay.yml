@@ -175,6 +175,35 @@ jobs:
     # Run on schedule or workflow_dispatch only
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
     
+    # ============================================
+    # CENTRALIZED USER CONFIGURATION - AJAY DHAGE
+    # Change these values to switch users easily
+    # ============================================
+    env:
+      # User Identity
+      APPLICANT_NAME: 'Ajay Dhage'
+      APPLICANT_FIRST_NAME: 'Ajay'
+      APPLICANT_LAST_NAME: 'Dhage'
+      APPLICANT_EMAIL: 'dhageajay012@gmail.com'
+      APPLICANT_PHONE: '+91-7847019704'
+      APPLICANT_LOCATION: 'Bengaluru, Karnataka, India'
+      APPLICANT_CITY: 'Bengaluru'
+      APPLICANT_COUNTRY: 'India'
+      APPLICANT_LINKEDIN: 'https://www.linkedin.com/in/ajay-dhage-88aab9164'
+      APPLICANT_EXPERIENCE: '5'
+      APPLICANT_TARGET_ROLE: 'DevOps Engineer, SRE, Platform Engineer, Cloud Engineer'
+      APPLICANT_PROJECTS: 'Kubernetes clusters, CI/CD pipelines, Infrastructure automation'
+      APPLICANT_GITHUB: 'https://github.com/githubajaydhage'
+      APPLICANT_PORTFOLIO: 'https://nifty-johnson-27cfaa.netlify.app/'
+      
+      # Resume Configuration
+      RESUME_FILENAME: 'Ajay_Dhage_Resume.pdf'
+      RESUME_PATH: 'resumes/Ajay_Dhage_Resume.pdf'
+      
+      # Job Search Keywords
+      JOB_KEYWORDS: 'devops engineer, sre, site reliability engineer, platform engineer, cloud engineer, kubernetes, docker, aws, azure, terraform, jenkins, cicd'
+      NAUKRI_KEYWORDS: 'devops engineer, sre, cloud engineer, platform engineer'
+    
     steps:
     - name: Checkout repository
       uses: actions/checkout@v3
@@ -208,6 +237,8 @@ jobs:
     - name: Phase 1 - Scrape Jobs (Multiple Sources)
       run: |
         echo "🔍 PHASE 1: SCRAPING DEVOPS/SRE JOBS FROM ALL SOURCES"
+        echo "   User: $APPLICANT_NAME"
+        echo "   Keywords: $JOB_KEYWORDS"
         echo "   Sources: RemoteOK, Arbeitnow, Jobicy, Adzuna (Himalayas disabled)"
         python scripts/reliable_job_scraper.py
         echo ""
@@ -219,9 +250,7 @@ jobs:
       env:
         PYTHONPATH: ${{ github.workspace }}
         JOB_LOCATION: ${{ github.event.inputs.job_location || 'Bangalore' }}
-        JOB_KEYWORDS: 'devops engineer, site reliability engineer, platform engineer, cloud engineer, kubernetes, sre, aws engineer, infrastructure engineer, docker, terraform'
         NAUKRI_LOCATION: ${{ github.event.inputs.job_location || 'bangalore' }}
-        NAUKRI_KEYWORDS: 'devops engineer, site reliability engineer, platform engineer, cloud engineer, kubernetes, sre'
         NAUKRI_EXPERIENCE: 'senior'
         MAX_JOBS_TO_SCRAPE: '50'
 
@@ -281,13 +310,14 @@ jobs:
       if: ${{ github.event.inputs.scrape_only != 'true' }}
       run: |
         echo "🤝 PHASE 3.5A: SENDING REFERRAL REQUESTS"
+        echo "   User: $APPLICANT_NAME"
+        echo "   Resume: $RESUME_PATH"
         echo "   Referrals have 10x higher response rate than cold emails!"
         python scripts/referral_system.py || true
       env:
         PYTHONPATH: ${{ github.workspace }}
         SENDER_EMAIL: ${{ secrets.SENDER_EMAIL_AJAY }}
         SENDER_PASSWORD: ${{ secrets.SENDER_PASSWORD_AJAY }}
-        RESUME_PATH: resumes/Ajay_Dhage_Resume.pdf
         MAX_REFERRAL_REQUESTS: '5'
         MAX_REFERRALS_PER_COMPANY: '2'
 

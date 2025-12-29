@@ -585,84 +585,189 @@ Edit `scripts/curated_hr_database.py`:
 
 ---
 
-## � Setting Up for Another Person
+## 👤 Setting Up for Another Person
 
 If you want to use this automation for someone else (friend, family member, etc.), follow these steps:
 
-### Step 1: Update User Details in `utils/config.py`
+---
 
-Edit the `USER_DETAILS` dictionary:
+### 📋 Pre-Setup Checklist
 
-```python
-USER_DETAILS = {
-    "full_name": "New Person Name",
-    "first_name": "First",
-    "last_name": "Last",
-    "email": "their.email@gmail.com",
-    "phone": "+91-9876543210",
-    "location": "Mumbai, Maharashtra, India",
-    "city": "Mumbai",
-    "country": "India",
-    "work_authorization": "Authorized to work in India",
-    "linkedin_url": "https://www.linkedin.com/in/their-profile/",
-    "years_experience": "5",
-    "github_url": "https://github.com/their-username",
-    "portfolio_url": "https://their-portfolio.com",
-    "kaggle_url": "",
-    "key_projects": "Project1, Project2",
-    "target_role": "Software Engineer",
-    "key_skills": "Java, Spring Boot, React, AWS, Docker",
-}
-```
+Before starting, collect from the person:
 
-### Step 2: Update Resume Path in `utils/config.py`
-
-```python
-BASE_RESUME_PATH = os.path.join(RESUMES_DIR, "NewPerson_Resume.pdf")
-```
-
-### Step 3: Add Their Resume File
-
-1. Place their resume PDF in the `resumes/` folder
-2. Name it exactly as specified in `BASE_RESUME_PATH`
-
-### Step 4: Update GitHub Secrets (For GitHub Actions)
-
-| Secret | Value |
-|--------|-------|
-| `SENDER_EMAIL` | Their Gmail address |
-| `SENDER_PASSWORD` | Their Gmail App Password |
-| `APPLICANT_NAME` | Their full name |
-| `APPLICANT_EMAIL` | Their email |
-| `APPLICANT_PHONE` | Their phone number |
-| `APPLICANT_LINKEDIN` | Their LinkedIn URL |
-| `APPLICANT_EXPERIENCE` | Years of experience |
-| `APPLICANT_SKILLS` | Their key skills |
-| `APPLICANT_TARGET_ROLE` | Target job role |
-| `RESUME_PATH` | Path to resume (e.g., `resumes/NewPerson_Resume.pdf`) |
-
-### Step 5: (Optional) Update Notification Secrets
-
-If they want their own notifications:
-- `SLACK_WEBHOOK_URL` - Their Slack webhook
-- `WHATSAPP_PHONE` - Their phone number
-- `CALLMEBOT_API_KEY` - Their CallMeBot API key
-- `TELEGRAM_BOT_TOKEN` - Their Telegram bot token
-- `TELEGRAM_CHAT_ID` - Their Telegram chat ID
-
-### Quick Checklist ✅
-
-- [ ] Updated `USER_DETAILS` in `utils/config.py`
-- [ ] Updated `BASE_RESUME_PATH` in `utils/config.py`
-- [ ] Placed resume PDF in `resumes/` folder
-- [ ] Updated `SENDER_EMAIL` secret
-- [ ] Updated `SENDER_PASSWORD` secret (App Password)
-- [ ] Updated `APPLICANT_*` secrets in GitHub
-- [ ] (Optional) Updated notification secrets
+| Required Item | Example | Notes |
+|---------------|---------|-------|
+| ✅ **Resume PDF** | `Rahul_Sharma_Resume.pdf` | Must be PDF format, under 5MB |
+| ✅ **Full Name** | Rahul Sharma | As shown on resume |
+| ✅ **Gmail Address** | rahul.sharma@gmail.com | Must be Gmail for SMTP |
+| ✅ **Gmail App Password** | `xxxx xxxx xxxx xxxx` | 16-character app password |
+| ✅ **Phone Number** | +91-9876543210 | With country code |
+| ✅ **LinkedIn URL** | linkedin.com/in/rahul-sharma | Full URL |
+| ✅ **Years of Experience** | 5 | Number only |
+| ✅ **Target Role** | Data Scientist | Job title they're seeking |
+| ✅ **Key Skills** | Python, SQL, ML, TensorFlow | Comma-separated |
 
 ---
 
-## �💡 Tips for Better Results
+### 📄 Step 1: Prepare Their Resume
+
+#### Resume Requirements:
+
+```
+┌────────────────────────────────────────────────────────────────────┐
+│  📄 RESUME CHECKLIST                                               │
+├────────────────────────────────────────────────────────────────────┤
+│                                                                    │
+│  ✅ Format: PDF only (not Word/DOC)                                │
+│  ✅ Size: Under 5MB                                                │
+│  ✅ Name: Use format: FirstName_LastName_Resume.pdf                │
+│           Example: Rahul_Sharma_Resume.pdf                         │
+│                                                                    │
+│  ✅ Technical Skills Section MUST include:                         │
+│     ┌──────────────────────────────────────────────────────────┐   │
+│     │  TECHNICAL SKILLS                                        │   │
+│     │  ─────────────────                                       │   │
+│     │  Languages: Python, SQL, Java, JavaScript                │   │
+│     │  Tools: Tableau, Power BI, Excel, Git                    │   │
+│     │  Frameworks: TensorFlow, PyTorch, React, Django          │   │
+│     │  Cloud: AWS, Azure, GCP                                  │   │
+│     │  Databases: MySQL, PostgreSQL, MongoDB                   │   │
+│     └──────────────────────────────────────────────────────────┘   │
+│                                                                    │
+│  ⚠️  Keywords in resume = Better job matching!                     │
+│     The system uses these keywords to match with job descriptions  │
+│                                                                    │
+└────────────────────────────────────────────────────────────────────┘
+```
+
+#### Place Resume in Correct Location:
+
+```
+resumes/
+├── Rahul_Sharma_Resume.pdf    <── Add their resume here
+└── tailored/                  <── Auto-generated tailored versions go here
+```
+
+---
+
+### ⚙️ Step 2: Update `utils/config.py`
+
+Edit the file with their details:
+
+```python
+# --- Path Configuration ---
+BASE_RESUME_PATH = os.path.join(RESUMES_DIR, "Rahul_Sharma_Resume.pdf")  # ⬅️ Change filename
+
+# --- User Application Details ---
+USER_DETAILS = {
+    # Basic Info
+    "full_name": "Rahul Sharma",                    # ⬅️ Full name as on resume
+    "first_name": "Rahul",                          # ⬅️ First name only
+    "last_name": "Sharma",                          # ⬅️ Last name only
+    "email": "rahul.sharma@gmail.com",              # ⬅️ Their Gmail address
+    "phone": "+91-9876543210",                      # ⬅️ With country code
+    
+    # Location
+    "location": "Mumbai, Maharashtra, India",       # ⬅️ Full location
+    "city": "Mumbai",                               # ⬅️ City name
+    "country": "India",                             # ⬅️ Country
+    "work_authorization": "Authorized to work in India",
+    
+    # Professional Links
+    "linkedin_url": "https://www.linkedin.com/in/rahul-sharma/",
+    "github_url": "https://github.com/rahul-sharma",         # Optional
+    "portfolio_url": "https://rahulsharma.dev",              # Optional
+    "kaggle_url": "",                                        # Optional
+    
+    # Experience & Skills (IMPORTANT for job matching!)
+    "years_experience": "5",                        # ⬅️ Total years
+    "target_role": "Data Scientist",                # ⬅️ Job title seeking
+    "key_skills": "Python, SQL, Machine Learning, TensorFlow, Deep Learning",
+    "key_projects": "Fraud Detection System, Customer Churn Model",  # Optional
+}
+```
+
+---
+
+### 🔐 Step 3: Update GitHub Secrets
+
+Go to **Repository → Settings → Secrets and variables → Actions → New repository secret**
+
+#### Required Secrets:
+
+| Secret Name | Value | Example |
+|-------------|-------|---------|
+| `SENDER_EMAIL` | Their Gmail address | `rahul.sharma@gmail.com` |
+| `SENDER_PASSWORD` | Gmail App Password (16 chars) | `abcd efgh ijkl mnop` |
+| `APPLICANT_NAME` | Full name | `Rahul Sharma` |
+| `APPLICANT_EMAIL` | Email address | `rahul.sharma@gmail.com` |
+| `APPLICANT_PHONE` | Phone with country code | `+91-9876543210` |
+| `APPLICANT_LINKEDIN` | LinkedIn profile URL | `https://linkedin.com/in/rahul-sharma` |
+| `APPLICANT_EXPERIENCE` | Years of experience | `5` |
+| `APPLICANT_SKILLS` | Comma-separated skills | `Python, SQL, ML, TensorFlow` |
+| `APPLICANT_TARGET_ROLE` | Target job title | `Data Scientist` |
+| `RESUME_PATH` | Path to resume file | `resumes/Rahul_Sharma_Resume.pdf` |
+
+#### Optional Secrets (for notifications):
+
+| Secret Name | Value | How to Get |
+|-------------|-------|------------|
+| `SLACK_WEBHOOK_URL` | Slack webhook URL | Create at api.slack.com |
+| `WHATSAPP_PHONE` | Phone number | Their WhatsApp number |
+| `CALLMEBOT_API_KEY` | API key | From CallMeBot |
+| `TELEGRAM_BOT_TOKEN` | Bot token | From @BotFather |
+| `TELEGRAM_CHAT_ID` | Chat ID | From @userinfobot |
+
+---
+
+### ✅ Step 4: Final Verification Checklist
+
+```
+┌────────────────────────────────────────────────────────────────────┐
+│  ✅ FINAL CHECKLIST BEFORE RUNNING                                 │
+├────────────────────────────────────────────────────────────────────┤
+│                                                                    │
+│  □ Resume PDF placed in resumes/ folder                            │
+│  □ Resume filename matches BASE_RESUME_PATH in config.py           │
+│  □ Resume has clear "Technical Skills" section with keywords       │
+│  □ USER_DETAILS updated with correct info                          │
+│  □ SENDER_EMAIL secret set (their Gmail)                           │
+│  □ SENDER_PASSWORD secret set (App Password, NOT regular password) │
+│  □ All APPLICANT_* secrets configured                              │
+│  □ RESUME_PATH secret matches actual file path                     │
+│  □ (Optional) Notification secrets configured                      │
+│                                                                    │
+└────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+### 🚀 Step 5: Run the Workflow
+
+1. Go to **Actions** tab
+2. Click **Job Application System (Ultimate v5)**
+3. Click **Run workflow**
+4. Set options:
+   - Job Location: `Mumbai` (or their city)
+   - Max Emails: `10` (start small to test)
+   - Scrape Only: `false`
+5. Click **Run workflow**
+
+---
+
+### ⚠️ Common Mistakes to Avoid
+
+| Mistake | Problem | Solution |
+|---------|---------|----------|
+| Wrong resume filename | Emails go without attachment | Ensure `BASE_RESUME_PATH` matches exactly |
+| Using regular Gmail password | Authentication fails | Must use 16-char App Password |
+| Resume without keywords | Poor job matching | Add clear Technical Skills section |
+| Resume over 5MB | Attachment fails | Compress or optimize PDF |
+| Missing country code in phone | Invalid format | Use `+91-` prefix for India |
+
+---
+
+## 💡 Tips for Better Results
 
 - **Customize your resume** for target roles
 - **Update `USER_DETAILS`** with accurate experience

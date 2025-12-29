@@ -104,9 +104,128 @@ When running the workflow manually:
 | Option | Description | Default |
 |--------|-------------|---------|
 | **Job Location** | Target city for job search | Bangalore |
-| **Max Emails** | Maximum new emails to send per run | 30 |
-| **Send Follow-ups** | Send follow-up emails to past contacts | Yes |
-| **Scrape Only** | Just scrape jobs, don't send emails | No |
+| **Max Emails** | Maximum new emails to send per run | 15 |
+| **Send Follow-ups** | Send follow-up emails to past contacts | true |
+| **Scrape Only** | Just scrape jobs, don't send emails | false |
+| **Include Portfolio Links** | Add GitHub/Portfolio links in emails | false |
+| **Send Slack Notifications** | Slack alerts for interviews/summaries | true |
+| **Enable Mobile Alerts** | WhatsApp/Telegram notifications | false |
+| **Enable WhatsApp** | WhatsApp via CallMeBot (when mobile alerts on) | false |
+| **Enable Telegram** | Telegram Bot notifications | false |
+| **Track Email Opens** | Track if HR opened your email | false |
+| **Auto-Retry Failed Emails** | Retry bounced emails with alternate addresses | true |
+
+---
+
+## 📱 Feature Setup Guide
+
+### 1. Slack Notifications (Recommended)
+Get instant Slack alerts when you receive interview requests or HR replies.
+
+**Setup:**
+1. Go to [api.slack.com/apps](https://api.slack.com/apps) → Create New App
+2. Choose "From scratch" → Name it "Job Alerts" → Select workspace
+3. Go to **Incoming Webhooks** → Enable → **Add New Webhook**
+4. Select a channel → Copy the Webhook URL
+5. Add secret: `SLACK_WEBHOOK_URL` = your webhook URL
+
+**Enable:** Set `send_slack_notifications` → `true` (default)
+
+---
+
+### 2. WhatsApp Alerts (Optional)
+Get instant WhatsApp messages for interviews and daily summaries using free CallMeBot service.
+
+**Is it safe?** ✅ Yes!
+- No app installation needed
+- Only sends messages TO you (can't read your chats)
+- No password shared, just phone number + API key
+- Block the number anytime to stop
+
+**Setup:**
+1. Save **+34 644 51 95 23** in your contacts as "CallMeBot"
+2. Send this WhatsApp message to that number:
+   ```
+   I allow callmebot to send me messages
+   ```
+3. You'll receive an API key (save it!)
+4. Add secrets in GitHub:
+   - `WHATSAPP_PHONE` = Your phone with country code (e.g., `+919876543210`)
+   - `CALLMEBOT_API_KEY` = The API key you received
+
+**Enable:** When running workflow:
+- Set `enable_mobile_alerts` → `true`
+- Set `enable_whatsapp` → `true`
+
+---
+
+### 3. Telegram Alerts (Optional)
+Get Telegram notifications for interviews and summaries.
+
+**Setup:**
+1. Message [@BotFather](https://t.me/BotFather) on Telegram
+2. Send `/newbot` and follow prompts to create your bot
+3. Copy the **Bot Token** you receive
+4. Message your new bot (just say "hi")
+5. Message [@userinfobot](https://t.me/userinfobot) to get your **Chat ID**
+6. Add secrets in GitHub:
+   - `TELEGRAM_BOT_TOKEN` = Your bot token
+   - `TELEGRAM_CHAT_ID` = Your chat ID
+
+**Enable:** When running workflow:
+- Set `enable_mobile_alerts` → `true`
+- Set `enable_telegram` → `true`
+
+---
+
+### 4. Email Open Tracking (Optional)
+Know when HR opens your email (requires your own tracking endpoint).
+
+**How it works:**
+- Invisible 1x1 pixel is added to emails
+- When HR opens email, pixel loads and logs the open
+- You can see open rates and who read your emails
+
+**Setup (Advanced):**
+1. Set up a tracking endpoint (Vercel, Netlify, or your server)
+2. Add secret: `TRACKING_PIXEL_URL` = Your endpoint URL
+
+**Enable:** Set `enable_open_tracking` → `true`
+
+**Alternative (Simpler):** Use [Mailtrack](https://mailtrack.io/) browser extension for Gmail.
+
+---
+
+### 5. Auto-Retry Failed Emails (Enabled by Default)
+Automatically retries bounced emails with verified alternate addresses.
+
+**How it works:**
+1. Detects bounced/failed emails
+2. Finds alternate HR emails for the same company
+3. **Verifies alternates before retry:**
+   - DNS MX record check (domain exists)
+   - Disposable email detection (rejects temp emails)
+   - Corporate domain verification
+   - Requires 60+ verification score
+4. Retries with verified alternate (max 2 per company)
+
+**Enable:** Set `enable_auto_retry` → `true` (default)
+
+**Disable:** Set `enable_auto_retry` → `false`
+
+---
+
+## 🔐 All Secrets Reference
+
+| Secret Name | Required | Description |
+|------------|----------|-------------|
+| `SENDER_PASSWORD` | ✅ Yes | Gmail App Password (16 chars) |
+| `SLACK_WEBHOOK_URL` | Optional | Slack Incoming Webhook URL |
+| `WHATSAPP_PHONE` | Optional | Your phone: `+919876543210` |
+| `CALLMEBOT_API_KEY` | Optional | CallMeBot API key |
+| `TELEGRAM_BOT_TOKEN` | Optional | Telegram Bot token |
+| `TELEGRAM_CHAT_ID` | Optional | Your Telegram chat ID |
+| `TRACKING_PIXEL_URL` | Optional | Email open tracking endpoint |
 
 ---
 

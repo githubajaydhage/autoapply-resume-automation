@@ -124,11 +124,11 @@ on:
       enable_whatsapp:
         description: 'Enable WhatsApp (requires WHATSAPP_PHONE, CALLMEBOT_API_KEY secrets)'
         required: false
-        default: 'true'
+        default: 'false'
         type: choice
         options:
-        - 'true'
         - 'false'
+        - 'true'
       enable_telegram:
         description: 'Enable Telegram (requires TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID secrets)'
         required: false

@@ -92,14 +92,17 @@ class RealHREmailFinder:
         # Source 2: Indeed job postings
         self._scrape_indeed_emails()
         
-        # Source 3: Company career pages
-        self._scrape_career_pages()
+        # Source 3: Company career pages - DISABLED (too many 404/403 errors)
+        # Career page scraping is unreliable - most sites block bots or have changed URLs
+        # Using curated_hr_database.py instead which has verified emails
+        # self._scrape_career_pages()
+        logging.info("📡 Skipping career page scraping (using curated HR database instead)")
         
         # Source 4: LinkedIn public job posts
         self._scrape_linkedin_jobs()
         
-        # Source 5: Glassdoor job listings
-        self._scrape_glassdoor_emails()
+        # Source 5: Glassdoor job listings - DISABLED (403 Forbidden)
+        # self._scrape_glassdoor_emails()
         
         # Source 6: Internshala (for fresher jobs)
         self._scrape_internshala_emails()

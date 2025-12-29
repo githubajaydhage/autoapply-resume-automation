@@ -175,6 +175,7 @@ class HREmailScraper:
         
         emails = self.scrape_page(careers_url, company_name)
         
+<<<<<<< HEAD
         # Also try common career page paths
         parsed = urlparse(careers_url)
         base_url = f"{parsed.scheme}://{parsed.netloc}"
@@ -194,6 +195,11 @@ class HREmailScraper:
                     emails.extend(page_emails)
             except:
                 continue
+=======
+        # DISABLED: Additional path scraping generates too many 404 errors
+        # Most company websites block bots or have non-standard URL structures
+        # Using curated_hr_database.py for reliable email sources
+>>>>>>> 4162b6c (Fix 404/403 errors: Disable unreliable career page scraping)
         
         emails = list(set(emails))
         
@@ -389,15 +395,16 @@ def main():
             output_path = os.path.join(os.path.dirname(__file__), '..', 'data', 'hr_emails_from_jobs.csv')
             jobs_emails_df.to_csv(output_path, index=False)
             logging.info(f"✅ Saved {len(jobs_emails_df)} records to {output_path}")
+    else:
+        jobs_emails_df = pd.DataFrame()
     
-    # Also scrape from target companies
-    logging.info("🏢 Scraping HR emails from target companies...")
-    companies_emails_df = scraper.scrape_from_company_list(TARGET_COMPANIES)
-    
-    if not companies_emails_df.empty:
-        output_path = os.path.join(os.path.dirname(__file__), '..', 'data', 'hr_emails_from_companies.csv')
-        companies_emails_df.to_csv(output_path, index=False)
-        logging.info(f"✅ Saved {len(companies_emails_df)} records to {output_path}")
+    # DISABLED: Target company career page scraping
+    # Most company websites block bots (403 Forbidden) or have moved URLs (404 Not Found)
+    # Using curated_hr_database.py instead for reliable, verified email addresses
+    logging.info("🏢 Skipping career page scraping (using curated HR database instead)")
+    logging.info("   ℹ️  Career page URLs are unreliable (404/403 errors)")
+    logging.info("   ✅ Using verified emails from curated_hr_database.py")
+    companies_emails_df = pd.DataFrame()
     
     # Combine all emails
     all_emails = pd.concat([

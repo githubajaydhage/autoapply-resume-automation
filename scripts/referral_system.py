@@ -23,6 +23,8 @@ from string import Template
 from typing import Dict, List, Optional, Tuple
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+from email.mime.base import MIMEBase
+from email import encoders
 from urllib.parse import quote_plus
 
 logging.basicConfig(
@@ -204,6 +206,9 @@ ${my_name}
         self.sender_password = os.getenv('SENDER_PASSWORD', '')
         self.smtp_server = os.getenv('SMTP_SERVER', 'smtp.gmail.com')
         self.smtp_port = int(os.getenv('SMTP_PORT', '587'))
+        
+        # Resume path for attachment
+        self.resume_path = os.getenv('RESUME_PATH', 'resumes/resume.pdf')
         
         # Output directory
         self.output_dir = 'data'
@@ -576,6 +581,27 @@ ${my_name}
             message['To'] = recipient_email
             message['Subject'] = subject
             message.attach(MIMEText(body, 'plain'))
+            
+            # Attach resume if available
+            if os.path.exists(self.resume_path):
+                try:
+                    with open(self.resume_path, 'rb') as attachment:
+                        part = MIMEBase('application', 'octet-stream')
+                        part.set_payload(attachment.read())
+                    
+                    encoders.encode_base64(part)
+                    
+                    filename = os.path.basename(self.resume_path)
+                    part.add_header(
+                        'Content-Disposition',
+                        f'attachment; filename= {filename}'
+                    )
+                    message.attach(part)
+                    logging.info(f"📎 Attached resume: {filename}")
+                except Exception as e:
+                    logging.warning(f"Could not attach resume: {e}")
+            else:
+                logging.warning(f"⚠️ Resume not found at {self.resume_path}")
             
             context = ssl.create_default_context()
             

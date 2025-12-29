@@ -196,9 +196,13 @@ jobs:
           data/all_hr_emails.csv
           data/jobs_today.csv
           data/curated_hr_emails.csv
-        key: job-data-${{ runner.os }}-v3
+          data/bounced_emails.csv
+          data/verified_hr_emails.csv
+          data/referral_requests_log.csv
+        key: job-data-yogeshwari-${{ runner.os }}-v8-${{ github.run_number }}
         restore-keys: |
-          job-data-${{ runner.os }}-
+          job-data-yogeshwari-${{ runner.os }}-v8-
+          job-data-yogeshwari-${{ runner.os }}-
 
     # PHASE 1: Scrape Jobs
     - name: Phase 1 - Scrape Jobs (Multiple Sources)

@@ -1,9 +1,17 @@
-name: Job Application System (Enhanced)
+name: Job Application System (Enhanced v2)
 
 # =================================================================
-# ENHANCED PRODUCTION SYSTEM - Maximum Interview Generation
+# ENHANCED PRODUCTION SYSTEM v2 - Maximum Interview Generation
 # =================================================================
-# Features:
+# NEW FEATURES in v2:
+# ✅ Smart Job-to-HR matching (only email when job found at company)
+# ✅ Reply detection (monitors inbox for HR responses)
+# ✅ Application status tracking (applied → interview → offer)
+# ✅ Enhanced job sources (Wellfound, Instahyre, Cutshort, etc.)
+# ✅ Job-specific email templates (not generic anymore)
+# ✅ Priority-based application queue
+# =================================================================
+# Previous Features:
 # ✅ Multiple job sources (RemoteOK API, Naukri, career pages, RSS)
 # ✅ Curated HR email database (100+ verified company emails)
 # ✅ Email verification before sending (deliverability scoring)
@@ -101,12 +109,15 @@ jobs:
     # PHASE 1: Scrape Jobs
     - name: Phase 1 - Scrape Jobs (Multiple Sources)
       run: |
-        echo "🔍 PHASE 1: SCRAPING JOBS FROM RELIABLE SOURCES"
-        echo "   Sources: RemoteOK API, Company Career Pages, Job Aggregators"
+        echo "🔍 PHASE 1: SCRAPING JOBS FROM ALL SOURCES"
+        echo "   Sources: RemoteOK, Arbeitnow, Himalayas, Jobicy, Adzuna"
         python scripts/reliable_job_scraper.py
         echo ""
         echo "🇮🇳 Scraping Naukri.com..."
         python scripts/naukri_scraper.py || true
+        echo ""
+        echo "🚀 Scraping Enhanced Sources (Wellfound, LinkedIn, etc.)..."
+        python scripts/enhanced_job_scraper.py || true
       env:
         PYTHONPATH: ${{ github.workspace }}
         JOB_LOCATION: ${{ github.event.inputs.job_location || 'Bangalore' }}
@@ -151,14 +162,26 @@ jobs:
     - name: Phase 3 - Send Application Emails
       if: ${{ github.event.inputs.scrape_only != 'true' }}
       run: |
-        echo "📤 PHASE 3B: SENDING APPLICATION EMAILS"
+        echo "📤 PHASE 3B: SENDING APPLICATION EMAILS (Smart Mode)"
         echo "   Max emails: ${{ github.event.inputs.max_emails || '15' }}"
+        echo "   Using smart job-to-HR matching..."
         echo "   Using email verification for quality control..."
         python scripts/email_sender.py
       env:
         PYTHONPATH: ${{ github.workspace }}
         SENDER_PASSWORD: ${{ secrets.SENDER_PASSWORD }}
         MAX_EMAILS: ${{ github.event.inputs.max_emails || '15' }}
+
+    # PHASE 3.5: Check for HR Replies
+    - name: Phase 3.5 - Detect HR Replies
+      if: ${{ github.event.inputs.scrape_only != 'true' }}
+      run: |
+        echo "📬 PHASE 3.5: SCANNING INBOX FOR HR REPLIES"
+        echo "   Looking for interview requests, offers, responses..."
+        python scripts/reply_detector.py || true
+      env:
+        PYTHONPATH: ${{ github.workspace }}
+        SENDER_PASSWORD: ${{ secrets.SENDER_PASSWORD }}
 
     # PHASE 4: Send Smart Follow-Up Emails
     - name: Phase 4 - Send Multi-Stage Follow-Ups
@@ -187,6 +210,16 @@ jobs:
         PYTHONPATH: ${{ github.workspace }}
         SENDER_PASSWORD: ${{ secrets.SENDER_PASSWORD }}
 
+    # PHASE 6: Update Application Tracker
+    - name: Phase 6 - Update Application Tracker
+      if: ${{ github.event.inputs.scrape_only != 'true' }}
+      run: |
+        echo "📊 PHASE 6: SYNCING APPLICATION STATUS TRACKER"
+        echo "   Tracking: Applied → Acknowledged → Interview → Offer"
+        python scripts/application_tracker.py || true
+      env:
+        PYTHONPATH: ${{ github.workspace }}
+
     - name: Save Data Cache
       uses: actions/cache/save@v3
       with:
@@ -202,8 +235,12 @@ jobs:
           data/email_verification_log.csv
           data/naukri_jobs.csv
           data/resume_match_report.csv
+          data/application_tracker.csv
+          data/hr_replies.csv
+          data/interview_requests.csv
+          data/enhanced_jobs.csv
           cover_letters/*.txt
-        key: job-data-${{ runner.os }}-v4-${{ github.run_number }}
+        key: job-data-${{ runner.os }}-v5-${{ github.run_number }}
 
     - name: Upload Results
       uses: actions/upload-artifact@v4
@@ -221,6 +258,10 @@ jobs:
           data/email_verification_log.csv
           data/naukri_jobs.csv
           data/resume_match_report.csv
+          data/application_tracker.csv
+          data/hr_replies.csv
+          data/interview_requests.csv
+          data/enhanced_jobs.csv
           data/*.json
           cover_letters/*.txt
         retention-days: 30
@@ -230,11 +271,15 @@ jobs:
       run: |
         echo ""
         echo "📊 =============================================="
-        echo "📊 ENHANCED JOB APPLICATION SUMMARY"
+        echo "📊 ENHANCED JOB APPLICATION SUMMARY v2"
         echo "📊 =============================================="
         if [ -f data/jobs_today.csv ]; then
           JOBS=$(wc -l < data/jobs_today.csv)
           echo "🔍 Jobs Scraped: $((JOBS - 1))"
+        fi
+        if [ -f data/enhanced_jobs.csv ]; then
+          ENHANCED=$(wc -l < data/enhanced_jobs.csv)
+          echo "🚀 Enhanced Sources Jobs: $((ENHANCED - 1))"
         fi
         if [ -f data/naukri_jobs.csv ]; then
           NAUKRI=$(wc -l < data/naukri_jobs.csv)
@@ -259,6 +304,18 @@ jobs:
         if [ -f data/verified_hr_emails.csv ]; then
           VERIFIED=$(wc -l < data/verified_hr_emails.csv)
           echo "✅ Verified HR Emails: $((VERIFIED - 1))"
+        fi
+        if [ -f data/hr_replies.csv ]; then
+          REPLIES=$(wc -l < data/hr_replies.csv)
+          echo "📬 HR Replies Detected: $((REPLIES - 1))"
+        fi
+        if [ -f data/interview_requests.csv ]; then
+          INTERVIEWS=$(wc -l < data/interview_requests.csv)
+          echo "🎯 Interview Requests: $((INTERVIEWS - 1))"
+        fi
+        if [ -f data/application_tracker.csv ]; then
+          TRACKED=$(wc -l < data/application_tracker.csv)
+          echo "📊 Applications Tracked: $((TRACKED - 1))"
         fi
         if [ -d cover_letters ]; then
           COVERS=$(ls cover_letters/*.txt 2>/dev/null | wc -l)

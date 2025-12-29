@@ -100,52 +100,121 @@ class NaukriScraper:
     def _try_naukri_api(self, keywords: str, location: str = 'bangalore', experience: str = '3') -> List[Dict]:
         """Try Naukri's internal API for better results."""
         jobs = []
-        try:
-            # Naukri uses an internal API that's more reliable
-            api_url = "https://www.naukri.com/jobapi/v3/search"
-            
-            params = {
-                'noOfResults': 50,
-                'urlType': 'search_by_keyword',
-                'searchType': 'adv',
-                'keyword': keywords,
-                'location': location,
-                'experience': experience,
-                'sort': 'relevance',
-                'pageNo': 1,
+        
+        # Try multiple API endpoints
+        endpoints = [
+            {
+                'url': 'https://www.naukri.com/jobapi/v3/search',
+                'type': 'web_api'
+            },
+            {
+                'url': 'https://www.naukri.com/jobapi/v4/search',
+                'type': 'v4_api'
             }
+        ]
+        
+        for endpoint in endpoints:
+            if jobs:  # Already got jobs, skip remaining
+                break
+                
+            try:
+                api_url = endpoint['url']
+                
+                params = {
+                    'noOfResults': 50,
+                    'urlType': 'search_by_keyword',
+                    'searchType': 'adv',
+                    'keyword': keywords,
+                    'location': location,
+                    'experience': experience,
+                    'sort': 'relevance',
+                    'pageNo': 1,
+                }
+                
+                self._update_session_headers()
+                api_headers = {
+                    'appid': '109',
+                    'systemid': 'Starter',
+                    'Accept': 'application/json',
+                    'clientid': 'd3skt0p',
+                    'gid': 'LOCATION,ENTITY,FUNCTION,EXPERIENCE,QUALIFICATION,COURSE,JOBAGE,INDUSTRY,SALARY',
+                }
+                self.session.headers.update(api_headers)
+                
+                response = self.session.get(api_url, params=params, timeout=15)
+                
+                if response.status_code == 200:
+                    data = response.json()
+                    job_details = data.get('jobDetails', [])
+                    
+                    for job_data in job_details:
+                        job = {
+                            'title': job_data.get('title', ''),
+                            'company': job_data.get('companyName', ''),
+                            'location': job_data.get('placeholders', [{}])[1].get('label', '') if len(job_data.get('placeholders', [])) > 1 else '',
+                            'experience': job_data.get('placeholders', [{}])[0].get('label', '') if job_data.get('placeholders') else '',
+                            'salary': job_data.get('placeholders', [{}])[2].get('label', '') if len(job_data.get('placeholders', [])) > 2 else '',
+                            'link': f"https://www.naukri.com{job_data.get('jdURL', '')}",
+                            'skills': ', '.join(job_data.get('tagsAndSkills', '').split(',')[:10]),
+                            'source': 'naukri.com',
+                            'scraped_at': datetime.now().isoformat(),
+                        }
+                        if job['title'] and job['company']:
+                            jobs.append(job)
+                            
+                    logging.info(f"   ✅ {endpoint['type']} returned {len(jobs)} jobs")
+                else:
+                    logging.debug(f"   {endpoint['type']} returned status {response.status_code}")
+                    
+            except Exception as e:
+                logging.debug(f"{endpoint['type']} approach failed: {e}")
+        
+        # If APIs failed, try RSS feed (publicly accessible)
+        if not jobs:
+            jobs = self._try_naukri_rss(keywords, location)
+        
+        return jobs
+    
+    def _try_naukri_rss(self, keywords: str, location: str = 'bangalore') -> List[Dict]:
+        """Try Naukri RSS feed as fallback - less likely to be blocked."""
+        jobs = []
+        try:
+            # Naukri has RSS feeds for job searches
+            keyword_slug = keywords.replace(' ', '-').lower()
+            rss_url = f"https://www.naukri.com/rss/{keyword_slug}-jobs-in-{location}"
             
             self._update_session_headers()
-            self.session.headers.update({
-                'appid': '109',
-                'systemid': 'Starter',
-                'Accept': 'application/json',
-            })
-            
-            response = self.session.get(api_url, params=params, timeout=15)
+            response = self.session.get(rss_url, timeout=15)
             
             if response.status_code == 200:
-                data = response.json()
-                job_details = data.get('jobDetails', [])
+                soup = BeautifulSoup(response.text, 'xml')
                 
-                for job_data in job_details:
-                    job = {
-                        'title': job_data.get('title', ''),
-                        'company': job_data.get('companyName', ''),
-                        'location': job_data.get('placeholders', [{}])[1].get('label', '') if len(job_data.get('placeholders', [])) > 1 else '',
-                        'experience': job_data.get('placeholders', [{}])[0].get('label', '') if job_data.get('placeholders') else '',
-                        'salary': job_data.get('placeholders', [{}])[2].get('label', '') if len(job_data.get('placeholders', [])) > 2 else '',
-                        'link': f"https://www.naukri.com{job_data.get('jdURL', '')}",
-                        'skills': ', '.join(job_data.get('tagsAndSkills', '').split(',')[:10]),
-                        'source': 'naukri.com',
-                        'scraped_at': datetime.now().isoformat(),
-                    }
-                    if job['title'] and job['company']:
-                        jobs.append(job)
+                for item in soup.find_all('item'):
+                    title_elem = item.find('title')
+                    link_elem = item.find('link')
+                    desc_elem = item.find('description')
+                    
+                    if title_elem and link_elem:
+                        # Parse title format: "Job Title - Company Name - Location"
+                        title_text = title_elem.get_text()
+                        parts = title_text.split(' - ')
                         
-                logging.info(f"   ✅ API returned {len(jobs)} jobs")
+                        job = {
+                            'title': parts[0].strip() if parts else title_text,
+                            'company': parts[1].strip() if len(parts) > 1 else '',
+                            'location': parts[2].strip() if len(parts) > 2 else location,
+                            'link': link_elem.get_text(),
+                            'description': desc_elem.get_text()[:500] if desc_elem else '',
+                            'source': 'naukri.com',
+                            'scraped_at': datetime.now().isoformat(),
+                        }
+                        
+                        if job['title'] and job['company']:
+                            jobs.append(job)
+                
+                logging.info(f"   ✅ RSS feed returned {len(jobs)} jobs")
         except Exception as e:
-            logging.debug(f"API approach failed: {e}")
+            logging.debug(f"RSS approach failed: {e}")
         
         return jobs
     

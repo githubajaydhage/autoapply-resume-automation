@@ -597,35 +597,74 @@ ${name}
         return stats
 
 
+def load_smart_matched_applications():
+    """Load applications with smart job-to-HR matching."""
+    base_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    
+    try:
+        from scripts.smart_job_matcher import SmartJobMatcher
+        
+        matcher = SmartJobMatcher()
+        applications = matcher.create_prioritized_application_list()
+        
+        if not applications.empty:
+            logging.info(f"🎯 Smart matcher found {len(applications)} job-matched applications")
+            return applications
+    except ImportError:
+        logging.warning("Smart matcher not available, falling back to legacy mode")
+    except Exception as e:
+        logging.warning(f"Smart matcher error: {e}, falling back to legacy mode")
+    
+    return None
+
+
 def main():
     """Main function to send personalized emails."""
     logging.info("="*60)
-    logging.info("📧 PERSONALIZED EMAIL SENDER")
+    logging.info("📧 PERSONALIZED EMAIL SENDER (Smart Mode)")
     logging.info("="*60)
     
     sender = PersonalizedEmailSender()
     
-    # Try multiple sources for HR emails
-    emails_df = pd.DataFrame()
+    # Check for password first
+    if not os.getenv('SENDER_PASSWORD'):
+        logging.error("\n❌ Gmail App Password not configured!")
+        logging.error("Add this ONE secret to GitHub:")
+        logging.error("  SENDER_PASSWORD = your-16-char-app-password")
+        logging.error("\nHow to create App Password:")
+        logging.error("  1. Go to https://myaccount.google.com/security")
+        logging.error("  2. Enable 2-Factor Authentication")
+        logging.error("  3. Go to https://myaccount.google.com/apppasswords")
+        logging.error("  4. Create app password for 'Mail'")
+        logging.error("  5. Copy the 16-character password")
+        return
     
-    # Source 1: Curated HR database (most reliable)
-    curated_path = os.path.join(os.path.dirname(__file__), '..', 'data', 'curated_hr_emails.csv')
-    if os.path.exists(curated_path):
-        curated_df = pd.read_csv(curated_path)
-        # Rename 'email' to 'hr_email' for compatibility
-        if 'email' in curated_df.columns:
-            curated_df = curated_df.rename(columns={'email': 'hr_email'})
-        curated_df['job_title'] = 'Data Analyst / Business Analyst'  # Default
-        emails_df = pd.concat([emails_df, curated_df], ignore_index=True)
-        logging.info(f"📋 Loaded {len(curated_df)} curated HR emails")
+    # Try smart matching first (job-specific applications)
+    emails_df = load_smart_matched_applications()
     
-    # Source 2: Scraped emails
-    scraped_path = os.path.join(os.path.dirname(__file__), '..', 'data', 'all_hr_emails.csv')
-    if os.path.exists(scraped_path):
-        scraped_df = pd.read_csv(scraped_path)
-        if 'hr_email' in scraped_df.columns:
-            emails_df = pd.concat([emails_df, scraped_df], ignore_index=True)
-            logging.info(f"🔍 Loaded {len(scraped_df)} scraped HR emails")
+    # Fall back to legacy mode if smart matching fails
+    if emails_df is None or emails_df.empty:
+        logging.info("📋 Using legacy curated HR database mode...")
+        emails_df = pd.DataFrame()
+        
+        # Source 1: Curated HR database (most reliable)
+        curated_path = os.path.join(os.path.dirname(__file__), '..', 'data', 'curated_hr_emails.csv')
+        if os.path.exists(curated_path):
+            curated_df = pd.read_csv(curated_path)
+            # Rename 'email' to 'hr_email' for compatibility
+            if 'email' in curated_df.columns:
+                curated_df = curated_df.rename(columns={'email': 'hr_email'})
+            curated_df['job_title'] = 'Data Analyst / Business Analyst'  # Default
+            emails_df = pd.concat([emails_df, curated_df], ignore_index=True)
+            logging.info(f"📋 Loaded {len(curated_df)} curated HR emails")
+        
+        # Source 2: Scraped emails
+        scraped_path = os.path.join(os.path.dirname(__file__), '..', 'data', 'all_hr_emails.csv')
+        if os.path.exists(scraped_path):
+            scraped_df = pd.read_csv(scraped_path)
+            if 'hr_email' in scraped_df.columns:
+                emails_df = pd.concat([emails_df, scraped_df], ignore_index=True)
+                logging.info(f"🔍 Loaded {len(scraped_df)} scraped HR emails")
     
     if emails_df.empty:
         logging.error("❌ No HR emails found!")
@@ -638,18 +677,12 @@ def main():
     
     logging.info(f"📊 Total unique HR contacts: {len(emails_df)}")
     
-    # Check for password - only thing needed from secrets!
-    if not os.getenv('SENDER_PASSWORD'):
-        logging.error("\n❌ Gmail App Password not configured!")
-        logging.error("Add this ONE secret to GitHub:")
-        logging.error("  SENDER_PASSWORD = your-16-char-app-password")
-        logging.error("\nHow to create App Password:")
-        logging.error("  1. Go to https://myaccount.google.com/security")
-        logging.error("  2. Enable 2-Factor Authentication")
-        logging.error("  3. Go to https://myaccount.google.com/apppasswords")
-        logging.error("  4. Create app password for 'Mail'")
-        logging.error("  5. Copy the 16-character password")
-        return
+    # Show job-specific stats if available
+    if 'match_type' in emails_df.columns:
+        match_stats = emails_df['match_type'].value_counts()
+        logging.info(f"🎯 Application types:")
+        for match_type, count in match_stats.items():
+            logging.info(f"   • {match_type}: {count}")
     
     # Get max emails from environment variable
     max_emails = int(os.getenv('MAX_EMAILS', '20'))

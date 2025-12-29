@@ -11,27 +11,39 @@ from typing import Dict, Optional
 class JobTitleStandardizer:
     """Standardizes job titles to consistent naming conventions for resume matching."""
     
-    # Mapping of keywords to standardized titles
+    # Mapping of keywords to standardized titles - Ajay Dhage (DevOps/SRE)
     TITLE_MAPPINGS = {
-        # Data roles
-        'data analyst': 'Data Analyst',
-        'senior data analyst': 'Data Analyst',  # Standardize to base title
-        'data scientist': 'Data Scientist',
-        'senior data scientist': 'Data Scientist',
-        'data engineer': 'Data Engineer',
-        'senior data engineer': 'Data Engineer',
+        # DevOps roles
+        'devops engineer': 'DevOps Engineer',
+        'senior devops engineer': 'DevOps Engineer',
+        'lead devops engineer': 'DevOps Engineer',
+        'devops lead': 'DevOps Engineer',
+        'devops architect': 'DevOps Engineer',
         
-        # Business roles  
-        'business analyst': 'Business Analyst',
-        'senior business analyst': 'Business Analyst',
-        'business intelligence analyst': 'Business Analyst',
-        'bi analyst': 'Business Analyst',
+        # SRE roles
+        'site reliability engineer': 'SRE',
+        'sre': 'SRE',
+        'senior sre': 'SRE',
+        'reliability engineer': 'SRE',
         
-        # Specialized roles
-        'power bi specialist': 'Business Analyst',
-        'tableau analyst': 'Data Analyst',
-        'sql developer': 'Data Analyst',
-        'analytics consultant': 'Data Analyst',
+        # Platform/Cloud roles
+        'platform engineer': 'Platform Engineer',
+        'cloud engineer': 'Cloud Engineer',
+        'cloud architect': 'Cloud Engineer',
+        'aws engineer': 'Cloud Engineer',
+        'azure engineer': 'Cloud Engineer',
+        'gcp engineer': 'Cloud Engineer',
+        
+        # Infrastructure roles
+        'infrastructure engineer': 'Infrastructure Engineer',
+        'kubernetes engineer': 'Infrastructure Engineer',
+        'k8s engineer': 'Infrastructure Engineer',
+        
+        # Automation roles
+        'automation engineer': 'DevOps Engineer',
+        'devsecops engineer': 'DevOps Engineer',
+        'build engineer': 'DevOps Engineer',
+        'release engineer': 'DevOps Engineer',
     }
     
     @classmethod
@@ -46,7 +58,7 @@ class JobTitleStandardizer:
             Standardized job title
         """
         if not original_title:
-            return "Data Analyst"  # Default fallback
+            return "DevOps Engineer"  # Default fallback for Ajay
             
         # Clean the title - remove company suffixes and special chars
         cleaned_title = cls._clean_title(original_title)
@@ -83,19 +95,23 @@ class JobTitleStandardizer:
         """Extract main role from title when no direct mapping exists."""
         title_lower = title.lower()
         
-        # Priority order for role detection
-        if 'scientist' in title_lower:
-            return 'Data Scientist'
-        elif 'engineer' in title_lower:
-            return 'Data Engineer'
-        elif 'business' in title_lower and 'analyst' in title_lower:
-            return 'Business Analyst'
-        elif 'data' in title_lower and 'analyst' in title_lower:
-            return 'Data Analyst'
-        elif 'analyst' in title_lower:
-            return 'Data Analyst'
+        # Priority order for role detection - DevOps/SRE focus
+        if 'devops' in title_lower:
+            return 'DevOps Engineer'
+        elif 'sre' in title_lower or 'reliability' in title_lower:
+            return 'SRE'
+        elif 'platform' in title_lower:
+            return 'Platform Engineer'
+        elif 'cloud' in title_lower or 'aws' in title_lower or 'azure' in title_lower:
+            return 'Cloud Engineer'
+        elif 'kubernetes' in title_lower or 'k8s' in title_lower:
+            return 'Infrastructure Engineer'
+        elif 'infrastructure' in title_lower:
+            return 'Infrastructure Engineer'
+        elif 'automation' in title_lower:
+            return 'DevOps Engineer'
         else:
-            return 'Data Analyst'  # Default fallback
+            return 'DevOps Engineer'  # Default fallback for Ajay
 
 
 class ResumeNamingManager:

@@ -39,17 +39,22 @@ class ReliableJobScraper:
         })
         self.all_jobs = []
         
-        # Target keywords for jobs
+        # Target keywords for jobs - Ajay Dhage (DevOps / SRE / Cloud)
         self.search_keywords = [
-            "data analyst",
-            "business analyst", 
-            "data scientist",
-            "python developer",
-            "sql developer",
-            "analytics",
-            "BI analyst",
-            "power bi",
-            "tableau",
+            "devops engineer",
+            "site reliability engineer",
+            "sre",
+            "platform engineer",
+            "cloud engineer",
+            "kubernetes engineer",
+            "infrastructure engineer",
+            "devops lead",
+            "technical lead devops",
+            "automation engineer",
+            "devsecops",
+            "cloud architect",
+            "aws engineer",
+            "azure devops",
         ]
         
     def scrape_all_sources(self) -> list:

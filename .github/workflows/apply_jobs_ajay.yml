@@ -1,0 +1,574 @@
+name: Job Application - Ajay Dhage (DevOps/SRE/Cloud)
+
+# =================================================================
+# AJAY DHAGE - DevOps Engineer / SRE / Technical Lead
+# Branch: v.1.3.0-ajay
+# =================================================================
+# NEW FEATURES in v6 (High Impact):
+# ✅ Email Open Tracking (know when HR reads your email)
+# ✅ WhatsApp/Telegram Alerts (instant mobile notifications)
+# ✅ Auto-Retry Failed Emails (verify & retry with alternates)
+# =================================================================
+# v5 Features:
+# ✅ ATS Keyword Optimizer (70%+ match filter)
+# ✅ Salary Intelligence System (market rate insights)
+# ✅ Job Priority Engine (urgent jobs first)
+# ✅ LinkedIn Warm-Up Plans (3x higher response)
+# ✅ Multi-Channel Analytics Dashboard
+# ✅ Slack Integration (instant interview alerts!)
+# =================================================================
+# v4 Features:
+# ✅ Skills Match Filter (70%+ threshold)
+# ✅ Interview Prep Generator (company research docs)
+# ✅ Thank You Email Automation
+# ✅ Weekly Summary Digest
+# ✅ Portfolio/GitHub links in emails
+# =================================================================
+# v3 Features:
+# ✅ Email Optimizer (personalized company openers, A/B subject testing)
+# ✅ Recruiter Name Finder ("Dear Priya" vs "Dear Hiring Manager")
+# ✅ Referral Request System (10x higher response rate!)
+# ✅ Optimal Send Timing (Tue-Thu, 9-11 AM IST)
+# ✅ Company-specific highlights in emails
+# =================================================================
+# v2 Features:
+# ✅ Smart Job-to-HR matching (only email when job found at company)
+# ✅ Reply detection (monitors inbox for HR responses)
+# ✅ Application status tracking (applied → interview → offer)
+# ✅ Enhanced job sources (Wellfound, Instahyre, Cutshort, etc.)
+# ✅ Job-specific email templates (not generic anymore)
+# ✅ Priority-based application queue
+# =================================================================
+# v1 Features:
+# ✅ Multiple job sources (RemoteOK API, Naukri, career pages, RSS)
+# ✅ Curated HR email database (100+ verified company emails)
+# ✅ Email verification before sending (deliverability scoring)
+# ✅ Smart multi-stage follow-ups (Day 3, 7, 14)
+# ✅ Bounce detection and email quality tracking
+# ✅ Resume keyword optimization and match scoring
+# ✅ Auto-generated cover letters
+# ✅ Duplicate prevention and tracking
+# ✅ Resume attachment
+# =================================================================
+# SECRETS NEEDED (use _AJAY suffix):
+# - SENDER_EMAIL_AJAY
+# - SENDER_PASSWORD_AJAY (Gmail App Password)
+# - SLACK_WEBHOOK_URL_AJAY (optional)
+# =================================================================
+
+on:
+  workflow_dispatch:
+    inputs:
+      job_location:
+        description: 'Job Location'
+        required: true
+        default: 'Bangalore'
+        type: choice
+        options:
+        - Bangalore
+        - Mumbai
+        - Delhi
+        - Hyderabad
+        - Pune
+        - Chennai
+        - Remote
+        - India
+      max_emails:
+        description: 'Max new emails to send'
+        required: true
+        default: '15'
+        type: choice
+        options:
+        - '5'
+        - '10'
+        - '15'
+        - '20'
+        - '30'
+        - '50'
+      send_followups:
+        description: 'Send follow-up emails?'
+        required: false
+        default: 'true'
+        type: choice
+        options:
+        - 'true'
+        - 'false'
+      scrape_only:
+        description: 'Only scrape (no emails)'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+        - 'false'
+        - 'true'
+      include_portfolio_links:
+        description: 'Include GitHub/Portfolio links in emails?'
+        required: false
+        default: 'true'
+        type: choice
+        options:
+        - 'true'
+        - 'false'
+      send_slack_notifications:
+        description: 'Send Slack notifications?'
+        required: false
+        default: 'true'
+        type: choice
+        options:
+        - 'true'
+        - 'false'
+      enable_mobile_alerts:
+        description: 'WhatsApp/Telegram alerts?'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+        - 'false'
+        - 'true'
+      enable_whatsapp:
+        description: 'Enable WhatsApp (requires WHATSAPP_PHONE, CALLMEBOT_API_KEY secrets)'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+        - 'false'
+        - 'true'
+      enable_telegram:
+        description: 'Enable Telegram (requires TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID secrets)'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+        - 'false'
+        - 'true'
+      enable_open_tracking:
+        description: 'Track email opens?'
+        required: false
+        default: 'true'
+        type: choice
+        options:
+        - 'true'
+        - 'false'
+      enable_auto_retry:
+        description: 'Auto-retry failed emails?'
+        required: false
+        default: 'true'
+        type: choice
+        options:
+        - 'true'
+        - 'false'
+        
+  push:
+    branches:
+      - v.1.3.0-ajay
+
+  # CRON DISABLED - Uncomment below to enable scheduled runs
+  # schedule:
+  #   # Runs 3 times per day, every day (IST: 10:30 AM, 3:30 PM, 8:30 PM)
+  #   # Offset by 1 hour from main to avoid overlap
+  #   - cron: '0 5,10,15 * * *'
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    # Run on schedule, workflow_dispatch, or push to ajay branch
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/v.1.3.0-ajay'
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+      with:
+        ref: v.1.3.0-ajay  # Always use Ajay's branch code
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Restore Previous Data
+      uses: actions/cache@v3
+      with:
+        path: |
+          data/sent_emails_log.csv
+          data/followup_log.csv
+          data/all_hr_emails.csv
+          data/jobs_today.csv
+          data/curated_hr_emails.csv
+        key: job-data-ajay-${{ runner.os }}-v3
+        restore-keys: |
+          job-data-ajay-${{ runner.os }}-
+
+    # PHASE 1: Scrape Jobs
+    - name: Phase 1 - Scrape Jobs (Multiple Sources)
+      run: |
+        echo "🔍 PHASE 1: SCRAPING DEVOPS/SRE JOBS FROM ALL SOURCES"
+        echo "   Sources: RemoteOK, Arbeitnow, Himalayas, Jobicy, Adzuna"
+        python scripts/reliable_job_scraper.py
+        echo ""
+        echo "🇮🇳 Scraping Naukri.com..."
+        python scripts/naukri_scraper.py || true
+        echo ""
+        echo "🚀 Scraping Enhanced Sources (Wellfound, LinkedIn, etc.)..."
+        python scripts/enhanced_job_scraper.py || true
+      env:
+        PYTHONPATH: ${{ github.workspace }}
+        JOB_LOCATION: ${{ github.event.inputs.job_location || 'Bangalore' }}
+        NAUKRI_LOCATION: ${{ github.event.inputs.job_location || 'bangalore' }}
+        NAUKRI_KEYWORDS: 'devops engineer, site reliability engineer, platform engineer, cloud engineer, kubernetes, sre'
+        NAUKRI_EXPERIENCE: 'senior'
+
+    # PHASE 1.5: Resume Optimization & Job Matching
+    - name: Phase 1.5 - Resume Optimization
+      run: |
+        echo "📄 PHASE 1.5: ANALYZING RESUME MATCH SCORES"
+        python scripts/resume_optimizer.py || true
+      env:
+        PYTHONPATH: ${{ github.workspace }}
+
+    # PHASE 2: Load HR Emails
+    - name: Phase 2 - Load HR Email Database
+      run: |
+        echo "📧 PHASE 2: LOADING HR EMAIL DATABASE"
+        echo "   100+ verified company HR/recruitment emails"
+        python scripts/curated_hr_database.py
+        echo ""
+        echo "   Finding HR emails from companies with active openings..."
+        python scripts/hr_email_finder.py
+        echo ""
+        echo "   Also scraping additional emails from job postings..."
+        python scripts/email_scraper.py || true
+      env:
+        PYTHONPATH: ${{ github.workspace }}
+
+    # PHASE 3: Generate Cover Letters & Send Application Emails
+    - name: Phase 3 - Generate Cover Letters
+      if: ${{ github.event.inputs.scrape_only != 'true' }}
+      run: |
+        echo "📝 PHASE 3A: GENERATING COVER LETTERS"
+        python scripts/cover_letter_generator.py || true
+      env:
+        PYTHONPATH: ${{ github.workspace }}
+        YEARS_EXPERIENCE: '5+'
+        APPLICANT_ROLE: 'DevOps Engineer / SRE'
+
+    - name: Phase 3 - Send Application Emails
+      if: ${{ github.event.inputs.scrape_only != 'true' }}
+      run: |
+        echo "📤 PHASE 3B: SENDING APPLICATION EMAILS (Optimized Mode)"
+        echo "   Max emails: ${{ github.event.inputs.max_emails || '15' }}"
+        echo "   Using smart job-to-HR matching..."
+        echo "   Using email optimizer (personalized openers, A/B subjects)..."
+        echo "   Using email verification for quality control..."
+        echo "   Portfolio links: ${{ github.event.inputs.include_portfolio_links || 'true' }}"
+        python scripts/email_sender.py
+      env:
+        PYTHONPATH: ${{ github.workspace }}
+        SENDER_EMAIL: ${{ secrets.SENDER_EMAIL_AJAY }}
+        SENDER_PASSWORD: ${{ secrets.SENDER_PASSWORD_AJAY }}
+        MAX_EMAILS: ${{ github.event.inputs.max_emails || '15' }}
+        INCLUDE_PORTFOLIO_LINKS: ${{ github.event.inputs.include_portfolio_links || 'true' }}
+
+    # PHASE 3.5: Send Referral Requests (HIGH IMPACT - 10x response rate)
+    - name: Phase 3.5 - Send Referral Requests
+      if: ${{ github.event.inputs.scrape_only != 'true' }}
+      run: |
+        echo "🤝 PHASE 3.5A: SENDING REFERRAL REQUESTS"
+        echo "   Referrals have 10x higher response rate than cold emails!"
+        python scripts/referral_system.py || true
+      env:
+        PYTHONPATH: ${{ github.workspace }}
+        SENDER_EMAIL: ${{ secrets.SENDER_EMAIL_AJAY }}
+        SENDER_PASSWORD: ${{ secrets.SENDER_PASSWORD_AJAY }}
+        RESUME_PATH: resumes/Ajay_Dhage_Resume.pdf
+        MAX_REFERRAL_REQUESTS: '5'
+        MAX_REFERRALS_PER_COMPANY: '2'
+
+    # PHASE 3.6: Check for HR Replies
+    - name: Phase 3.6 - Detect HR Replies
+      if: ${{ github.event.inputs.scrape_only != 'true' }}
+      run: |
+        echo "📬 PHASE 3.6: SCANNING INBOX FOR HR REPLIES"
+        echo "   Looking for interview requests, offers, responses..."
+        python scripts/reply_detector.py || true
+      env:
+        PYTHONPATH: ${{ github.workspace }}
+        SENDER_EMAIL: ${{ secrets.SENDER_EMAIL_AJAY }}
+        SENDER_PASSWORD: ${{ secrets.SENDER_PASSWORD_AJAY }}
+
+    # PHASE 4: Send Smart Follow-Up Emails
+    - name: Phase 4 - Send Multi-Stage Follow-Ups
+      if: ${{ github.event.inputs.scrape_only != 'true' && github.event.inputs.send_followups != 'false' }}
+      run: |
+        echo "🔄 PHASE 4: SMART MULTI-STAGE FOLLOW-UPS"
+        echo "   Stage 1: Day 3 - Gentle Reminder"
+        echo "   Stage 2: Day 7 - Value-Add Message"
+        echo "   Stage 3: Day 14 - Final Follow-up"
+        python scripts/followup_sender.py
+      env:
+        PYTHONPATH: ${{ github.workspace }}
+        SENDER_EMAIL: ${{ secrets.SENDER_EMAIL_AJAY }}
+        SENDER_PASSWORD: ${{ secrets.SENDER_PASSWORD_AJAY }}
+        MAX_FOLLOWUPS: '15'
+
+    # PHASE 5: Check for Bounces and Update Email Quality
+    - name: Phase 5 - Check Email Bounces
+      if: ${{ github.event.inputs.scrape_only != 'true' }}
+      run: |
+        echo "📬 PHASE 5: CHECKING FOR BOUNCED EMAILS"
+        python scripts/bounce_checker.py || true
+        echo ""
+        echo "📧 Updating verified emails database..."
+        python scripts/verified_emails_db.py || true
+      env:
+        PYTHONPATH: ${{ github.workspace }}
+        SENDER_EMAIL: ${{ secrets.SENDER_EMAIL_AJAY }}
+        SENDER_PASSWORD: ${{ secrets.SENDER_PASSWORD_AJAY }}
+
+    # PHASE 6: Update Application Tracker
+    - name: Phase 6 - Update Application Tracker
+      if: ${{ github.event.inputs.scrape_only != 'true' }}
+      run: |
+        echo "📊 PHASE 6: SYNCING APPLICATION STATUS TRACKER"
+        echo "   Tracking: Applied → Acknowledged → Interview → Offer"
+        python scripts/application_tracker.py || true
+      env:
+        PYTHONPATH: ${{ github.workspace }}
+
+    # PHASE 7: Interview Success Suite
+    - name: Phase 7 - Interview Prep & Weekly Summary
+      if: ${{ github.event.inputs.scrape_only != 'true' }}
+      run: |
+        echo "🎯 PHASE 7: INTERVIEW SUCCESS SUITE"
+        echo "   Generating interview prep docs for detected interviews..."
+        echo "   Creating weekly activity summary..."
+        python scripts/interview_success_suite.py || true
+      env:
+        PYTHONPATH: ${{ github.workspace }}
+
+    # PHASE 8-10: Analysis Phases (Priority, LinkedIn, Analytics)
+    - name: Phase 8-10 - Run Analysis Phases
+      run: |
+        echo "📊 PHASES 8-10: ANALYSIS & INSIGHTS"
+        echo "   Phase 8: Job Priority Analysis"
+        echo "   Phase 9: LinkedIn Warm-Up Plans"
+        echo "   Phase 10: Multi-Channel Analytics"
+        python scripts/run_analysis_phases.py || true
+      env:
+        PYTHONPATH: ${{ github.workspace }}
+
+    - name: Save Data Cache
+      uses: actions/cache/save@v3
+      with:
+        path: |
+          data/sent_emails_log.csv
+          data/followup_log.csv
+          data/all_hr_emails.csv
+          data/jobs_today.csv
+          data/curated_hr_emails.csv
+          data/bounced_emails.csv
+          data/verified_hr_emails.csv
+          data/known_bad_emails.csv
+          data/email_verification_log.csv
+          data/naukri_jobs.csv
+          data/resume_match_report.csv
+          data/application_tracker.csv
+          data/hr_replies.csv
+          data/interview_requests.csv
+          data/enhanced_jobs.csv
+          data/subject_line_stats.csv
+          data/company_insights_cache.json
+          data/referral_requests_log.csv
+          data/thank_you_log.csv
+          data/weekly_summary_*.txt
+          data/prioritized_jobs.csv
+          data/linkedin_search_targets.txt
+          data/linkedin_warmup_plans.txt
+          data/analytics_dashboard.txt
+          data/multi_channel_tracker.csv
+          data/ats_report.txt
+          data/email_opens_log.csv
+          data/retry_log.csv
+          data/email_verification_cache.json
+          cover_letters/*.txt
+          interview_prep/*.txt
+        key: job-data-ajay-${{ runner.os }}-v8-${{ github.run_number }}
+
+    - name: Upload Results
+      uses: actions/upload-artifact@v4
+      with:
+        name: application-results-ajay-${{ github.run_number }}
+        path: |
+          data/jobs_today.csv
+          data/all_hr_emails.csv
+          data/curated_hr_emails.csv
+          data/sent_emails_log.csv
+          data/followup_log.csv
+          data/bounced_emails.csv
+          data/verified_hr_emails.csv
+          data/problematic_emails.csv
+          data/email_verification_log.csv
+          data/naukri_jobs.csv
+          data/resume_match_report.csv
+          data/application_tracker.csv
+          data/hr_replies.csv
+          data/interview_requests.csv
+          data/enhanced_jobs.csv
+          data/subject_line_stats.csv
+          data/thank_you_log.csv
+          data/weekly_summary_*.txt
+          data/prioritized_jobs.csv
+          data/linkedin_search_targets.txt
+          data/linkedin_warmup_plans.txt
+          data/analytics_dashboard.txt
+          data/multi_channel_tracker.csv
+          data/ats_report.txt
+          data/email_opens_log.csv
+          data/open_tracking_report.txt
+          data/retry_log.csv
+          data/email_verification_cache.json
+          data/*.json
+          cover_letters/*.txt
+          interview_prep/*.txt
+        retention-days: 30
+      if: always()
+
+    # PHASE 11: Slack Notifications
+    - name: Phase 11 - Send Slack Notifications
+      if: ${{ github.event.inputs.send_slack_notifications != 'false' }}
+      run: |
+        echo "📢 PHASE 11: SENDING SLACK NOTIFICATIONS"
+        echo "   Alerting for interviews, HR replies, and daily summary..."
+        python scripts/slack_notifier.py || true
+      env:
+        PYTHONPATH: ${{ github.workspace }}
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL_AJAY }}
+
+    # PHASE 12: Auto-Retry Failed Emails (verify first, then retry)
+    - name: Phase 12 - Auto-Retry Failed Emails
+      if: ${{ github.event.inputs.scrape_only != 'true' && github.event.inputs.enable_auto_retry != 'false' }}
+      run: |
+        echo "🔄 PHASE 12: AUTO-RETRY FAILED EMAILS"
+        echo "   Finding failed/bounced emails..."
+        echo "   Verifying alternate addresses before retry..."
+        echo "   Only retrying with genuine, validated emails..."
+        python scripts/auto_retry_emails.py || true
+      env:
+        PYTHONPATH: ${{ github.workspace }}
+        SENDER_EMAIL: ${{ secrets.SENDER_EMAIL_AJAY }}
+        SENDER_PASSWORD: ${{ secrets.SENDER_PASSWORD_AJAY }}
+
+    # PHASE 13: Email Open Tracking Report
+    - name: Phase 13 - Email Open Tracking
+      if: ${{ github.event.inputs.enable_open_tracking == 'true' }}
+      run: |
+        echo "📊 PHASE 13: EMAIL OPEN TRACKING"
+        echo "   Generating open tracking report..."
+        python scripts/email_open_tracker.py || true
+      env:
+        PYTHONPATH: ${{ github.workspace }}
+        ENABLE_OPEN_TRACKING: ${{ github.event.inputs.enable_open_tracking }}
+        TRACKING_PIXEL_URL: ${{ secrets.TRACKING_PIXEL_URL_AJAY }}
+
+    # PHASE 14: Mobile Alerts (WhatsApp/Telegram)
+    - name: Phase 14 - Mobile Alerts
+      if: ${{ github.event.inputs.enable_mobile_alerts == 'true' }}
+      run: |
+        echo "📱 PHASE 14: MOBILE ALERTS (WhatsApp/Telegram)"
+        echo "   Sending instant notifications to your phone..."
+        python scripts/mobile_alerts.py || true
+      env:
+        PYTHONPATH: ${{ github.workspace }}
+        ENABLE_WHATSAPP: ${{ github.event.inputs.enable_whatsapp }}
+        WHATSAPP_PHONE: ${{ secrets.WHATSAPP_PHONE_AJAY }}
+        CALLMEBOT_API_KEY: ${{ secrets.CALLMEBOT_API_KEY_AJAY }}
+        ENABLE_TELEGRAM: ${{ github.event.inputs.enable_telegram }}
+        TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN_AJAY }}
+        TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID_AJAY }}
+
+    - name: Summary Report
+      run: |
+        echo ""
+        echo "📊 =============================================="
+        echo "📊 JOB APPLICATION SUMMARY - AJAY DHAGE (DevOps)"
+        echo "📊 =============================================="
+        if [ -f data/jobs_today.csv ]; then
+          JOBS=$(wc -l < data/jobs_today.csv)
+          echo "🔍 DevOps/SRE Jobs Scraped: $((JOBS - 1))"
+        fi
+        if [ -f data/prioritized_jobs.csv ]; then
+          PRIORITY=$(grep -c "🔴 URGENT\|🟠 HIGH" data/prioritized_jobs.csv 2>/dev/null || echo "0")
+          echo "⚡ High Priority Jobs: $PRIORITY"
+        fi
+        if [ -f data/enhanced_jobs.csv ]; then
+          ENHANCED=$(wc -l < data/enhanced_jobs.csv)
+          echo "🚀 Enhanced Sources Jobs: $((ENHANCED - 1))"
+        fi
+        if [ -f data/naukri_jobs.csv ]; then
+          NAUKRI=$(wc -l < data/naukri_jobs.csv)
+          echo "🇮🇳 Naukri Jobs: $((NAUKRI - 1))"
+        fi
+        if [ -f data/all_hr_emails.csv ]; then
+          EMAILS=$(wc -l < data/all_hr_emails.csv)
+          echo "📧 HR Emails Available: $((EMAILS - 1))"
+        fi
+        if [ -f data/sent_emails_log.csv ]; then
+          SENT=$(wc -l < data/sent_emails_log.csv)
+          echo "✉️  Total Emails Sent: $((SENT - 1))"
+        fi
+        if [ -f data/referral_requests_log.csv ]; then
+          REFERRALS=$(wc -l < data/referral_requests_log.csv)
+          echo "🤝 Referral Requests: $((REFERRALS - 1))"
+        fi
+        if [ -f data/followup_log.csv ]; then
+          FOLLOWUPS=$(wc -l < data/followup_log.csv)
+          echo "🔄 Follow-ups Sent: $((FOLLOWUPS - 1))"
+        fi
+        if [ -f data/bounced_emails.csv ]; then
+          BOUNCED=$(wc -l < data/bounced_emails.csv)
+          echo "❌ Bounced Emails: $((BOUNCED - 1))"
+        fi
+        if [ -f data/verified_hr_emails.csv ]; then
+          VERIFIED=$(wc -l < data/verified_hr_emails.csv)
+          echo "✅ Verified HR Emails: $((VERIFIED - 1))"
+        fi
+        if [ -f data/hr_replies.csv ]; then
+          REPLIES=$(wc -l < data/hr_replies.csv)
+          echo "📬 HR Replies Detected: $((REPLIES - 1))"
+        fi
+        if [ -f data/interview_requests.csv ]; then
+          INTERVIEWS=$(wc -l < data/interview_requests.csv)
+          echo "🎯 Interview Requests: $((INTERVIEWS - 1))"
+        fi
+        if [ -f data/application_tracker.csv ]; then
+          TRACKED=$(wc -l < data/application_tracker.csv)
+          echo "📊 Applications Tracked: $((TRACKED - 1))"
+        fi
+        if [ -f data/subject_line_stats.csv ]; then
+          echo "📈 A/B Subject Testing: Active"
+        fi
+        if [ -f data/linkedin_warmup_plans.txt ]; then
+          echo "🔗 LinkedIn Warm-Up Plans: Generated"
+        fi
+        if [ -f data/analytics_dashboard.txt ]; then
+          echo "📊 Analytics Dashboard: Generated"
+        fi
+        if [ -f data/retry_log.csv ]; then
+          RETRIED=$(wc -l < data/retry_log.csv)
+          echo "🔄 Emails Auto-Retried: $((RETRIED - 1))"
+        fi
+        if [ -f data/email_opens_log.csv ]; then
+          OPENS=$(grep -c "open_count.*[1-9]" data/email_opens_log.csv 2>/dev/null || echo "0")
+          echo "👀 Emails Opened: $OPENS"
+        fi
+        if [ -d cover_letters ]; then
+          COVERS=$(ls cover_letters/*.txt 2>/dev/null | wc -l)
+          echo "📝 Cover Letters Generated: $COVERS"
+        fi
+        echo "📊 =============================================="
+        echo "💡 TIP: Download artifacts for full reports!"
+        echo "📊 =============================================="

@@ -504,8 +504,8 @@ def main():
     
     scraper = NaukriScraper()
     
-    # Get search keywords from environment or use defaults
-    keywords_env = os.getenv('NAUKRI_KEYWORDS', 'python developer, data scientist, software engineer')
+    # Get search keywords from environment or use defaults - DevOps/SRE roles
+    keywords_env = os.getenv('NAUKRI_KEYWORDS', 'devops engineer, site reliability engineer, platform engineer, cloud engineer, kubernetes, sre')
     keywords_list = [k.strip() for k in keywords_env.split(',')]
     
     location = os.getenv('NAUKRI_LOCATION', 'bangalore')

@@ -61,6 +61,10 @@ class ApplicationTracker:
     
     def _generate_application_id(self, company: str, email: str) -> str:
         """Generate unique application ID."""
+        # Handle NaN/None values
+        if company is None or (isinstance(company, float) and pd.isna(company)):
+            company = 'UNKNOWN'
+        company = str(company)
         company_short = ''.join(c for c in company[:10] if c.isalnum()).upper()
         email_hash = hash(email) % 10000
         return f"{company_short}_{email_hash}"
@@ -80,6 +84,10 @@ class ApplicationTracker:
             
             if not email or pd.isna(email):
                 continue
+            
+            # Handle NaN company names
+            if pd.isna(company):
+                company = 'Unknown Company'
             
             # Check if already tracked
             existing = self.tracker_df[

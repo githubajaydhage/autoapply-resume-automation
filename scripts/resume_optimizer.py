@@ -152,7 +152,11 @@ class ResumeOptimizer:
     
     def _extract_keywords_from_jd(self, job_description: str) -> dict:
         """Extract important keywords from job description."""
-        jd_lower = job_description.lower()
+        # Handle NaN/None/non-string values
+        if job_description is None or (isinstance(job_description, float) and pd.isna(job_description)):
+            return {'skills': {}, 'min_experience': 0, 'experience_level': 'entry', 'education': [], 'actions': []}
+        
+        jd_lower = str(job_description).lower()
         
         # Extract skills
         skills = self._extract_skills_from_text(jd_lower)

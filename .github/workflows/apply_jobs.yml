@@ -162,6 +162,33 @@ jobs:
   apply:
     runs-on: ubuntu-latest
     
+    # ============================================
+    # CENTRALIZED USER CONFIGURATION - SHWETA BIRADAR
+    # Change these values to switch users easily
+    # ============================================
+    env:
+      # User Identity
+      APPLICANT_NAME: 'Shweta Biradar'
+      APPLICANT_FIRST_NAME: 'Shweta'
+      APPLICANT_LAST_NAME: 'Biradar'
+      APPLICANT_EMAIL: 'biradarshweta48@gmail.com'
+      APPLICANT_PHONE: '+91-7676294009'
+      APPLICANT_LOCATION: 'Bangalore, Karnataka, India'
+      APPLICANT_CITY: 'Bangalore'
+      APPLICANT_COUNTRY: 'India'
+      APPLICANT_LINKEDIN: 'https://www.linkedin.com/in/shweta-biradar-1b5001257/'
+      APPLICANT_EXPERIENCE: '3'
+      APPLICANT_TARGET_ROLE: 'Data Analyst, Business Analyst'
+      APPLICANT_PROJECTS: ''
+      
+      # Resume Configuration
+      RESUME_FILENAME: 'Shweta_Biradar_Resume.pdf'
+      RESUME_PATH: 'resumes/Shweta_Biradar_Resume.pdf'
+      
+      # Job Search Keywords
+      JOB_KEYWORDS: 'data analyst, business analyst, sql, python, tableau, power bi, excel'
+      NAUKRI_KEYWORDS: 'data analyst, business analyst, sql developer'
+    
     steps:
     - name: Checkout repository
       uses: actions/checkout@v3
@@ -193,6 +220,8 @@ jobs:
     - name: Phase 1 - Scrape Jobs (Multiple Sources)
       run: |
         echo "🔍 PHASE 1: SCRAPING JOBS FROM ALL SOURCES"
+        echo "   User: $APPLICANT_NAME"
+        echo "   Keywords: $JOB_KEYWORDS"
         echo "   Sources: RemoteOK, Arbeitnow, Himalayas, Jobicy, Adzuna"
         python scripts/reliable_job_scraper.py
         echo ""
@@ -205,7 +234,6 @@ jobs:
         PYTHONPATH: ${{ github.workspace }}
         JOB_LOCATION: ${{ github.event.inputs.job_location || 'Bangalore' }}
         NAUKRI_LOCATION: ${{ github.event.inputs.job_location || 'bangalore' }}
-        NAUKRI_KEYWORDS: 'python developer, software engineer, data scientist'
         NAUKRI_EXPERIENCE: 'mid'
 
     # PHASE 1.5: Resume Optimization & Job Matching
@@ -263,12 +291,13 @@ jobs:
       if: ${{ github.event.inputs.scrape_only != 'true' }}
       run: |
         echo "🤝 PHASE 3.5A: SENDING REFERRAL REQUESTS"
+        echo "   User: $APPLICANT_NAME"
+        echo "   Resume: $RESUME_PATH"
         echo "   Referrals have 10x higher response rate than cold emails!"
         python scripts/referral_system.py || true
       env:
         PYTHONPATH: ${{ github.workspace }}
         SENDER_PASSWORD: ${{ secrets.SENDER_PASSWORD }}
-        RESUME_PATH: resumes/Shweta_Biradar_Resume.pdf
         MAX_REFERRAL_REQUESTS: '5'
         MAX_REFERRALS_PER_COMPANY: '2'
 

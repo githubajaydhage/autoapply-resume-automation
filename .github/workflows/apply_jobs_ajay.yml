@@ -7,7 +7,7 @@ name: Job Application - Ajay Dhage (DevOps/SRE)
 # v7 FEATURES (Latest):
 # ✅ Multi-Job Workflow (each phase visible in UI, can cancel individually)
 # ✅ No Hardcoded Values (all config from JOB_KEYWORDS)
-# ✅ Recruiting Agencies (50+ staffing firms)
+# ✅ Industry-Prioritized HR Database
 # ✅ Fast Referrals (5-15s delays, 10 max)
 # =================================================================
 # ONLY 1 SECRET NEEDED: SENDER_PASSWORD_AJAY (Gmail App Password)
@@ -174,8 +174,12 @@ jobs:
           data/followup_log.csv
           data/all_hr_emails.csv
           data/curated_hr_emails.csv
-        key: job-data-ajay-${{ runner.os }}-v8
+          data/bounced_emails.csv
+          data/verified_hr_emails.csv
+          data/referral_requests_log.csv
+        key: job-data-ajay-${{ runner.os }}-v8-${{ github.run_number }}
         restore-keys: |
+          job-data-ajay-${{ runner.os }}-v8-
           job-data-ajay-${{ runner.os }}-
 
     - name: Scrape Jobs (RemoteOK, Arbeitnow, Jobicy, Adzuna)
@@ -260,7 +264,7 @@ jobs:
 
     - name: Load Curated HR Database
       run: |
-        echo "📚 Loading 170+ verified HR emails..."
+        echo "📚 Loading HR emails..."
         python scripts/curated_hr_database.py
       env:
         PYTHONPATH: ${{ github.workspace }}

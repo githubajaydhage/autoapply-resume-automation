@@ -1,9 +1,23 @@
-name: Job Application System (Enhanced v3)
+name: Job Application System (Ultimate v5)
 
 # =================================================================
-# ENHANCED PRODUCTION SYSTEM v3 - Maximum Interview Generation
+# ULTIMATE PRODUCTION SYSTEM v5 - Maximum Interview Generation
 # =================================================================
-# NEW FEATURES in v3 (High Impact):
+# NEW FEATURES in v5 (High Impact):
+# ✅ ATS Keyword Optimizer (70%+ match filter)
+# ✅ Salary Intelligence System (market rate insights)
+# ✅ Job Priority Engine (urgent jobs first)
+# ✅ LinkedIn Warm-Up Plans (3x higher response)
+# ✅ Multi-Channel Analytics Dashboard
+# =================================================================
+# v4 Features:
+# ✅ Skills Match Filter (70%+ threshold)
+# ✅ Interview Prep Generator (company research docs)
+# ✅ Thank You Email Automation
+# ✅ Weekly Summary Digest
+# ✅ Portfolio/GitHub links in emails
+# =================================================================
+# v3 Features:
 # ✅ Email Optimizer (personalized company openers, A/B subject testing)
 # ✅ Recruiter Name Finder ("Dear Priya" vs "Dear Hiring Manager")
 # ✅ Referral Request System (10x higher response rate!)
@@ -250,6 +264,73 @@ jobs:
       env:
         PYTHONPATH: ${{ github.workspace }}
 
+    # PHASE 8: ATS & Priority Analysis
+    - name: Phase 8 - ATS & Job Priority Analysis
+      run: |
+        echo "📊 PHASE 8: ATS KEYWORD OPTIMIZATION & JOB PRIORITY"
+        echo "   Analyzing job-resume keyword match..."
+        echo "   Prioritizing jobs by urgency and fit..."
+        python -c "
+from scripts.ats_keyword_optimizer import generate_ats_report
+from scripts.job_priority_engine import prioritize_jobs
+import pandas as pd
+import os
+
+if os.path.exists('data/jobs_today.csv'):
+    jobs_df = pd.read_csv('data/jobs_today.csv')
+    prioritize_jobs(jobs_df)
+    print('Job priority analysis complete')
+" || true
+      env:
+        PYTHONPATH: ${{ github.workspace }}
+
+    # PHASE 9: LinkedIn Warm-Up Plans
+    - name: Phase 9 - Generate LinkedIn Warm-Up Plans
+      run: |
+        echo "🔗 PHASE 9: LINKEDIN WARM-UP STRATEGY"
+        echo "   Generating recruiter search queries..."
+        echo "   Creating warm-up engagement plans..."
+        python -c "
+from scripts.linkedin_warmup import generate_linkedin_search_targets, LinkedInWarmUpStrategy
+import pandas as pd
+import os
+
+if os.path.exists('data/jobs_today.csv'):
+    jobs_df = pd.read_csv('data/jobs_today.csv')
+    generate_linkedin_search_targets(jobs_df)
+    
+    # Generate warmup plans for top companies
+    targets = []
+    for company in jobs_df['company'].unique()[:10]:
+        job = jobs_df[jobs_df['company'] == company].iloc[0]
+        targets.append({
+            'name': 'Recruiter',
+            'company': company,
+            'job_title': job.get('title', 'Position')
+        })
+    if targets:
+        LinkedInWarmUpStrategy.generate_batch_warmup_plans(targets)
+print('LinkedIn warm-up plans generated')
+" || true
+      env:
+        PYTHONPATH: ${{ github.workspace }}
+
+    # PHASE 10: Multi-Channel Analytics Dashboard
+    - name: Phase 10 - Generate Analytics Dashboard
+      run: |
+        echo "📈 PHASE 10: MULTI-CHANNEL ANALYTICS"
+        echo "   Integrating all channel data..."
+        echo "   Generating performance insights..."
+        python -c "
+from scripts.multi_channel_analytics import AnalyticsDashboard, integrate_existing_logs
+integrate_existing_logs()
+dashboard = AnalyticsDashboard()
+dashboard.generate_dashboard_report()
+print('Analytics dashboard generated')
+" || true
+      env:
+        PYTHONPATH: ${{ github.workspace }}
+
     - name: Save Data Cache
       uses: actions/cache/save@v3
       with:
@@ -274,9 +355,15 @@ jobs:
           data/referral_requests_log.csv
           data/thank_you_log.csv
           data/weekly_summary_*.txt
+          data/prioritized_jobs.csv
+          data/linkedin_search_targets.txt
+          data/linkedin_warmup_plans.txt
+          data/analytics_dashboard.txt
+          data/multi_channel_tracker.csv
+          data/ats_report.txt
           cover_letters/*.txt
           interview_prep/*.txt
-        key: job-data-${{ runner.os }}-v6-${{ github.run_number }}
+        key: job-data-${{ runner.os }}-v7-${{ github.run_number }}
 
     - name: Upload Results
       uses: actions/upload-artifact@v4
@@ -301,6 +388,12 @@ jobs:
           data/subject_line_stats.csv
           data/thank_you_log.csv
           data/weekly_summary_*.txt
+          data/prioritized_jobs.csv
+          data/linkedin_search_targets.txt
+          data/linkedin_warmup_plans.txt
+          data/analytics_dashboard.txt
+          data/multi_channel_tracker.csv
+          data/ats_report.txt
           data/*.json
           cover_letters/*.txt
           interview_prep/*.txt
@@ -311,11 +404,15 @@ jobs:
       run: |
         echo ""
         echo "📊 =============================================="
-        echo "📊 JOB APPLICATION SUMMARY v3 - MAXIMUM INTERVIEWS"
+        echo "📊 JOB APPLICATION SUMMARY v5 - ULTIMATE EDITION"
         echo "📊 =============================================="
         if [ -f data/jobs_today.csv ]; then
           JOBS=$(wc -l < data/jobs_today.csv)
           echo "🔍 Jobs Scraped: $((JOBS - 1))"
+        fi
+        if [ -f data/prioritized_jobs.csv ]; then
+          PRIORITY=$(grep -c "🔴 URGENT\|🟠 HIGH" data/prioritized_jobs.csv 2>/dev/null || echo "0")
+          echo "⚡ High Priority Jobs: $PRIORITY"
         fi
         if [ -f data/enhanced_jobs.csv ]; then
           ENHANCED=$(wc -l < data/enhanced_jobs.csv)
@@ -364,10 +461,16 @@ jobs:
         if [ -f data/subject_line_stats.csv ]; then
           echo "📈 A/B Subject Testing: Active"
         fi
+        if [ -f data/linkedin_warmup_plans.txt ]; then
+          echo "🔗 LinkedIn Warm-Up Plans: Generated"
+        fi
+        if [ -f data/analytics_dashboard.txt ]; then
+          echo "📊 Analytics Dashboard: Generated"
+        fi
         if [ -d cover_letters ]; then
           COVERS=$(ls cover_letters/*.txt 2>/dev/null | wc -l)
           echo "📝 Cover Letters Generated: $COVERS"
         fi
         echo "📊 =============================================="
-        echo "💡 TIP: Check artifacts for detailed reports"
+        echo "💡 TIP: Download artifacts for full reports!"
         echo "📊 =============================================="

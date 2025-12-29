@@ -311,10 +311,20 @@ class PersonalizedEmailSender:
             logging.info(f"   ⏰ Timing: {timing['reason']}")
         
     def _load_sent_log(self) -> set:
-        """Load previously sent emails to avoid duplicates."""
+        """Load previously sent emails to avoid duplicates.
+        
+        Now tracks by (email + job_title) combination so we can apply
+        to NEW job openings at the same company.
+        """
         if os.path.exists(self.sent_log_path):
             df = pd.read_csv(self.sent_log_path)
-            return set(df['recipient_email'].str.lower())
+            # Track by email + job_title combination (allows same company for different jobs)
+            sent_combinations = set()
+            for _, row in df.iterrows():
+                email = str(row.get('recipient_email', '')).lower().strip()
+                job = str(row.get('job_title', '')).lower().strip()
+                sent_combinations.add(f"{email}|{job}")
+            return sent_combinations
         return set()
     
     def _save_sent_log(self, recipient_email: str, company: str, job_title: str, status: str):
@@ -338,7 +348,8 @@ class PersonalizedEmailSender:
             df = pd.DataFrame([log_entry])
         
         df.to_csv(self.sent_log_path, index=False)
-        self.sent_emails.add(recipient_email.lower())
+        # Track by email + job_title combination
+        self.sent_emails.add(f"{recipient_email.lower()}|{job_title.lower().strip()}")
     
     def generate_email_subject(self, job_title: str, company: str, recipient_email: str = None) -> str:
         """Generate a personalized email subject - optimized for high open rates."""
@@ -602,8 +613,18 @@ ${name}
             logging.warning("No emails to send!")
             return {'sent': 0, 'failed': 0, 'skipped': 0}
         
-        # Filter out already sent
-        emails_df = emails_df[~emails_df['hr_email'].str.lower().isin(self.sent_emails)]
+        # Filter out already sent - now tracks by (email + job_title) combination
+        # This allows applying to NEW job openings at the same company
+        def is_already_sent(row):
+            email = str(row['hr_email']).lower().strip()
+            job = str(row.get('job_title', '')).lower().strip()
+            return f"{email}|{job}" in self.sent_emails
+        
+        already_sent_mask = emails_df.apply(is_already_sent, axis=1)
+        new_jobs_count = (~already_sent_mask).sum()
+        logging.info(f"📬 Found {new_jobs_count} NEW job applications (filtered {already_sent_mask.sum()} already-sent)")
+        
+        emails_df = emails_df[~already_sent_mask]
         emails_df = emails_df[emails_df['hr_email'].notna()]
         
         # CRITICAL: Filter to only HR-related emails (skip info@, support@, etc.)

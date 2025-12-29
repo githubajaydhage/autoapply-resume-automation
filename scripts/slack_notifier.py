@@ -265,7 +265,10 @@ def notify_new_interviews(notifier: SlackNotifier, data_dir: str = "data"):
         # Get interviews from last 24 hours
         if 'date' in df.columns:
             df['date'] = pd.to_datetime(df['date'], errors='coerce')
-            recent = df[df['date'] > (datetime.now() - pd.Timedelta(hours=24))]
+            # Use timezone-naive comparison by removing timezone info
+            df['date'] = df['date'].dt.tz_localize(None)
+            cutoff = datetime.now() - pd.Timedelta(hours=24)
+            recent = df[df['date'].notna() & (df['date'] > cutoff)]
         else:
             recent = df.tail(5)  # Just notify last 5
         

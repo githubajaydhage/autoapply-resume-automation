@@ -149,7 +149,9 @@ class CompanyPersonalizer:
     
     def get_company_highlight(self, company: str) -> str:
         """Get a personalized highlight for a company."""
-        company_lower = company.lower().strip()
+        if pd.isna(company) or not company:
+            return None
+        company_lower = str(company).lower().strip()
         
         # Check known highlights
         for key, highlights in self.COMPANY_HIGHLIGHTS.items():
@@ -184,7 +186,9 @@ class CompanyPersonalizer:
     
     def get_company_values_mention(self, company: str) -> str:
         """Get company values/culture mention for emails."""
-        company_lower = company.lower()
+        if pd.isna(company) or not company:
+            return ""
+        company_lower = str(company).lower()
         
         culture_map = {
             'google': "innovation and 20% time for personal projects",
@@ -328,7 +332,10 @@ class SubjectLineOptimizer:
                 'reply_count': 0,
                 'reply_rate': 0.0
             }])
-            self.stats = pd.concat([self.stats, new_row], ignore_index=True)
+            if self.stats.empty:
+                self.stats = new_row
+            else:
+                self.stats = pd.concat([self.stats, new_row], ignore_index=True)
         self._save_stats()
     
     def record_reply(self, template_id: str):
@@ -448,6 +455,12 @@ class EmailOptimizer:
                                applicant_projects: str = '',
                                include_portfolio: bool = False) -> str:
         """Generate a fully optimized email body with optional portfolio links."""
+        
+        # Handle NaN values for required fields
+        job_title = str(job_title) if not pd.isna(job_title) else "Data Analyst"
+        company = str(company) if not pd.isna(company) else "your company"
+        applicant_skills = str(applicant_skills) if not pd.isna(applicant_skills) else "data analysis"
+        applicant_experience = str(applicant_experience) if not pd.isna(applicant_experience) else "3"
         
         optimization = self.optimize_email(
             recipient_email, company, job_title, applicant_experience

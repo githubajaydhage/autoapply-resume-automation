@@ -149,14 +149,24 @@ class SmartJobMatcher:
         if os.path.exists(match_path):
             try:
                 match_df = pd.read_csv(match_path)
-                # Merge match scores with jobs
+                # Merge match scores with jobs - check if required columns exist
                 if 'match_score' in match_df.columns:
-                    jobs_df = jobs_df.merge(
-                        match_df[['title', 'company', 'match_score']], 
-                        on=['title', 'company'], 
-                        how='left'
-                    )
-                    logging.info(f"📊 Loaded match scores for jobs")
+                    # Determine merge columns based on what's available
+                    merge_cols = []
+                    for col in ['title', 'company']:
+                        if col in match_df.columns and col in jobs_df.columns:
+                            merge_cols.append(col)
+                    
+                    if merge_cols:
+                        select_cols = merge_cols + ['match_score']
+                        jobs_df = jobs_df.merge(
+                            match_df[select_cols], 
+                            on=merge_cols, 
+                            how='left'
+                        )
+                        logging.info(f"📊 Loaded match scores for jobs (merged on: {merge_cols})")
+                    else:
+                        logging.warning("Match scores file missing required columns for merge")
             except Exception as e:
                 logging.warning(f"Could not load match scores: {e}")
         

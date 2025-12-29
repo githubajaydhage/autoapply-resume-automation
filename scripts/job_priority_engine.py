@@ -76,10 +76,11 @@ class PostingFreshnessScorer:
         Returns:
             Number of days since posting
         """
-        if not posted_date:
+        import pandas as pd
+        if not posted_date or pd.isna(posted_date):
             return 30  # Default assumption
         
-        posted_lower = posted_date.lower().strip()
+        posted_lower = str(posted_date).lower().strip()
         
         # Handle relative dates
         relative_patterns = [
@@ -144,7 +145,8 @@ class PostingFreshnessScorer:
         explanation = f"{days_old} days old"
         
         # Adjust based on keywords
-        desc_lower = description.lower()
+        import pandas as pd
+        desc_lower = str(description).lower() if description and not pd.isna(description) else ""
         
         for keyword in cls.FRESH_KEYWORDS:
             if keyword in desc_lower:
@@ -187,7 +189,10 @@ class ApplicationDeadlineScorer:
         Returns:
             Tuple of (score, explanation)
         """
-        desc_lower = description.lower()
+        import pandas as pd
+        if not description or pd.isna(description):
+            return 50, "No description available"
+        desc_lower = str(description).lower()
         
         for pattern, urgency_type in cls.DEADLINE_KEYWORDS:
             match = re.search(pattern, desc_lower)
@@ -281,7 +286,10 @@ class CompanyResponseScorer:
         Returns:
             Tuple of (score, explanation)
         """
-        company_lower = company.lower().strip()
+        import pandas as pd
+        if not company or pd.isna(company):
+            return 55, "Unknown company"
+        company_lower = str(company).lower().strip()
         
         # Check known companies
         for known_company, score in cls.RESPONSIVE_COMPANIES.items():
@@ -290,7 +298,7 @@ class CompanyResponseScorer:
                 return score, f"{company} has {responsiveness} response rate"
         
         # Check for startup indicators
-        desc_lower = description.lower() if description else ""
+        desc_lower = str(description).lower() if description and not pd.isna(description) else ""
         for indicator in cls.STARTUP_INDICATORS:
             if indicator in desc_lower or indicator in company_lower:
                 return 75, "Funded startup - typically responsive"
@@ -327,8 +335,14 @@ class RoleFitScorer:
         Returns:
             Tuple of (score, explanation)
         """
+        import pandas as pd
         score = 50  # Base score
         factors = []
+        
+        # Handle NaN values
+        job_title = str(job_title) if job_title and not pd.isna(job_title) else ""
+        description = str(description) if description and not pd.isna(description) else ""
+        target_role = str(target_role) if target_role and not pd.isna(target_role) else ""
         
         title_lower = job_title.lower()
         desc_lower = description.lower()

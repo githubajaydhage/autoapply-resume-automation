@@ -9,6 +9,7 @@ name: Job Application System (Ultimate v5)
 # ✅ Job Priority Engine (urgent jobs first)
 # ✅ LinkedIn Warm-Up Plans (3x higher response)
 # ✅ Multi-Channel Analytics Dashboard
+# ✅ Slack Integration (instant interview alerts!)
 # =================================================================
 # v4 Features:
 # ✅ Skills Match Filter (70%+ threshold)
@@ -99,6 +100,14 @@ on:
         options:
         - 'false'
         - 'true'
+      send_slack_notifications:
+        description: 'Send Slack notifications?'
+        required: false
+        default: 'true'
+        type: choice
+        options:
+        - 'true'
+        - 'false'
         
   schedule:
     # Runs 3 times per day on weekdays (IST: 9:30 AM, 2:30 PM, 7:30 PM)
@@ -353,6 +362,17 @@ jobs:
           interview_prep/*.txt
         retention-days: 30
       if: always()
+
+    # PHASE 11: Slack Notifications
+    - name: Phase 11 - Send Slack Notifications
+      if: ${{ github.event.inputs.send_slack_notifications != 'false' }}
+      run: |
+        echo "📢 PHASE 11: SENDING SLACK NOTIFICATIONS"
+        echo "   Alerting for interviews, HR replies, and daily summary..."
+        python scripts/slack_notifier.py || true
+      env:
+        PYTHONPATH: ${{ github.workspace }}
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
     - name: Summary Report
       run: |

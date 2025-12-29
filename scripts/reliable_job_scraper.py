@@ -46,17 +46,20 @@ class ReliableJobScraper:
             self.search_keywords = [k.strip() for k in keywords_env.split(',') if k.strip()]
             logging.info(f"📋 Using job keywords from environment: {self.search_keywords}")
         else:
-            # Default fallback for backward compatibility
+            # Default fallback - Yogeshwari Mane (Interior Design / AutoCAD)
             self.search_keywords = [
-                "data analyst",
-                "business analyst", 
-                "data scientist",
-                "python developer",
-                "sql developer",
-                "analytics",
-                "BI analyst",
-                "power bi",
-                "tableau",
+                "autocad designer",
+                "interior designer",
+                "junior interior designer",
+                "estimation engineer",
+                "quantity surveyor",
+                "billing engineer",
+                "drafting engineer",
+                "revit",
+                "civil draftsman",
+                "design coordinator",
+                "interior design",
+                "tender engineer",
             ]
         
     def scrape_all_sources(self) -> list:
@@ -139,7 +142,7 @@ class ReliableJobScraper:
         """Himalayas.app - DISABLED due to consistent 403 blocks."""
         # Himalayas is consistently blocking requests with 403 Forbidden
         # Skipping to save time and avoid wasted API calls
-        logging.info("📡 Skipping Himalayas API (blocked, returns 403)")
+        logging.info("📡 Skipping Himalayas API (blocked by 403)")
         return
     
     def _scrape_jobicy(self):
@@ -558,6 +561,11 @@ class ReliableJobScraper:
             logging.warning(f"   ⚠️ RemoteOK error: {e}")
             
         time.sleep(0.3)
+    
+    def _scrape_direct_career_pages(self):
+        """Scrape directly from company career pages - most reliable."""
+        
+        # Top tech companies with scrapeable career pages
         career_pages = [
             # Indian Tech Giants
             ("Infosys", "https://www.infosys.com/careers.html"),
@@ -597,6 +605,9 @@ class ReliableJobScraper:
         
         logging.info("🏢 Scraping direct company career pages...")
         
+        # Use JOB_KEYWORDS for job title instead of hardcoded "Data Analyst"
+        job_title_from_keywords = self.search_keywords[0].title() if self.search_keywords else 'Open Positions'
+        
         for company_name, career_url in career_pages:
             try:
                 response = self.session.get(career_url, timeout=10)
@@ -604,7 +615,7 @@ class ReliableJobScraper:
                 if response.status_code == 200:
                     # Create a job entry for each company (HR contact reference)
                     job_entry = {
-                        'title': 'Data Analyst / Business Analyst',
+                        'title': job_title_from_keywords,
                         'company': company_name,
                         'location': self.location,
                         'url': career_url,

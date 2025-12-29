@@ -796,7 +796,8 @@ ${my_name}
             message['From'] = f"{self.my_name} <{self.my_email}>"
             message['To'] = recipient_email
             message['Subject'] = subject
-            message.attach(MIMEText(body, 'plain'))
+            # Use UTF-8 encoding to handle emojis and special characters
+            message.attach(MIMEText(body, 'plain', 'utf-8'))
             
             # Attach resume if available
             if os.path.exists(self.resume_path):
@@ -955,9 +956,9 @@ def main():
     
     system = ReferralRequestSystem()
     
-    # Get max referrals from env or default to 10
+    # Get max referrals from env or default to 10 (reduced from unlimited)
     max_referrals = int(os.getenv('MAX_REFERRAL_REQUESTS', '10'))
-    max_per_company = int(os.getenv('MAX_REFERRALS_PER_COMPANY', '2'))
+    max_per_company = int(os.getenv('MAX_REFERRALS_PER_COMPANY', '1'))  # Only 1 contact per company
     
     # Priority 1: Check for jobs_today.csv to auto-send referrals
     jobs_file = 'data/jobs_today.csv'
@@ -975,7 +976,7 @@ def main():
                 jobs_df=jobs_df,
                 max_per_company=max_per_company,
                 max_total=max_referrals,
-                delay_range=(30, 60)  # 30-60 seconds delay for faster execution
+                delay_range=(5, 15)  # 5-15 seconds delay for fast execution
             )
             
             logging.info("\n" + "="*60)

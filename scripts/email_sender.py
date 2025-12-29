@@ -698,6 +698,14 @@ def load_smart_matched_applications():
     return None
 
 
+# Import recruiting agencies finder
+try:
+    from scripts.recruiting_agencies import get_agency_emails_for_profile
+    AGENCIES_AVAILABLE = True
+except ImportError:
+    AGENCIES_AVAILABLE = False
+
+
 def main():
     """Main function to send personalized emails."""
     logging.info("="*60)
@@ -734,7 +742,10 @@ def main():
             # Rename 'email' to 'hr_email' for compatibility
             if 'email' in curated_df.columns:
                 curated_df = curated_df.rename(columns={'email': 'hr_email'})
-            curated_df['job_title'] = 'Data Analyst / Business Analyst'  # Default
+            # Use JOB_KEYWORDS for job title instead of hardcoded "Data Analyst"
+            job_keywords_str = os.environ.get('JOB_KEYWORDS', 'Open Position')
+            job_title_default = job_keywords_str.split(',')[0].strip().title() if job_keywords_str else 'Open Position'
+            curated_df['job_title'] = job_title_default
             emails_df = pd.concat([emails_df, curated_df], ignore_index=True)
             logging.info(f"📋 Loaded {len(curated_df)} curated HR emails")
         
@@ -749,12 +760,6 @@ def main():
     # ============================================
     # NEW: Add Recruiting Agencies to email list
     # ============================================
-    try:
-        from scripts.recruiting_agencies import get_agency_emails_for_profile
-        AGENCIES_AVAILABLE = True
-    except ImportError:
-        AGENCIES_AVAILABLE = False
-    
     if AGENCIES_AVAILABLE and os.getenv('SEND_TO_AGENCIES', 'true').lower() == 'true':
         logging.info("\n🏢 RECRUITING AGENCIES - Finding staffing firms for your profile...")
         try:

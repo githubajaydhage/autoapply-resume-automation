@@ -1089,6 +1089,298 @@ When adding multiple users, offset their cron times:
 
 ---
 
+## 🔄 Alternative Approaches for Multi-User Setup
+
+Besides the branch approach documented above, here are other ways to set up the automation for multiple users:
+
+### 📊 Comparison of Approaches
+
+```mermaid
+flowchart TB
+    subgraph APPROACHES["🎯 MULTI-USER SETUP OPTIONS"]
+        direction TB
+        
+        A1["🌿 APPROACH 1<br/>Branch Per User<br/>⭐ Recommended"]
+        A2["📦 APPROACH 2<br/>Separate Repository"]
+        A3["🔧 APPROACH 3<br/>Environment Variables Only"]
+        A4["📁 APPROACH 4<br/>Config Subdirectories"]
+    end
+    
+    style A1 fill:#c8e6c9
+    style A2 fill:#e1f5fe
+    style A3 fill:#fff3e0
+    style A4 fill:#fce4ec
+```
+
+| Approach | Complexity | Isolation | Maintenance | Best For |
+|----------|------------|-----------|-------------|----------|
+| 🌿 **Branch Per User** | Medium | ✅ Complete | Easy | Teams, multiple job seekers |
+| 📦 **Separate Repository** | Low | ✅ Complete | Harder (updates) | Independent users |
+| 🔧 **Environment Variables** | Low | ⚠️ Partial | Very Easy | Same role, different person |
+| 📁 **Config Subdirectories** | High | ⚠️ Partial | Complex | Advanced users |
+
+---
+
+### 📦 Approach 2: Separate Repository (Fork/Clone)
+
+**Best for:** Users who want complete independence and don't need shared updates.
+
+#### How It Works
+
+```mermaid
+flowchart LR
+    ORIGINAL["🏠 Original Repo<br/>autoapply-resume-automation"]
+    
+    FORK1["📦 User 1's Fork<br/>user1/job-automation"]
+    FORK2["📦 User 2's Fork<br/>user2/job-automation"]
+    FORK3["📦 User 3's Fork<br/>user3/job-automation"]
+    
+    ORIGINAL --> |Fork| FORK1
+    ORIGINAL --> |Fork| FORK2
+    ORIGINAL --> |Fork| FORK3
+    
+    style ORIGINAL fill:#fff3e0
+    style FORK1 fill:#e8f5e9
+    style FORK2 fill:#e8f5e9
+    style FORK3 fill:#e8f5e9
+```
+
+#### Step-by-Step
+
+1. **Fork the Repository**
+   - Go to the original repo on GitHub
+   - Click **Fork** button (top right)
+   - This creates a copy under your account
+
+2. **Clone Your Fork**
+   ```bash
+   git clone https://github.com/YOUR_USERNAME/autoapply-resume-automation.git
+   cd autoapply-resume-automation/job-automation
+   ```
+
+3. **Update Configuration Files**
+   - Edit `utils/config.py` with your details
+   - Edit `scripts/reliable_job_scraper.py` with your job keywords
+   - Edit `scripts/naukri_scraper.py` with your Naukri keywords
+   - Edit `utils/resume_naming.py` with your job title mappings
+
+4. **Add Your Resume**
+   ```bash
+   cp /path/to/Your_Resume.pdf resumes/
+   ```
+
+5. **Set Up Secrets in Your Fork**
+   - Go to your fork's **Settings → Secrets → Actions**
+   - Add all required secrets (no suffix needed since it's your own repo)
+
+6. **Push Changes**
+   ```bash
+   git add -A
+   git commit -m "Configure for my job search"
+   git push origin main
+   ```
+
+#### ✅ Pros
+- Complete isolation
+- Simple secret management (no suffixes)
+- Full control over your repo
+- Can make any customizations
+
+#### ❌ Cons
+- Missing updates from original repo
+- Must manually sync improvements
+- Each user manages their own repo
+
+#### 🔄 Syncing Updates from Original
+```bash
+# Add original as upstream (one-time)
+git remote add upstream https://github.com/ORIGINAL_OWNER/autoapply-resume-automation.git
+
+# Fetch and merge updates
+git fetch upstream
+git merge upstream/main
+# Resolve any conflicts in config files
+git push origin main
+```
+
+---
+
+### 🔧 Approach 3: Environment Variables Only (Single Branch)
+
+**Best for:** Users with similar roles who only differ in personal details.
+
+#### How It Works
+
+Keep all configuration in GitHub Secrets, no code changes needed per user.
+
+```mermaid
+flowchart TB
+    subgraph REPO["🏠 SINGLE REPOSITORY"]
+        CODE["📄 Same Code<br/>No modifications"]
+        WF1["⚙️ Workflow 1<br/>Uses USER1 secrets"]
+        WF2["⚙️ Workflow 2<br/>Uses USER2 secrets"]
+    end
+    
+    subgraph SECRETS["🔐 GITHUB SECRETS"]
+        S1["SENDER_EMAIL_USER1<br/>SENDER_PASSWORD_USER1<br/>APPLICANT_NAME_USER1<br/>..."]
+        S2["SENDER_EMAIL_USER2<br/>SENDER_PASSWORD_USER2<br/>APPLICANT_NAME_USER2<br/>..."]
+    end
+    
+    CODE --> WF1 & WF2
+    S1 --> WF1
+    S2 --> WF2
+    
+    style REPO fill:#e8f5e9
+    style SECRETS fill:#fce4ec
+```
+
+#### Step-by-Step
+
+1. **Keep main branch unchanged** (default config)
+
+2. **Create workflow file for each user**
+   ```bash
+   cp .github/workflows/apply_jobs.yml .github/workflows/apply_jobs_user2.yml
+   ```
+
+3. **In the new workflow, use secrets for EVERYTHING:**
+   ```yaml
+   env:
+     # Personal details from secrets
+     APPLICANT_NAME: ${{ secrets.APPLICANT_NAME_USER2 }}
+     APPLICANT_EMAIL: ${{ secrets.APPLICANT_EMAIL_USER2 }}
+     APPLICANT_PHONE: ${{ secrets.APPLICANT_PHONE_USER2 }}
+     APPLICANT_TARGET_ROLE: ${{ secrets.APPLICANT_TARGET_ROLE_USER2 }}
+     APPLICANT_SKILLS: ${{ secrets.APPLICANT_SKILLS_USER2 }}
+     
+     # Job search keywords
+     NAUKRI_KEYWORDS: ${{ secrets.NAUKRI_KEYWORDS_USER2 }}
+     
+     # Email credentials
+     SENDER_EMAIL: ${{ secrets.SENDER_EMAIL_USER2 }}
+     SENDER_PASSWORD: ${{ secrets.SENDER_PASSWORD_USER2 }}
+     
+     # Resume path
+     RESUME_PATH: ${{ secrets.RESUME_PATH_USER2 }}
+   ```
+
+4. **Set up all secrets for User 2:**
+   | Secret | Example Value |
+   |--------|---------------|
+   | `APPLICANT_NAME_USER2` | John Doe |
+   | `APPLICANT_EMAIL_USER2` | john@gmail.com |
+   | `APPLICANT_TARGET_ROLE_USER2` | Data Analyst |
+   | `NAUKRI_KEYWORDS_USER2` | data analyst, sql developer |
+   | `RESUME_PATH_USER2` | resumes/John_Doe_Resume.pdf |
+
+5. **Add resume to resumes/ folder** and push
+
+#### ✅ Pros
+- No code changes needed
+- All config in one place (secrets)
+- Easy to add new users
+- Single codebase to maintain
+
+#### ❌ Cons
+- Many secrets to manage per user
+- Job keywords in `reliable_job_scraper.py` still hardcoded
+- Limited customization per user
+- Secrets have character limits
+
+#### ⚠️ Limitation
+This approach works well for personal details but **job search keywords in code files still need modification** for different job types (e.g., IT vs Interior Design).
+
+---
+
+### 📁 Approach 4: Config Subdirectories
+
+**Best for:** Advanced users who want all configs in one branch.
+
+#### How It Works
+
+Create a config folder per user and select via environment variable.
+
+```
+job-automation/
+├── configs/
+│   ├── shweta/
+│   │   ├── config.py
+│   │   ├── job_keywords.py
+│   │   └── resume_mapping.py
+│   ├── yogeshwari/
+│   │   ├── config.py
+│   │   ├── job_keywords.py
+│   │   └── resume_mapping.py
+│   └── __init__.py
+├── resumes/
+│   ├── Shweta_Resume.pdf
+│   └── Yogeshwari_Resume.pdf
+└── utils/
+    └── config.py  # Loads from configs/{USER}/
+```
+
+#### Implementation
+
+1. **Modify `utils/config.py` to load dynamically:**
+   ```python
+   import os
+   import importlib
+   
+   # Get user from environment
+   ACTIVE_USER = os.getenv('ACTIVE_USER', 'shweta')
+   
+   # Load user-specific config
+   user_config = importlib.import_module(f'configs.{ACTIVE_USER}.config')
+   
+   USER_DETAILS = user_config.USER_DETAILS
+   BASE_RESUME_PATH = user_config.BASE_RESUME_PATH
+   ```
+
+2. **Create workflow per user with `ACTIVE_USER` env:**
+   ```yaml
+   env:
+     ACTIVE_USER: yogeshwari
+   ```
+
+#### ✅ Pros
+- All configs in one branch
+- Easy to compare configurations
+- Single codebase
+
+#### ❌ Cons
+- Requires code refactoring
+- More complex setup
+- All users' configs visible to everyone
+- Need to modify multiple scripts to use dynamic loading
+
+---
+
+### 🎯 Recommendation Summary
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│  🎯 WHICH APPROACH SHOULD YOU USE?                                  │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│  👥 Managing job search for family/friends?                         │
+│     → Use BRANCH APPROACH (Approach 1)                              │
+│                                                                     │
+│  🧑 Setting up for just yourself?                                   │
+│     → Use SEPARATE REPOSITORY (Approach 2)                          │
+│                                                                     │
+│  👔 Multiple people, SAME job type (e.g., all Data Analysts)?       │
+│     → Use ENVIRONMENT VARIABLES (Approach 3)                        │
+│                                                                     │
+│  🔧 Want everything in one place, okay with complexity?             │
+│     → Use CONFIG SUBDIRECTORIES (Approach 4)                        │
+│                                                                     │
+│  ⭐ Not sure? Start with BRANCH APPROACH - it's the most flexible!  │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
 ## ⚠️ Important Notes
 
 1. **Use responsibly** - Don't spam. The system has built-in rate limiting.

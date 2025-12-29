@@ -501,8 +501,13 @@ class EnhancedJobScraper:
                 if col not in existing_df.columns:
                     existing_df[col] = ''
             
-            # Merge
-            merged = pd.concat([existing_df, enhanced_df], ignore_index=True)
+            # Merge - handle empty DataFrames
+            if existing_df.empty:
+                merged = enhanced_df
+            elif enhanced_df.empty:
+                merged = existing_df
+            else:
+                merged = pd.concat([existing_df, enhanced_df], ignore_index=True)
             merged = merged.drop_duplicates(subset=['title', 'company'], keep='first')
             
             # Save back

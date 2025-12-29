@@ -193,7 +193,10 @@ def main():
     # Load existing if any
     if os.path.exists(all_hr_path):
         existing = pd.read_csv(all_hr_path)
-        combined = pd.concat([existing, df], ignore_index=True)
+        if existing.empty:
+            combined = df
+        else:
+            combined = pd.concat([existing, df], ignore_index=True)
         combined = combined.drop_duplicates(subset=['email'], keep='first')
     else:
         combined = df

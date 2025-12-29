@@ -320,6 +320,9 @@ class AutoRetryEmails:
             # Check if last retry was recent
             if not company_retries.empty:
                 last_retry = pd.to_datetime(company_retries['retry_at'].max())
+                # Remove timezone for safe comparison
+                if last_retry.tzinfo is not None:
+                    last_retry = last_retry.tz_localize(None)
                 if datetime.now() - last_retry < timedelta(days=self.retry_delay_days):
                     return False
             
@@ -409,7 +412,11 @@ Best regards,
                 'retry_count': len(df[df['company'] == company]) + 1
             }
             
-            df = pd.concat([df, pd.DataFrame([new_entry])], ignore_index=True)
+            new_row = pd.DataFrame([new_entry])
+            if df.empty:
+                df = new_row
+            else:
+                df = pd.concat([df, new_row], ignore_index=True)
             df.to_csv(self.retry_log, index=False)
             
         except Exception as e:

@@ -275,7 +275,10 @@ class MobileAlerts:
             # Get interviews from last hour (to avoid duplicate alerts)
             if 'date' in df.columns:
                 df['date'] = pd.to_datetime(df['date'], errors='coerce')
-                recent = df[df['date'] > (datetime.now() - pd.Timedelta(hours=1))]
+                # Remove timezone info for safe comparison
+                df['date'] = df['date'].dt.tz_localize(None)
+                cutoff = datetime.now() - pd.Timedelta(hours=1)
+                recent = df[df['date'].notna() & (df['date'] > cutoff)]
             else:
                 recent = df.tail(3)
             

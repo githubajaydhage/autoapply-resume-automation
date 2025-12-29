@@ -354,7 +354,10 @@ class EmailVerifier:
         df['verified_at'] = datetime.now().isoformat()
         if os.path.exists(self.verification_log_path):
             df_existing = pd.read_csv(self.verification_log_path)
-            df_combined = pd.concat([df_existing, df], ignore_index=True)
+            if df_existing.empty:
+                df_combined = df
+            else:
+                df_combined = pd.concat([df_existing, df], ignore_index=True)
             df_combined = df_combined.drop_duplicates(subset=['email'], keep='last')
             df_combined.to_csv(self.verification_log_path, index=False)
         else:

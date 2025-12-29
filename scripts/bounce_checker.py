@@ -250,7 +250,10 @@ class BounceChecker:
         
         if os.path.exists(self.bounce_log_path):
             df_existing = pd.read_csv(self.bounce_log_path)
-            df_combined = pd.concat([df_existing, df_new], ignore_index=True)
+            if df_existing.empty:
+                df_combined = df_new
+            else:
+                df_combined = pd.concat([df_existing, df_new], ignore_index=True)
             df_combined = df_combined.drop_duplicates(subset=['bounced_email'], keep='last')
         else:
             df_combined = df_new

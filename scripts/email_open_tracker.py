@@ -109,7 +109,11 @@ class EmailOpenTracker:
                 'ip_location': ''
             }
             
-            df = pd.concat([df, pd.DataFrame([new_entry])], ignore_index=True)
+            new_row = pd.DataFrame([new_entry])
+            if df.empty:
+                df = new_row
+            else:
+                df = pd.concat([df, new_row], ignore_index=True)
             df.to_csv(self.tracking_log, index=False)
             
             logging.info(f"📧 Tracking enabled for {recipient_email} (ID: {tracking_id})")
@@ -191,11 +195,13 @@ class EmailOpenTracker:
         try:
             df = pd.read_csv(self.tracking_log)
             
-            df['sent_at'] = pd.to_datetime(df['sent_at'])
+            df['sent_at'] = pd.to_datetime(df['sent_at'], errors='coerce')
+            # Remove timezone info for safe comparison
+            df['sent_at'] = df['sent_at'].dt.tz_localize(None)
             cutoff = datetime.now() - pd.Timedelta(days=days_old)
             
             # Emails sent before cutoff with 0 opens
-            unopened = df[(df['sent_at'] < cutoff) & (df['open_count'] == 0)]
+            unopened = df[(df['sent_at'].notna()) & (df['sent_at'] < cutoff) & (df['open_count'] == 0)]
             
             return unopened.to_dict('records')
             

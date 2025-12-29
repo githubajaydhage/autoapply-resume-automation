@@ -329,7 +329,11 @@ class PersonalizedEmailSender:
         
         if os.path.exists(self.sent_log_path):
             df = pd.read_csv(self.sent_log_path)
-            df = pd.concat([df, pd.DataFrame([log_entry])], ignore_index=True)
+            new_row = pd.DataFrame([log_entry])
+            if df.empty:
+                df = new_row
+            else:
+                df = pd.concat([df, new_row], ignore_index=True)
         else:
             df = pd.DataFrame([log_entry])
         

@@ -116,7 +116,9 @@ class SmartFollowUpSender:
         df = df[df['status'] == 'sent']
         
         # Parse dates and calculate days since sent
-        df['sent_at'] = pd.to_datetime(df['sent_at'])
+        df['sent_at'] = pd.to_datetime(df['sent_at'], errors='coerce')
+        # Remove timezone info for safe comparison
+        df['sent_at'] = df['sent_at'].dt.tz_localize(None)
         df['days_since_sent'] = (datetime.now() - df['sent_at']).dt.days
         
         # Determine which stage each contact is eligible for

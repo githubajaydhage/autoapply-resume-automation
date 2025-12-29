@@ -483,8 +483,10 @@ class WeeklySummaryDigest:
             sent_df = pd.read_csv(sent_path)
             # Filter to last 7 days
             sent_df['sent_at'] = pd.to_datetime(sent_df['sent_at'], errors='coerce')
+            # Remove timezone for safe comparison
+            sent_df['sent_at'] = sent_df['sent_at'].dt.tz_localize(None)
             week_ago = datetime.now() - timedelta(days=7)
-            recent = sent_df[sent_df['sent_at'] >= week_ago]
+            recent = sent_df[sent_df['sent_at'].notna() & (sent_df['sent_at'] >= week_ago)]
             
             summary.append(f"\n📤 EMAILS SENT THIS WEEK: {len(recent)}")
             if not recent.empty:

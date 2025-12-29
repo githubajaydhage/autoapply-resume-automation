@@ -753,6 +753,342 @@ Go to **Repository → Settings → Secrets and variables → Actions → New re
 
 ---
 
+## 🆕 Adding a New User (Multi-User Setup with Branches)
+
+This section documents how to set up the automation for a **new person** using a separate Git branch. This ensures complete isolation - each user has their own configuration, resume, secrets, and cron schedule.
+
+### 📋 Overview
+
+When adding a new user, you'll:
+1. Create a new branch from main
+2. Update 5 key files with the new user's details
+3. Create a separate workflow file
+4. Set up branch-specific GitHub secrets
+5. Add the workflow to main for visibility
+
+### 🗂️ Files That Need Modification
+
+```mermaid
+flowchart TB
+    subgraph BRANCH["🌿 NEW BRANCH (e.g., v.1.2.0-geeta)"]
+        direction TB
+        F1["📁 utils/config.py<br/>👤 Name, Email, Skills"]
+        F2["📁 scripts/reliable_job_scraper.py<br/>🔍 Job Search Keywords"]
+        F3["📁 scripts/naukri_scraper.py<br/>🔍 Naukri Keywords"]
+        F4["📁 utils/resume_naming.py<br/>📋 Job Title Mappings"]
+        F5["📁 .github/workflows/<br/>⚙️ New Workflow File"]
+        F6["📁 resumes/<br/>📄 User's Resume PDF"]
+    end
+    
+    subgraph MAIN["🏠 MAIN BRANCH"]
+        F7["📁 .github/workflows/<br/>⚙️ Copy of Workflow<br/>(for visibility only)"]
+    end
+    
+    subgraph SECRETS["🔐 GITHUB SECRETS"]
+        S1["SENDER_EMAIL_USERNAME"]
+        S2["SENDER_PASSWORD_USERNAME"]
+        S3["SLACK_WEBHOOK_URL_USERNAME"]
+    end
+    
+    BRANCH --> MAIN
+    SECRETS --> BRANCH
+    
+    style BRANCH fill:#e8f5e9
+    style MAIN fill:#fff3e0
+    style SECRETS fill:#fce4ec
+```
+
+---
+
+### 📝 Step-by-Step Guide
+
+#### Step 1: Create a New Branch
+
+```bash
+git checkout main
+git pull origin main
+git checkout -b v.1.2.0-username   # Replace 'username' with actual name
+```
+
+---
+
+#### Step 2: Update `utils/config.py`
+
+Update the user details at the top of the file:
+
+```python
+# ============================================
+# USER CONFIGURATION - UPDATE FOR NEW MEMBER
+# ============================================
+BASE_RESUME_PATH = os.path.join(RESUMES_DIR, "FirstName_LastName_Resume.pdf")
+
+USER_DETAILS = {
+    "full_name": os.getenv("APPLICANT_NAME", "FirstName LastName"),
+    "email": os.getenv("APPLICANT_EMAIL", "user@gmail.com"),
+    "phone": os.getenv("APPLICANT_PHONE", "+91-XXXXXXXXXX"),
+    "linkedin": os.getenv("APPLICANT_LINKEDIN", "https://linkedin.com/in/username"),
+    "location": os.getenv("APPLICANT_LOCATION", "City, India"),
+    "years_experience": os.getenv("APPLICANT_YEARS_EXP", "X+"),
+    "target_role": os.getenv("APPLICANT_TARGET_ROLE", "Job Title 1, Job Title 2"),
+    "key_skills": os.getenv("APPLICANT_SKILLS", "Skill1, Skill2, Skill3"),
+    "portfolio": os.getenv("APPLICANT_PORTFOLIO", ""),
+    "github": os.getenv("APPLICANT_GITHUB", ""),
+}
+```
+
+---
+
+#### Step 3: Update Job Search Keywords in `scripts/reliable_job_scraper.py`
+
+Find and update the `search_keywords` list (around line 43):
+
+```python
+# Target keywords for jobs - Update for the user's target roles
+self.search_keywords = [
+    "job title 1",
+    "job title 2",
+    "related keyword 1",
+    "related keyword 2",
+    # Add more relevant keywords
+]
+```
+
+**Example for Interior Designer:**
+```python
+self.search_keywords = [
+    "autocad designer",
+    "interior designer",
+    "estimation engineer",
+    "quantity surveyor",
+    "drafting engineer",
+    "revit",
+]
+```
+
+---
+
+#### Step 4: Update Naukri Keywords in `scripts/naukri_scraper.py`
+
+Find and update the default keywords (around line 508):
+
+```python
+# Get search keywords from environment or use defaults
+keywords_env = os.getenv('NAUKRI_KEYWORDS', 'job title 1, job title 2, job title 3')
+```
+
+---
+
+#### Step 5: Update Job Title Mappings in `utils/resume_naming.py`
+
+Update the `TITLE_MAPPINGS` dictionary:
+
+```python
+TITLE_MAPPINGS = {
+    # Primary roles
+    'job title 1': 'Standardized Title 1',
+    'job title 2': 'Standardized Title 2',
+    # Variations
+    'senior job title': 'Standardized Title',
+    'junior job title': 'Standardized Title',
+}
+```
+
+Also update the `_extract_main_role` method's fallback logic.
+
+---
+
+#### Step 6: Create a New Workflow File
+
+Copy `.github/workflows/apply_jobs.yml` to a new file:
+
+```bash
+cp .github/workflows/apply_jobs.yml .github/workflows/apply_jobs_username.yml
+```
+
+**Key modifications in the new workflow file:**
+
+1. **Update the name:**
+```yaml
+name: Job Application - FirstName LastName (Role Type)
+```
+
+2. **Add branch-specific trigger:**
+```yaml
+on:
+  push:
+    branches:
+      - v.1.2.0-username
+```
+
+3. **Offset the cron schedule** (avoid overlap with other users):
+```yaml
+schedule:
+  # Offset by 30 mins from main: 10:00 AM, 3:00 PM, 8:00 PM IST
+  - cron: '30 4,9,14 * * *'
+```
+
+4. **Update job condition** to allow schedule events:
+```yaml
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/v.1.2.0-username'
+```
+
+5. **Checkout the correct branch code:**
+```yaml
+- name: Checkout repository
+  uses: actions/checkout@v3
+  with:
+    ref: v.1.2.0-username  # Always use this user's branch code
+```
+
+6. **Use user-specific secret names** (add `_USERNAME` suffix):
+```yaml
+env:
+  SENDER_EMAIL: ${{ secrets.SENDER_EMAIL_USERNAME }}
+  SENDER_PASSWORD: ${{ secrets.SENDER_PASSWORD_USERNAME }}
+  SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL_USERNAME }}
+  # ... all other secrets with _USERNAME suffix
+```
+
+7. **Update job keywords in env:**
+```yaml
+NAUKRI_KEYWORDS: 'job title 1, job title 2, job title 3'
+APPLICANT_ROLE: 'Primary Job Title'
+```
+
+---
+
+#### Step 7: Add Resume to `resumes/` Folder
+
+```bash
+# Add the user's resume
+cp /path/to/FirstName_LastName_Resume.pdf resumes/
+```
+
+Ensure the filename matches `BASE_RESUME_PATH` in config.py.
+
+---
+
+#### Step 8: Configure GitHub Secrets
+
+Go to **Settings → Secrets and variables → Actions** and add:
+
+| Secret Name | Value | Description |
+|-------------|-------|-------------|
+| `SENDER_EMAIL_USERNAME` | user@gmail.com | User's Gmail |
+| `SENDER_PASSWORD_USERNAME` | xxxx xxxx xxxx xxxx | Gmail App Password |
+| `APPLICANT_NAME_USERNAME` | FirstName LastName | Full name |
+| `APPLICANT_EMAIL_USERNAME` | user@gmail.com | Contact email |
+| `APPLICANT_PHONE_USERNAME` | +91-XXXXXXXXXX | Phone with country code |
+| `SLACK_WEBHOOK_URL_USERNAME` | https://hooks.slack.com/... | (Optional) Slack webhook |
+
+**Note:** Secrets are repository-level, so use unique suffixes to avoid conflicts.
+
+---
+
+#### Step 9: Commit and Push the Branch
+
+```bash
+git add -A
+git commit -m "Configure automation for FirstName LastName - Job Title"
+git push origin v.1.2.0-username
+```
+
+---
+
+#### Step 10: Add Workflow to Main Branch (For Visibility)
+
+GitHub only shows `workflow_dispatch` for workflows in the default branch:
+
+```bash
+git checkout main
+git checkout v.1.2.0-username -- ".github/workflows/apply_jobs_username.yml"
+git add -A
+git commit -m "Add username workflow to main for workflow_dispatch visibility"
+git push origin main
+git checkout v.1.2.0-username  # Switch back
+```
+
+---
+
+### ✅ Complete Checklist for New User Setup
+
+```
+┌────────────────────────────────────────────────────────────────────┐
+│  📋 NEW USER BRANCH SETUP CHECKLIST                                │
+├────────────────────────────────────────────────────────────────────┤
+│                                                                    │
+│  BRANCH CREATION:                                                  │
+│  □ Created new branch from main (v.1.2.0-username)                 │
+│                                                                    │
+│  FILE UPDATES IN NEW BRANCH:                                       │
+│  □ utils/config.py - Updated USER_DETAILS                          │
+│  □ utils/config.py - Updated BASE_RESUME_PATH                      │
+│  □ scripts/reliable_job_scraper.py - Updated search_keywords       │
+│  □ scripts/naukri_scraper.py - Updated NAUKRI_KEYWORDS default     │
+│  □ utils/resume_naming.py - Updated TITLE_MAPPINGS                 │
+│  □ utils/resume_naming.py - Updated _extract_main_role fallback    │
+│                                                                    │
+│  WORKFLOW FILE:                                                    │
+│  □ Created new workflow file (apply_jobs_username.yml)             │
+│  □ Updated workflow name                                           │
+│  □ Added branch trigger (v.1.2.0-username)                         │
+│  □ Offset cron schedule (avoid overlap)                            │
+│  □ Added schedule to job condition                                 │
+│  □ Set checkout ref to user's branch                               │
+│  □ Renamed all secrets with _USERNAME suffix                       │
+│  □ Updated NAUKRI_KEYWORDS and APPLICANT_ROLE                      │
+│                                                                    │
+│  RESUME:                                                           │
+│  □ Added resume PDF to resumes/ folder                             │
+│  □ Filename matches BASE_RESUME_PATH                               │
+│                                                                    │
+│  GITHUB SECRETS:                                                   │
+│  □ SENDER_EMAIL_USERNAME                                           │
+│  □ SENDER_PASSWORD_USERNAME (App Password)                         │
+│  □ All APPLICANT_*_USERNAME secrets                                │
+│  □ SLACK_WEBHOOK_URL_USERNAME (optional)                           │
+│                                                                    │
+│  FINAL STEPS:                                                      │
+│  □ Pushed new branch to origin                                     │
+│  □ Copied workflow to main branch (for visibility)                 │
+│  □ Pushed main branch                                              │
+│  □ Tested manual workflow run                                      │
+│                                                                    │
+└────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+### 🔄 Cron Schedule Offsets (Avoid Overlap)
+
+When adding multiple users, offset their cron times:
+
+| User | Cron Schedule | IST Times |
+|------|--------------|-----------|
+| User 1 (main) | `0 4,9,14 * * *` | 9:30 AM, 2:30 PM, 7:30 PM |
+| User 2 | `30 4,9,14 * * *` | 10:00 AM, 3:00 PM, 8:00 PM |
+| User 3 | `0 5,10,15 * * *` | 10:30 AM, 3:30 PM, 8:30 PM |
+| User 4 | `30 5,10,15 * * *` | 11:00 AM, 4:00 PM, 9:00 PM |
+
+---
+
+### 📊 Example: Real Setup (Yogeshwari Mane)
+
+| Field | Value |
+|-------|-------|
+| Branch | `v.1.2.0-geeta` |
+| Name | Yogeshwari Mane |
+| Role | Junior Interior Designer / AutoCAD Designer |
+| Keywords | `autocad designer`, `interior designer`, `estimation engineer`, `quantity surveyor` |
+| Workflow | `apply_jobs_yogeshwari.yml` |
+| Secrets | `SENDER_PASSWORD_YOGESHWARI`, `SLACK_WEBHOOK_URL_YOGESHWARI`, etc. |
+| Cron | `30 4,9,14 * * *` (offset 30 mins) |
+
+---
+
 ## ⚠️ Important Notes
 
 1. **Use responsibly** - Don't spam. The system has built-in rate limiting.

@@ -140,11 +140,11 @@ on:
       enable_open_tracking:
         description: 'Track email opens?'
         required: false
-        default: 'false'
+        default: 'true'
         type: choice
         options:
-        - 'false'
         - 'true'
+        - 'false'
       enable_auto_retry:
         description: 'Auto-retry failed emails?'
         required: false

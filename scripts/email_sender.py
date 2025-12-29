@@ -1,6 +1,6 @@
 """
 Personalized Email Sender - Sends customized job application emails to HR contacts
-With integrated email verification and bounce tracking
+With integrated email verification, bounce tracking, and optimization
 """
 
 import smtplib
@@ -32,6 +32,13 @@ try:
     VERIFIER_AVAILABLE = True
 except ImportError:
     VERIFIER_AVAILABLE = False
+
+# Import email optimizer for maximum response rates
+try:
+    from scripts.email_optimizer import EmailOptimizer
+    OPTIMIZER_AVAILABLE = True
+except ImportError:
+    OPTIMIZER_AVAILABLE = False
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] %(message)s')
@@ -274,12 +281,26 @@ class PersonalizedEmailSender:
             except:
                 pass
         
+        # Initialize email optimizer if available
+        self.optimizer = None
+        if OPTIMIZER_AVAILABLE:
+            try:
+                self.optimizer = EmailOptimizer()
+                logging.info("   ✅ Email optimizer loaded (personalization + timing)")
+            except Exception as e:
+                logging.debug(f"Optimizer not loaded: {e}")
+        
         # Log configuration
         logging.info(f"📧 Email Sender Configuration:")
         logging.info(f"   Sender: {self.sender_name} <{self.sender_email}>")
         logging.info(f"   Phone: {self.applicant_phone}")
         logging.info(f"   Experience: {self.applicant_experience}+ years")
         logging.info(f"   Resume: {self.resume_path}")
+        
+        # Show timing recommendation
+        if self.optimizer:
+            timing = self.optimizer.timer.get_send_recommendation()
+            logging.info(f"   ⏰ Timing: {timing['reason']}")
         
     def _load_sent_log(self) -> set:
         """Load previously sent emails to avoid duplicates."""
@@ -307,9 +328,18 @@ class PersonalizedEmailSender:
         df.to_csv(self.sent_log_path, index=False)
         self.sent_emails.add(recipient_email.lower())
     
-    def generate_email_subject(self, job_title: str, company: str) -> str:
+    def generate_email_subject(self, job_title: str, company: str, recipient_email: str = None) -> str:
         """Generate a personalized email subject - optimized for high open rates."""
-        # Subject lines with higher open rates (data-driven best practices)
+        
+        # Use optimizer if available for A/B tested subjects
+        if self.optimizer:
+            subject, template_id = self.optimizer.subject_optimizer.get_optimized_subject(
+                job_title, company, self.applicant_experience
+            )
+            self.optimizer.subject_optimizer.record_send(template_id)
+            return subject
+        
+        # Fallback to standard subjects
         subjects = [
             # Direct and specific (highest open rates)
             f"Application: {job_title} - Bangalore - {self.applicant_experience}+ Years Experience",
@@ -325,10 +355,23 @@ class PersonalizedEmailSender:
         ]
         return random.choice(subjects)
     
-    def generate_email_body(self, job_title: str, company: str, job_url: str = None) -> str:
-        """Generate a personalized email body."""
+    def generate_email_body(self, job_title: str, company: str, job_url: str = None, recipient_email: str = None) -> str:
+        """Generate a personalized email body with company-specific content."""
         
-        # Multiple email templates for variety
+        # Use optimizer for personalized content if available
+        if self.optimizer and recipient_email:
+            return self.optimizer.generate_optimized_body(
+                recipient_email=recipient_email,
+                company=company,
+                job_title=job_title,
+                applicant_name=self.applicant_name,
+                applicant_phone=self.applicant_phone,
+                applicant_linkedin=self.applicant_linkedin,
+                applicant_experience=self.applicant_experience,
+                applicant_skills=self.applicant_skills
+            )
+        
+        # Fallback to standard templates
         templates = [
             # Template 1 - Professional and direct
             """Dear Hiring Manager,
@@ -508,9 +551,9 @@ ${name}
             return False
         
         try:
-            # Generate personalized content
-            subject = self.generate_email_subject(job_title, company)
-            body = self.generate_email_body(job_title, company, job_url)
+            # Generate personalized content with optimizer
+            subject = self.generate_email_subject(job_title, company, recipient_email)
+            body = self.generate_email_body(job_title, company, job_url, recipient_email)
             message = self.create_email_message(recipient_email, subject, body)
             
             # Connect and send

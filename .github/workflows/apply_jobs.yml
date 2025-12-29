@@ -1,9 +1,16 @@
-name: Job Application System (Enhanced v2)
+name: Job Application System (Enhanced v3)
 
 # =================================================================
-# ENHANCED PRODUCTION SYSTEM v2 - Maximum Interview Generation
+# ENHANCED PRODUCTION SYSTEM v3 - Maximum Interview Generation
 # =================================================================
-# NEW FEATURES in v2:
+# NEW FEATURES in v3 (High Impact):
+# ✅ Email Optimizer (personalized company openers, A/B subject testing)
+# ✅ Recruiter Name Finder ("Dear Priya" vs "Dear Hiring Manager")
+# ✅ Referral Request System (10x higher response rate!)
+# ✅ Optimal Send Timing (Tue-Thu, 9-11 AM IST)
+# ✅ Company-specific highlights in emails
+# =================================================================
+# v2 Features:
 # ✅ Smart Job-to-HR matching (only email when job found at company)
 # ✅ Reply detection (monitors inbox for HR responses)
 # ✅ Application status tracking (applied → interview → offer)
@@ -11,7 +18,7 @@ name: Job Application System (Enhanced v2)
 # ✅ Job-specific email templates (not generic anymore)
 # ✅ Priority-based application queue
 # =================================================================
-# Previous Features:
+# v1 Features:
 # ✅ Multiple job sources (RemoteOK API, Naukri, career pages, RSS)
 # ✅ Curated HR email database (100+ verified company emails)
 # ✅ Email verification before sending (deliverability scoring)
@@ -162,9 +169,10 @@ jobs:
     - name: Phase 3 - Send Application Emails
       if: ${{ github.event.inputs.scrape_only != 'true' }}
       run: |
-        echo "📤 PHASE 3B: SENDING APPLICATION EMAILS (Smart Mode)"
+        echo "📤 PHASE 3B: SENDING APPLICATION EMAILS (Optimized Mode)"
         echo "   Max emails: ${{ github.event.inputs.max_emails || '15' }}"
         echo "   Using smart job-to-HR matching..."
+        echo "   Using email optimizer (personalized openers, A/B subjects)..."
         echo "   Using email verification for quality control..."
         python scripts/email_sender.py
       env:
@@ -172,11 +180,22 @@ jobs:
         SENDER_PASSWORD: ${{ secrets.SENDER_PASSWORD }}
         MAX_EMAILS: ${{ github.event.inputs.max_emails || '15' }}
 
-    # PHASE 3.5: Check for HR Replies
-    - name: Phase 3.5 - Detect HR Replies
+    # PHASE 3.5: Send Referral Requests (HIGH IMPACT - 10x response rate)
+    - name: Phase 3.5 - Send Referral Requests
       if: ${{ github.event.inputs.scrape_only != 'true' }}
       run: |
-        echo "📬 PHASE 3.5: SCANNING INBOX FOR HR REPLIES"
+        echo "🤝 PHASE 3.5A: SENDING REFERRAL REQUESTS"
+        echo "   Referrals have 10x higher response rate than cold emails!"
+        python scripts/referral_system.py || true
+      env:
+        PYTHONPATH: ${{ github.workspace }}
+        SENDER_PASSWORD: ${{ secrets.SENDER_PASSWORD }}
+
+    # PHASE 3.6: Check for HR Replies
+    - name: Phase 3.6 - Detect HR Replies
+      if: ${{ github.event.inputs.scrape_only != 'true' }}
+      run: |
+        echo "📬 PHASE 3.6: SCANNING INBOX FOR HR REPLIES"
         echo "   Looking for interview requests, offers, responses..."
         python scripts/reply_detector.py || true
       env:
@@ -239,6 +258,9 @@ jobs:
           data/hr_replies.csv
           data/interview_requests.csv
           data/enhanced_jobs.csv
+          data/subject_line_stats.csv
+          data/company_insights_cache.json
+          data/referral_requests_log.csv
           cover_letters/*.txt
         key: job-data-${{ runner.os }}-v5-${{ github.run_number }}
 
@@ -293,6 +315,10 @@ jobs:
           SENT=$(wc -l < data/sent_emails_log.csv)
           echo "✉️  Total Emails Sent: $((SENT - 1))"
         fi
+        if [ -f data/referral_requests_log.csv ]; then
+          REFERRALS=$(wc -l < data/referral_requests_log.csv)
+          echo "🤝 Referral Requests: $((REFERRALS - 1))"
+        fi
         if [ -f data/followup_log.csv ]; then
           FOLLOWUPS=$(wc -l < data/followup_log.csv)
           echo "🔄 Follow-ups Sent: $((FOLLOWUPS - 1))"
@@ -316,6 +342,9 @@ jobs:
         if [ -f data/application_tracker.csv ]; then
           TRACKED=$(wc -l < data/application_tracker.csv)
           echo "📊 Applications Tracked: $((TRACKED - 1))"
+        fi
+        if [ -f data/subject_line_stats.csv ]; then
+          echo "📈 A/B Subject Testing: Active"
         fi
         if [ -d cover_letters ]; then
           COVERS=$(ls cover_letters/*.txt 2>/dev/null | wc -l)

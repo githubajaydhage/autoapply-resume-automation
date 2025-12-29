@@ -274,70 +274,14 @@ jobs:
       env:
         PYTHONPATH: ${{ github.workspace }}
 
-    # PHASE 8: ATS & Priority Analysis
-    - name: Phase 8 - ATS & Job Priority Analysis
+    # PHASE 8-10: Analysis Phases (Priority, LinkedIn, Analytics)
+    - name: Phase 8-10 - Run Analysis Phases
       run: |
-        echo "📊 PHASE 8: ATS KEYWORD OPTIMIZATION & JOB PRIORITY"
-        echo "   Analyzing job-resume keyword match..."
-        echo "   Prioritizing jobs by urgency and fit..."
-        python -c "
-from scripts.ats_keyword_optimizer import generate_ats_report
-from scripts.job_priority_engine import prioritize_jobs
-import pandas as pd
-import os
-
-if os.path.exists('data/jobs_today.csv'):
-    jobs_df = pd.read_csv('data/jobs_today.csv')
-    prioritize_jobs(jobs_df)
-    print('Job priority analysis complete')
-" || true
-      env:
-        PYTHONPATH: ${{ github.workspace }}
-
-    # PHASE 9: LinkedIn Warm-Up Plans
-    - name: Phase 9 - Generate LinkedIn Warm-Up Plans
-      run: |
-        echo "🔗 PHASE 9: LINKEDIN WARM-UP STRATEGY"
-        echo "   Generating recruiter search queries..."
-        echo "   Creating warm-up engagement plans..."
-        python -c "
-from scripts.linkedin_warmup import generate_linkedin_search_targets, LinkedInWarmUpStrategy
-import pandas as pd
-import os
-
-if os.path.exists('data/jobs_today.csv'):
-    jobs_df = pd.read_csv('data/jobs_today.csv')
-    generate_linkedin_search_targets(jobs_df)
-    
-    # Generate warmup plans for top companies
-    targets = []
-    for company in jobs_df['company'].unique()[:10]:
-        job = jobs_df[jobs_df['company'] == company].iloc[0]
-        targets.append({
-            'name': 'Recruiter',
-            'company': company,
-            'job_title': job.get('title', 'Position')
-        })
-    if targets:
-        LinkedInWarmUpStrategy.generate_batch_warmup_plans(targets)
-print('LinkedIn warm-up plans generated')
-" || true
-      env:
-        PYTHONPATH: ${{ github.workspace }}
-
-    # PHASE 10: Multi-Channel Analytics Dashboard
-    - name: Phase 10 - Generate Analytics Dashboard
-      run: |
-        echo "📈 PHASE 10: MULTI-CHANNEL ANALYTICS"
-        echo "   Integrating all channel data..."
-        echo "   Generating performance insights..."
-        python -c "
-from scripts.multi_channel_analytics import AnalyticsDashboard, integrate_existing_logs
-integrate_existing_logs()
-dashboard = AnalyticsDashboard()
-dashboard.generate_dashboard_report()
-print('Analytics dashboard generated')
-" || true
+        echo "📊 PHASES 8-10: ANALYSIS & INSIGHTS"
+        echo "   Phase 8: Job Priority Analysis"
+        echo "   Phase 9: LinkedIn Warm-Up Plans"
+        echo "   Phase 10: Multi-Channel Analytics"
+        python scripts/run_analysis_phases.py || true
       env:
         PYTHONPATH: ${{ github.workspace }}
 

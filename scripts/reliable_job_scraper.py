@@ -133,10 +133,13 @@ class ReliableJobScraper:
         except Exception as e:
             logging.warning(f"   ⚠️ Arbeitnow error: {e}")
         
-        time.sleep(1)
+        time.sleep(0.3)
     
     def _scrape_himalayas(self):
         """Himalayas.app - Free API for remote jobs."""
+        # DISABLED: This API consistently returns 403 Forbidden, wasting time
+        logging.info("📡 Skipping Himalayas API (blocked, returns 403)")
+        return
         try:
             logging.info("📡 Scraping Himalayas API (free, remote jobs)...")
             url = "https://himalayas.app/jobs/api?limit=50"
@@ -169,7 +172,7 @@ class ReliableJobScraper:
         except Exception as e:
             logging.warning(f"   ⚠️ Himalayas error: {e}")
         
-        time.sleep(1)
+        time.sleep(0.3)
     
     def _scrape_jobicy(self):
         """Jobicy - Free remote jobs API."""
@@ -205,7 +208,7 @@ class ReliableJobScraper:
         except Exception as e:
             logging.warning(f"   ⚠️ Jobicy error: {e}")
         
-        time.sleep(1)
+        time.sleep(0.3)
     
     def _scrape_adzuna(self):
         """Adzuna - Job search with free RSS feeds."""
@@ -307,7 +310,7 @@ class ReliableJobScraper:
         except Exception as e:
             logging.debug(f"   Freshersworld: {e}")
         
-        time.sleep(1)
+        time.sleep(0.3)
     
     def _scrape_instahyre(self):
         """Instahyre - Indian tech job portal."""
@@ -343,7 +346,7 @@ class ReliableJobScraper:
         except Exception as e:
             logging.debug(f"   Instahyre: {e}")
         
-        time.sleep(1)
+        time.sleep(0.3)
     
     def _scrape_cutshort(self):
         """Cutshort - Indian startup job portal."""
@@ -378,7 +381,7 @@ class ReliableJobScraper:
         except Exception as e:
             logging.debug(f"   Cutshort: {e}")
         
-        time.sleep(1)
+        time.sleep(0.3)
     
     def _scrape_hirist(self):
         """Hirist - Indian tech/startup jobs."""
@@ -444,7 +447,7 @@ class ReliableJobScraper:
         except Exception as e:
             logging.debug(f"   IIMJobs: {e}")
         
-        time.sleep(1)
+        time.sleep(0.3)
     
     def _scrape_dev_job_boards(self):
         """Scrape developer-focused job boards."""
@@ -522,7 +525,7 @@ class ReliableJobScraper:
         except Exception as e:
             logging.debug(f"   Working Nomads: {e}")
         
-        time.sleep(1)
+        time.sleep(0.3)
     
     def _scrape_authentic_jobs(self):
         """Authentic Jobs - Design & dev jobs with RSS."""
@@ -586,12 +589,7 @@ class ReliableJobScraper:
         except Exception as e:
             logging.warning(f"   ⚠️ RemoteOK error: {e}")
             
-        time.sleep(1)
-    
-    def _scrape_direct_career_pages(self):
-        """Scrape directly from company career pages - most reliable."""
-        
-        # Top tech companies with scrapeable career pages
+        time.sleep(0.3)
         career_pages = [
             # Indian Tech Giants
             ("Infosys", "https://www.infosys.com/careers.html"),
@@ -686,7 +684,7 @@ class ReliableJobScraper:
                 except Exception:
                     pass
                     
-                time.sleep(1)
+                time.sleep(0.3)
                 
         except Exception as e:
             logging.warning(f"   ⚠️ Google Jobs RSS error: {e}")
@@ -769,7 +767,7 @@ class ReliableJobScraper:
                 except Exception:
                     pass
                     
-                time.sleep(1)
+                time.sleep(0.3)
                 
         except Exception as e:
             logging.warning(f"   ⚠️ Aggregator error: {e}")

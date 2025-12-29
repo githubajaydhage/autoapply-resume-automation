@@ -168,12 +168,14 @@ on:
 jobs:
   apply:
     runs-on: ubuntu-latest
-    # Only run on Yogeshwari's branch
-    if: github.ref == 'refs/heads/v.1.2.0-geeta' || github.event_name == 'workflow_dispatch'
+    # Run on schedule, workflow_dispatch, or push to geeta branch
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/v.1.2.0-geeta'
     
     steps:
     - name: Checkout repository
       uses: actions/checkout@v3
+      with:
+        ref: v.1.2.0-geeta  # Always use Yogeshwari's branch code
 
     - name: Set up Python
       uses: actions/setup-python@v4

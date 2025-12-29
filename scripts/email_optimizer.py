@@ -445,16 +445,17 @@ class EmailOptimizer:
                                applicant_skills: str,
                                applicant_github: str = '',
                                applicant_portfolio: str = '',
-                               applicant_projects: str = '') -> str:
-        """Generate a fully optimized email body with portfolio links."""
+                               applicant_projects: str = '',
+                               include_portfolio: bool = False) -> str:
+        """Generate a fully optimized email body with optional portfolio links."""
         
         optimization = self.optimize_email(
             recipient_email, company, job_title, applicant_experience
         )
         
-        # Build portfolio section if links available
+        # Build portfolio section only if enabled and links available
         portfolio_section = ""
-        if applicant_github or applicant_portfolio or applicant_projects:
+        if include_portfolio and (applicant_github or applicant_portfolio or applicant_projects):
             portfolio_section = "\n📂 View my work:\n"
             if applicant_github:
                 portfolio_section += f"   • GitHub: {applicant_github}\n"

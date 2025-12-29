@@ -250,6 +250,9 @@ class PersonalizedEmailSender:
         self.applicant_portfolio = USER_DETAILS.get('portfolio_url', '')
         self.applicant_projects = USER_DETAILS.get('key_projects', '')
         
+        # Control whether to include portfolio links (controlled from workflow)
+        self.include_portfolio_links = os.getenv('INCLUDE_PORTFOLIO_LINKS', 'false').lower() == 'true'
+        
         # Resume path from config
         self.resume_path = BASE_RESUME_PATH
         
@@ -376,7 +379,8 @@ class PersonalizedEmailSender:
                 applicant_skills=self.applicant_skills,
                 applicant_github=self.applicant_github,
                 applicant_portfolio=self.applicant_portfolio,
-                applicant_projects=self.applicant_projects
+                applicant_projects=self.applicant_projects,
+                include_portfolio=self.include_portfolio_links
             )
         
         # Fallback to standard templates

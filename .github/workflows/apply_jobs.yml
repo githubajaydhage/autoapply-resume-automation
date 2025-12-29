@@ -91,6 +91,14 @@ on:
         options:
         - 'false'
         - 'true'
+      include_portfolio_links:
+        description: 'Include GitHub/Portfolio links in emails?'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+        - 'false'
+        - 'true'
         
   schedule:
     # Runs 3 times per day on weekdays (IST: 9:30 AM, 2:30 PM, 7:30 PM)
@@ -188,11 +196,13 @@ jobs:
         echo "   Using smart job-to-HR matching..."
         echo "   Using email optimizer (personalized openers, A/B subjects)..."
         echo "   Using email verification for quality control..."
+        echo "   Portfolio links: ${{ github.event.inputs.include_portfolio_links || 'false' }}"
         python scripts/email_sender.py
       env:
         PYTHONPATH: ${{ github.workspace }}
         SENDER_PASSWORD: ${{ secrets.SENDER_PASSWORD }}
         MAX_EMAILS: ${{ github.event.inputs.max_emails || '15' }}
+        INCLUDE_PORTFOLIO_LINKS: ${{ github.event.inputs.include_portfolio_links || 'false' }}
 
     # PHASE 3.5: Send Referral Requests (HIGH IMPACT - 10x response rate)
     - name: Phase 3.5 - Send Referral Requests

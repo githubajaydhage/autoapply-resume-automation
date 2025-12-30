@@ -85,59 +85,71 @@ on:
   # Manual trigger
   workflow_dispatch:
     inputs:
-      # User Identity (Required)
+      # User Identity (All Optional with Defaults - NO PROMPTS!)
       applicant_name:
-        description: 'Full Name (e.g. Shweta Biradar)'
-        required: true
+        description: 'Full Name'
+        required: false
+        default: 'Shweta Biradar'
         type: string
       applicant_email:
         description: 'Email Address'
-        required: true  
+        required: false
+        default: 'shweta.biradar@example.com'
         type: string
       applicant_phone:
         description: 'Phone Number'
-        required: true
+        required: false
+        default: '+91-9876543210'
         type: string
       applicant_location:
-        description: 'Location (e.g. Bangalore, Karnataka, India)'
-        required: true
+        description: 'Location'
+        required: false
+        default: 'Bangalore, Karnataka, India'
         type: string
       applicant_city:
-        description: 'City (e.g. Bangalore)'
+        description: 'City'
         required: false
+        default: 'Bangalore'
         type: string
       applicant_country:
-        description: 'Country (e.g. India)'
+        description: 'Country'
         required: false
+        default: 'India'
         type: string
       applicant_linkedin:
         description: 'LinkedIn URL'
-        required: true
+        required: false
+        default: 'https://www.linkedin.com/in/shweta-biradar'
         type: string
       applicant_experience:
         description: 'Years of Experience'
-        required: true
+        required: false
+        default: '5'
         type: string
       applicant_target_role:
-        description: 'Target Roles (e.g. Data Analyst, Business Analyst)'
-        required: true
+        description: 'Target Roles'
+        required: false
+        default: 'Data Analyst, Business Analyst, Software Engineer'
         type: string
       applicant_skills:
         description: 'Key Skills (comma-separated)'
-        required: true
+        required: false
+        default: 'Python, SQL, Data Analysis, Machine Learning, Excel, PowerBI'
         type: string
       resume_filename:
-        description: 'Resume Filename (e.g. Shweta_Biradar_Resume.pdf)'
-        required: true
+        description: 'Resume Filename'
+        required: false
+        default: 'Shweta_Biradar_Resume.pdf'
         type: string
       job_keywords:
         description: 'Job Search Keywords (comma-separated)'
-        required: true
+        required: false
+        default: 'data analyst, python developer, business analyst, software engineer'
         type: string
       # Job Search Parameters
       job_location:
         description: 'Job Location'
-        required: true
+        required: false
         default: 'Bangalore'
         type: choice
         options:
@@ -151,7 +163,7 @@ on:
         - India
       max_emails:
         description: 'Max new emails to send'
-        required: true
+        required: false
         default: '15'
         type: choice
         options:

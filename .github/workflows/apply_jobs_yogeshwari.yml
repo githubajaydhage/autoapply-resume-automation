@@ -37,7 +37,7 @@ on:
     inputs:
       job_location:
         description: 'Job Location'
-        required: true
+        required: false
         default: 'Bangalore'
         type: choice
         options:
@@ -51,7 +51,7 @@ on:
         - India
       max_emails:
         description: 'Max new emails to send'
-        required: true
+        required: false
         default: '15'
         type: choice
         options:

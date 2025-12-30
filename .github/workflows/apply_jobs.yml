@@ -240,29 +240,29 @@ concurrency:
 # All values from workflow inputs - NO HARDCODING!
 # ============================================
 env:
-  # User Identity (from inputs)
-  APPLICANT_NAME: ${{ github.event.inputs.applicant_name || 'Shweta Biradar' }}
-  APPLICANT_FIRST_NAME: ${{ github.event.inputs.applicant_name && 'Shweta' || 'Shweta' }}
-  APPLICANT_LAST_NAME: ${{ github.event.inputs.applicant_name && 'Biradar' || 'Biradar' }}
-  APPLICANT_EMAIL: ${{ github.event.inputs.applicant_email || 'biradarshweta48@gmail.com' }}
-  SENDER_EMAIL: ${{ github.event.inputs.applicant_email || 'biradarshweta48@gmail.com' }}
-  APPLICANT_PHONE: ${{ github.event.inputs.applicant_phone || '+91-9876543210' }}
+  # User Identity (from inputs with proper defaults)
+  APPLICANT_NAME: ${{ github.event.inputs.applicant_name || 'Ajay Dhage' }}
+  APPLICANT_FIRST_NAME: 'Ajay'
+  APPLICANT_LAST_NAME: 'Dhage'
+  APPLICANT_EMAIL: ${{ github.event.inputs.applicant_email || 'ajay.dhage@gmail.com' }}
+  SENDER_EMAIL: ${{ github.event.inputs.applicant_email || 'ajay.dhage@gmail.com' }}
+  APPLICANT_PHONE: ${{ github.event.inputs.applicant_phone || '+91-8888888888' }}
   APPLICANT_LOCATION: ${{ github.event.inputs.applicant_location || 'Bangalore, Karnataka, India' }}
   APPLICANT_CITY: ${{ github.event.inputs.applicant_city || 'Bangalore' }}
   APPLICANT_COUNTRY: ${{ github.event.inputs.applicant_country || 'India' }}
-  APPLICANT_LINKEDIN: ${{ github.event.inputs.applicant_linkedin || 'https://www.linkedin.com/in/shweta-biradar/' }}
+  APPLICANT_LINKEDIN: ${{ github.event.inputs.applicant_linkedin || 'https://www.linkedin.com/in/ajay-dhage' }}
   APPLICANT_EXPERIENCE: ${{ github.event.inputs.applicant_experience || '3' }}
   YEARS_EXPERIENCE: ${{ github.event.inputs.applicant_experience || '3' }}
-  APPLICANT_TARGET_ROLE: ${{ github.event.inputs.applicant_target_role || 'Data Analyst, Business Analyst, Analytics' }}
-  APPLICANT_SKILLS: ${{ github.event.inputs.applicant_skills || 'SQL, Python, Tableau, Power BI, Excel, Data Visualization' }}
+  APPLICANT_TARGET_ROLE: ${{ github.event.inputs.applicant_target_role || 'Data Analyst, Business Analyst, Software Engineer' }}
+  APPLICANT_SKILLS: ${{ github.event.inputs.applicant_skills || 'Python, SQL, Data Analysis, Machine Learning, Excel, PowerBI' }}
   
   # Resume Configuration (from inputs)
-  RESUME_FILENAME: ${{ github.event.inputs.resume_filename || 'Shweta_Biradar_Resume.pdf' }}
-  RESUME_PATH: resumes/${{ github.event.inputs.resume_filename || 'Shweta_Biradar_Resume.pdf' }}
+  RESUME_FILENAME: ${{ github.event.inputs.resume_filename || 'Ajay_Dhage_Resume.pdf' }}
+  RESUME_PATH: resumes/${{ github.event.inputs.resume_filename || 'Ajay_Dhage_Resume.pdf' }}
   
   # Job Search Keywords (from inputs)
-  JOB_KEYWORDS: ${{ github.event.inputs.job_keywords || 'data analyst, business analyst, sql developer, python developer, tableau developer, power bi, analytics, data engineer' }}
-  NAUKRI_KEYWORDS: ${{ github.event.inputs.job_keywords || 'data analyst, business analyst, sql developer' }}
+  JOB_KEYWORDS: ${{ github.event.inputs.job_keywords || 'data analyst, python developer, business analyst, software engineer' }}
+  NAUKRI_KEYWORDS: ${{ github.event.inputs.job_keywords || 'data analyst, business analyst, software engineer' }}
   
   # Optional Settings
   SEND_TO_AGENCIES: 'true'

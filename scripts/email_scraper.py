@@ -175,31 +175,9 @@ class HREmailScraper:
         
         emails = self.scrape_page(careers_url, company_name)
         
-<<<<<<< HEAD
-        # Also try common career page paths
-        parsed = urlparse(careers_url)
-        base_url = f"{parsed.scheme}://{parsed.netloc}"
-        
-        career_paths = [
-            '/careers', '/jobs', '/careers/contact', '/contact', 
-            '/about/careers', '/join-us', '/work-with-us',
-            '/careers/openings', '/opportunities'
-        ]
-        
-        for path in career_paths:
-            try:
-                page_url = urljoin(base_url, path)
-                if page_url != careers_url:
-                    time.sleep(random.uniform(1, 3))
-                    page_emails = self.scrape_page(page_url, company_name)
-                    emails.extend(page_emails)
-            except:
-                continue
-=======
         # DISABLED: Additional path scraping generates too many 404 errors
         # Most company websites block bots or have non-standard URL structures
         # Using curated_hr_database.py for reliable email sources
->>>>>>> 4162b6c (Fix 404/403 errors: Disable unreliable career page scraping)
         
         emails = list(set(emails))
         

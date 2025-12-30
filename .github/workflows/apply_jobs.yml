@@ -189,6 +189,7 @@ jobs:
         restore-keys: |
           job-data-${{ runner.os }}-
 
+<<<<<<< HEAD
     # PHASE 1: Scrape Jobs
     - name: Phase 1 - Scrape Jobs (Multiple Sources)
       run: |
@@ -196,6 +197,18 @@ jobs:
         echo "   Sources: RemoteOK, Arbeitnow, Himalayas, Jobicy, Adzuna"
         python scripts/reliable_job_scraper.py
         echo ""
+=======
+    - name: 🛡️ Bulletproof Job Scraping (15+ sources)
+      run: |
+        echo "🛡️ Running BULLETPROOF job engine (15+ sources with failover)..."
+        python scripts/bulletproof_job_engine.py || python scripts/reliable_job_scraper.py
+      env:
+        PYTHONPATH: ${{ github.workspace }}
+        JOB_LOCATION: ${{ github.event.inputs.job_location || 'Bangalore' }}
+
+    - name: Scrape Naukri.com
+      run: |
+>>>>>>> 295b1ca (Add bulletproof job engine: 15+ sources, self-healing, auto-application pipeline)
         echo "🇮🇳 Scraping Naukri.com..."
         python scripts/naukri_scraper.py || true
         echo ""
@@ -470,6 +483,43 @@ jobs:
         TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
         TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
 
+<<<<<<< HEAD
+=======
+    - name: 🔧 Self-Healing Monitor (detect & recover issues)
+      run: |
+        echo "🔧 Running self-healing monitor..."
+        python scripts/self_healing_monitor.py || true
+      env:
+        PYTHONPATH: ${{ github.workspace }}
+
+    - name: Save Data Cache
+      uses: actions/cache/save@v3
+      with:
+        path: |
+          data/sent_emails_log.csv
+          data/followup_log.csv
+          data/all_hr_emails.csv
+          data/curated_hr_emails.csv
+          data/bounced_emails.csv
+          data/verified_hr_emails.csv
+          data/referral_requests_log.csv
+          data/all_jobs_database.csv
+          data/application_queue.csv
+          data/pipeline_health.json
+          data/source_health.json
+        key: job-data-shweta-${{ runner.os }}-v9-${{ github.run_number }}
+
+    - name: Upload Final Results
+      uses: actions/upload-artifact@v4
+      with:
+        name: final-results-${{ github.run_number }}
+        path: |
+          data/
+          cover_letters/
+          interview_prep/
+        retention-days: 30
+
+>>>>>>> 295b1ca (Add bulletproof job engine: 15+ sources, self-healing, auto-application pipeline)
     - name: Summary Report
       run: |
         echo ""

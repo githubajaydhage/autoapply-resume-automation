@@ -167,7 +167,79 @@ env:
 
 jobs:
   # ============================================
-  # JOB 1: SETUP & SCRAPE JOBS
+  # JOB 0: APPLY IMMEDIATELY (PARALLEL - Uses CACHED data)
+  # Runs at same time as research - NO dependencies!
+  # ============================================
+  apply-cached:
+    name: "⚡ Instant Apply (Cached)"
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    if: ${{ github.event.inputs.scrape_only != 'true' }}
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+      with:
+        ref: v.1.2.0-geeta
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Restore Cached HR Emails
+      uses: actions/cache@v3
+      with:
+        path: |
+          data/sent_emails_log.csv
+          data/all_hr_emails.csv
+          data/curated_hr_emails.csv
+          data/verified_hr_emails.csv
+          data/discovered_hr_emails.csv
+          data/jobs_today.csv
+        key: job-data-yogeshwari-${{ runner.os }}-v10-${{ github.run_number }}
+        restore-keys: |
+          job-data-yogeshwari-${{ runner.os }}-v10-
+          job-data-yogeshwari-${{ runner.os }}-v9-
+          job-data-yogeshwari-${{ runner.os }}-
+
+    - name: Load Curated HR Database (Interior Design companies!)
+      run: |
+        echo "📚 Loading CURATED HR database..."
+        python scripts/curated_hr_database.py
+        if [ -f data/curated_hr_emails.csv ]; then
+          CURATED=$(($(wc -l < data/curated_hr_emails.csv) - 1))
+          echo "✅ Curated emails: $CURATED"
+        fi
+      env:
+        PYTHONPATH: ${{ github.workspace }}
+
+    - name: Send Emails NOW (Using Cached Data)
+      run: |
+        echo "⚡ INSTANT APPLY - Using cached HR emails!"
+        echo "   No waiting for research - applying NOW!"
+        python scripts/email_sender.py
+      env:
+        PYTHONPATH: ${{ github.workspace }}
+        SENDER_PASSWORD: ${{ secrets.SENDER_PASSWORD_YOGESHWARI }}
+        MAX_EMAILS: ${{ github.event.inputs.max_emails || '10' }}
+        INCLUDE_PORTFOLIO_LINKS: ${{ github.event.inputs.include_portfolio_links || 'false' }}
+        USE_CACHED_ONLY: 'true'
+
+    - name: Upload Instant Results
+      uses: actions/upload-artifact@v4
+      with:
+        name: instant-apply-results
+        path: data/
+        retention-days: 1
+
+  # ============================================
+  # JOB 1: RESEARCH - SCRAPE JOBS (PARALLEL)
   # ============================================
   scrape-jobs:
     name: "🔍 Phase 1: Scrape Jobs"
@@ -398,14 +470,14 @@ jobs:
         retention-days: 1
 
   # ============================================
-  # JOB 4: SEND REFERRAL REQUESTS
+  # JOB 4: SEND REFERRAL REQUESTS (waits for both parallel jobs)
   # ============================================
   send-referrals:
     name: "🤝 Phase 4: Referrals"
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    needs: send-emails
-    if: ${{ github.event.inputs.scrape_only != 'true' }}
+    needs: [apply-cached, send-emails]  # Wait for BOTH parallel jobs
+    if: ${{ always() && github.event.inputs.scrape_only != 'true' }}
     
     steps:
     - name: Checkout repository
@@ -526,7 +598,7 @@ jobs:
     name: "📊 Phase 6: Analytics & Notify"
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    needs: [scrape-jobs, discover-hr, send-emails, send-referrals, followups]
+    needs: [apply-cached, scrape-jobs, discover-hr, send-emails, send-referrals, followups]
     if: always()
     
     steps:

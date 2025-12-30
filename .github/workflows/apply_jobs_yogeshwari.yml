@@ -210,6 +210,10 @@ env:
   MAX_REFERRAL_REQUESTS: '10'
   MAX_REFERRALS_PER_COMPANY: '1'
 
+# Permissions for git push (permanent HR data storage)
+permissions:
+  contents: write
+
 jobs:
   # ============================================
   # JOB 0: APPLY IMMEDIATELY (PARALLEL - Uses CACHED data)

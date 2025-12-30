@@ -1,26 +1,57 @@
 # 🚀 Job Application Automation System v8 - FREE AI Powered
 
-**Production-Ready Automated Job Application System with FREE AI-Powered Matching, Cold Email Outreach, Referral Requests, and Multi-Channel Notifications**
+**Production-Ready Automated Job Application System with Dynamic Configuration, FREE AI-Powered Matching, Cold Email Outreach, and Multi-Branch User Support**
 
 [![GitHub Actions](https://img.shields.io/badge/GitHub%20Actions-Automated-2088FF?logo=github-actions&logoColor=white)](../../actions)
 [![Python 3.9](https://img.shields.io/badge/Python-3.9-blue.svg)](https://www.python.org/)
 [![AI Powered](https://img.shields.io/badge/AI-FREE%20LLMs-green.svg)](https://groq.com/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![Dynamic Config](https://img.shields.io/badge/Config-Dynamic%20Inputs-brightgreen)](.)
 
 ---
 
-## 🆕 What's New in v8 (FREE AI Revolution!)
+## 🆕 What's New in v8 (Enterprise-Grade Architecture!)
 
 | Feature | Description |
 |---------|-------------|
-| 🤖 **FREE AI Providers** | Groq, HuggingFace, Cohere, Together.ai, OpenRouter - NO COST! |
-| 🔍 **AI Job Researcher** | Discovers best job sources & hiring companies for your role |
-| 🎯 **AI Job Matcher** | Scores each job 0-100 based on resume fit |
-| 📝 **AI Cover Letters** | Generates personalized, industry-specific cover letters |
-| 📧 **AI Email Personalizer** | Creates attention-grabbing subject lines |
-| 🔎 **AI HR Discovery** | Generates likely HR email patterns (hr@, careers@) |
-| 📬 **AI Response Classifier** | Auto-prioritizes interview requests from HR replies |
-| 🛡️ **Bulletproof Engine** | 15+ job sources with automatic failover |
+| 🔄 **Zero Hardcoding** | Completely dynamic configuration via workflow inputs |
+| 🌿 **Multi-Branch Support** | Isolated user environments per branch |
+| 🎯 **Template-Based** | Easy new user setup with TEMPLATE_dynamic_user.yml |
+| ⚡ **Parallel Processing** | Instant apply + research runs simultaneously |
+| 🤖 **FREE AI Providers** | Groq, HuggingFace, Cohere, Together.ai, OpenRouter |
+| 🔍 **AI Job Matching** | Scores each job 0-100 based on resume fit |
+| 📝 **AI Cover Letters** | Generates personalized, industry-specific content |
+| 📧 **Smart Email Discovery** | Advanced HR email pattern generation |
+| 🛡️ **Bulletproof Engine** | Multiple job sources with automatic failover |
+| ⏱️ **Performance Optimized** | 60% faster with aggressive timeouts |
+
+### 🏗️ Current Architecture
+
+```
+📁 job-automation/
+├── 📄 README.md                 # This file
+├── 📄 QUICK_START.md            # Quick setup guide
+├── 📄 requirements.txt          # Python dependencies
+├── 📁 .github/workflows/        # GitHub Actions workflows
+│   ├── apply_jobs.yml           # Main workflow (Shweta)
+│   ├── apply_jobs_yogeshwari.yml # Yogeshwari workflow
+│   ├── quick_gmail_test.yml     # Gmail authentication test
+│   └── TEMPLATE_dynamic_user.yml # Template for new users
+├── 📁 scripts/                  # Core automation scripts
+│   ├── email_sender.py          # Main email sending engine
+│   ├── enhanced_job_scraper.py  # Multi-source job scraping
+│   ├── hr_email_finder.py       # HR contact discovery
+│   ├── ai_job_matcher.py        # AI-powered job scoring
+│   ├── ai_cover_letter.py       # AI cover letter generation
+│   ├── email_verifier.py        # Email validation
+│   ├── application_tracker.py   # Progress tracking
+│   ├── validate_config.py       # Configuration validation
+│   └── ... (25+ specialized scripts)
+├── 📁 data/                     # Runtime data storage
+├── 📁 resumes/                  # Resume files
+├── 📁 cover_letters/            # Generated cover letters
+└── 📁 utils/                    # Configuration utilities
+```
 
 ### 🆓 FREE AI API Keys (Pick Any One!)
 

@@ -1,9 +1,16 @@
-name: Job Application System (Ultimate v7 - AI Powered)
+name: Job Application System (Ultimate v8 - FREE AI Powered)
 
 # =================================================================
-# ULTIMATE PRODUCTION SYSTEM v7 - AI-POWERED MAXIMUM INTERVIEWS
+# ULTIMATE PRODUCTION SYSTEM v8 - FREE AI-POWERED JOB HUNTING
 # =================================================================
-# NEW FEATURES in v7 (AI Revolution):
+# NEW FEATURES in v8 (FREE AI Revolution):
+# ✅ FREE AI Providers (Groq, HuggingFace, Cohere, Together.ai)
+# ✅ AI Job Research (discover job sources & companies)
+# ✅ AI HR Email Discovery (smart email pattern generation)
+# ✅ Zero-cost AI matching and personalization
+# ✅ Multi-provider fallback (never fails!)
+# =================================================================
+# v7 Features (AI Powered):
 # ✅ AI Job Matcher (GPT-4/Gemini semantic matching)
 # ✅ AI Cover Letter Generator (personalized, industry-specific)
 # ✅ AI Email Personalizer (subject optimization, company research)
@@ -57,7 +64,15 @@ name: Job Application System (Ultimate v7 - AI Powered)
 # ✅ Duplicate prevention and tracking
 # ✅ Resume attachment
 # =================================================================
-# ONLY 1 SECRET NEEDED: SENDER_PASSWORD (Gmail App Password)
+# FREE AI API KEYS (Pick any one - all are free!):
+# - GROQ_API_KEY: https://console.groq.com/keys (FASTEST)
+# - GEMINI_API_KEY: https://makersuite.google.com/app/apikey
+# - HUGGINGFACE_API_KEY: https://huggingface.co/settings/tokens
+# - TOGETHER_API_KEY: https://api.together.xyz/
+# - COHERE_API_KEY: https://dashboard.cohere.ai/api-keys
+# - OPENROUTER_API_KEY: https://openrouter.ai/keys
+# =================================================================
+# ONLY 1 REQUIRED SECRET: SENDER_PASSWORD (Gmail App Password)
 # =================================================================
 
 on:
@@ -206,6 +221,21 @@ jobs:
         PYTHONPATH: ${{ github.workspace }}
         JOB_LOCATION: ${{ github.event.inputs.job_location || 'Bangalore' }}
 
+    # PHASE 1.1: AI Job Research (NEW - FREE AI!)
+    - name: 🤖 AI Job Research & Discovery
+      run: |
+        echo "🤖 Running AI-powered job research..."
+        echo "   Using FREE AI: Groq/Gemini/HuggingFace/Cohere"
+        python scripts/ai_job_researcher.py || true
+      env:
+        PYTHONPATH: ${{ github.workspace }}
+        GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+        GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        HUGGINGFACE_API_KEY: ${{ secrets.HUGGINGFACE_API_KEY }}
+        TOGETHER_API_KEY: ${{ secrets.TOGETHER_API_KEY }}
+        COHERE_API_KEY: ${{ secrets.COHERE_API_KEY }}
+        OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+
     - name: Scrape Naukri.com & Enhanced Sources
       run: |
         echo "🇮🇳 Scraping Naukri.com..."
@@ -223,22 +253,112 @@ jobs:
     # PHASE 1.5: Resume Optimization & Job Matching
     - name: Phase 1.5 - Resume Optimization
       run: |
-        echo "📄 PHASE 1.5: ANALYZING RESUME MATCH SCORES"
+        if [ -f data/jobs_today.csv ]; then
+          JOBS=$(($(wc -l < data/jobs_today.csv) - 1))
+          echo "jobs=$JOBS" >> $GITHUB_OUTPUT
+          echo "✅ Found $JOBS jobs"
+        else
+          echo "jobs=0" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Upload Scraped Jobs
+      uses: actions/upload-artifact@v4
+      with:
+        name: scraped-jobs
+        path: |
+          data/jobs_today.csv
+          data/naukri_jobs.csv
+          data/enhanced_jobs.csv
+          data/sent_emails_log.csv
+          data/followup_log.csv
+        retention-days: 1
+
+  # ============================================
+  # JOB 2: DISCOVER HR EMAILS
+  # ============================================
+  discover-hr:
+    name: "📧 Phase 2: Find HR Emails"
+    runs-on: ubuntu-latest
+    needs: scrape-jobs
+    
+    outputs:
+      emails_count: ${{ steps.count.outputs.emails }}
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+      with:
+        ref: main
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Download Scraped Jobs
+      uses: actions/download-artifact@v4
+      with:
+        name: scraped-jobs
+        path: data/
+
+    - name: Load Curated HR Database
+      run: |
+        echo "📚 Loading HR emails..."
+        python scripts/curated_hr_database.py
+      env:
+        PYTHONPATH: ${{ github.workspace }}
+
+    - name: Find HR Emails from Job Postings
+      run: |
+        echo "🔍 Finding HR emails..."
+        python scripts/hr_email_finder.py
+        python scripts/email_scraper.py || true
+        echo "📈 Running Advanced HR Discovery..."
+        python scripts/advanced_hr_discovery.py || true
+      env:
+        PYTHONPATH: ${{ github.workspace }}
+
+    # PHASE 2.1: AI HR Email Discovery (NEW - FREE AI!)
+    - name: 🤖 AI HR Email Discovery
+      run: |
+        echo "🤖 Using AI to discover HR emails..."
+        echo "   Generating email patterns for companies..."
+        python scripts/ai_hr_email_discovery.py || true
+      env:
+        PYTHONPATH: ${{ github.workspace }}
+        GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+        GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        HUGGINGFACE_API_KEY: ${{ secrets.HUGGINGFACE_API_KEY }}
+        TOGETHER_API_KEY: ${{ secrets.TOGETHER_API_KEY }}
+        COHERE_API_KEY: ${{ secrets.COHERE_API_KEY }}
+
+    - name: Resume Optimization Analysis
+      run: |
+        echo "📄 Analyzing resume match scores..."
         python scripts/resume_optimizer.py || true
       env:
         PYTHONPATH: ${{ github.workspace }}
 
-    # PHASE 1.6: AI-Powered Job Scoring & Matching (NEW!)
+    # PHASE 1.6: AI-Powered Job Scoring & Matching (FREE AI!)
     - name: Phase 1.6 - AI Job Matching & Scoring
       run: |
         echo "🤖 PHASE 1.6: AI-POWERED JOB SCORING"
-        echo "   Using GPT-4/Gemini/Ollama for semantic matching..."
+        echo "   Using FREE AI: Groq/Gemini/HuggingFace/Cohere..."
         echo "   Analyzing skill gaps and experience fit..."
         python scripts/ai_job_matcher.py || true
       env:
         PYTHONPATH: ${{ github.workspace }}
-        OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
         GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        HUGGINGFACE_API_KEY: ${{ secrets.HUGGINGFACE_API_KEY }}
+        TOGETHER_API_KEY: ${{ secrets.TOGETHER_API_KEY }}
+        COHERE_API_KEY: ${{ secrets.COHERE_API_KEY }}
+        OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         OLLAMA_HOST: ${{ secrets.OLLAMA_HOST }}
 
     # PHASE 2: Load HR Emails

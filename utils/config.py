@@ -9,41 +9,36 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATA_DIR = os.path.join(BASE_DIR, "data")
 RESUMES_DIR = os.path.join(BASE_DIR, "resumes")
 TAILORED_RESUMES_DIR = os.path.join(RESUMES_DIR, "tailored")
-# ============================================
-# AJAY DHAGE - DevOps Engineer / SRE / Technical Lead
-# Branch: v.1.3.0-ajay
-# ============================================
-# Resume filename from environment variable (set in workflow) or default
-RESUME_FILENAME = os.getenv("RESUME_FILENAME", "Ajay_Dhage_Resume.pdf")
+# Resume filename from environment variable (set in workflow) - REQUIRED
+RESUME_FILENAME = os.getenv("RESUME_FILENAME", "resume.pdf")
 BASE_RESUME_PATH = os.path.join(RESUMES_DIR, RESUME_FILENAME)
 JOBS_CSV_PATH = os.path.join(DATA_DIR, "jobs_today.csv")
 APPLIED_LOG_PATH = os.path.join(DATA_DIR, "applied_log.csv")
 ERROR_LOG_PATH = os.path.join(DATA_DIR, "errors.log")
 
 # --- User Application Details ---
-# These will be used to auto-fill application forms
+# ALL values should be set via environment variables in the workflow!
+# These empty defaults ensure workflows must provide proper configuration.
 USER_DETAILS = {
-    "full_name": os.getenv("APPLICANT_NAME", "Ajay Dhage"),
-    "first_name": os.getenv("APPLICANT_FIRST_NAME", "Ajay"),
-    "last_name": os.getenv("APPLICANT_LAST_NAME", "Dhage"),
-    "email": os.getenv("APPLICANT_EMAIL", "dhageajay012@gmail.com"),
-    "phone": os.getenv("APPLICANT_PHONE", "+91-7847019704"),
-    "location": os.getenv("APPLICANT_LOCATION", "Bengaluru, Karnataka, India"),
-    "city": os.getenv("APPLICANT_CITY", "Bengaluru"),
+    "full_name": os.getenv("APPLICANT_NAME", ""),
+    "first_name": os.getenv("APPLICANT_FIRST_NAME", ""),
+    "last_name": os.getenv("APPLICANT_LAST_NAME", ""),
+    "email": os.getenv("APPLICANT_EMAIL", os.getenv("SENDER_EMAIL", "")),
+    "phone": os.getenv("APPLICANT_PHONE", ""),
+    "location": os.getenv("APPLICANT_LOCATION", "Bangalore, Karnataka, India"),
+    "city": os.getenv("APPLICANT_CITY", "Bangalore"),
     "country": os.getenv("APPLICANT_COUNTRY", "India"),
     "work_authorization": os.getenv("APPLICANT_WORK_AUTH", "Authorized to work in India"),
-    "linkedin_url": os.getenv("APPLICANT_LINKEDIN", "https://www.linkedin.com/in/ajay-dhage-88aab9164"),
-    "years_experience": os.getenv("APPLICANT_EXPERIENCE", "5"),
+    "linkedin_url": os.getenv("APPLICANT_LINKEDIN", ""),
+    "years_experience": os.getenv("APPLICANT_EXPERIENCE", os.getenv("YEARS_EXPERIENCE", "3")),
     # Portfolio & Project Links
-    "github_url": os.getenv("APPLICANT_GITHUB", "https://github.com/githubajaydhage"),
-    "portfolio_url": os.getenv("APPLICANT_PORTFOLIO", "https://nifty-johnson-27cfaa.netlify.app/"),
+    "github_url": os.getenv("APPLICANT_GITHUB", ""),
+    "portfolio_url": os.getenv("APPLICANT_PORTFOLIO", ""),
     "kaggle_url": os.getenv("APPLICANT_KAGGLE", ""),
-    # Key projects to highlight in emails
-    "key_projects": os.getenv("APPLICANT_PROJECTS", "Ngage CPaaS Platform, K8sgpt AI Integration, CI/CD Pipelines for Enterprise Clients"),
-    # Target role for better job matching
-    "target_role": os.getenv("APPLICANT_TARGET_ROLE", "DevOps Engineer, SRE, Platform Engineer, Cloud Engineer"),
-    # Key skills for matching
-    "key_skills": os.getenv("APPLICANT_SKILLS", "Kubernetes, Docker, Terraform, Ansible, AWS, Azure, GCP, Jenkins, GitHub Actions, Helm, Prometheus, Grafana, Python, Bash, CI/CD, Linux"),
+    # Key projects and skills - from workflow JOB_KEYWORDS or APPLICANT_SKILLS
+    "key_projects": os.getenv("APPLICANT_PROJECTS", ""),
+    "target_role": os.getenv("APPLICANT_TARGET_ROLE", os.getenv("JOB_KEYWORDS", "").split(",")[0].strip() if os.getenv("JOB_KEYWORDS", "") else ""),
+    "key_skills": os.getenv("APPLICANT_SKILLS", os.getenv("JOB_KEYWORDS", "")),
 }
 
 

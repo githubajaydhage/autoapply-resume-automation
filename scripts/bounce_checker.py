@@ -72,7 +72,10 @@ class BounceChecker:
     def __init__(self):
         self.imap_server = os.getenv('IMAP_SERVER', 'imap.gmail.com')
         self.imap_port = int(os.getenv('IMAP_PORT', '993'))
-        self.email_address = USER_DETAILS.get('email', 'biradarshweta48@gmail.com')
+        # Email must be configured via environment or USER_DETAILS
+        self.email_address = os.getenv('SENDER_EMAIL') or USER_DETAILS.get('email', '')
+        if not self.email_address:
+            logging.warning("⚠️ SENDER_EMAIL not set! Bounce checking may fail.")
         self.email_password = os.getenv('SENDER_PASSWORD', '')
         
         # Paths for data files

@@ -190,10 +190,15 @@ class AutoRetryEmails:
         self.retry_log = os.path.join(self.data_dir, 'retry_log.csv')
         self.verifier = EmailVerifier()
         
-        # Email config
-        self.sender_email = os.environ.get('SENDER_EMAIL', 'biradarshweta48@gmail.com')
+        # Email config - MUST be set via environment variables
+        self.sender_email = os.environ.get('SENDER_EMAIL', '')
         self.sender_password = os.environ.get('SENDER_PASSWORD', '')
-        self.sender_name = os.environ.get('SENDER_NAME', 'Shweta Biradar')
+        self.sender_name = os.environ.get('APPLICANT_NAME', '')
+        
+        if not self.sender_email:
+            logging.warning("⚠️ SENDER_EMAIL not set! Auto-retry will not work.")
+        if not self.sender_name:
+            logging.warning("⚠️ APPLICANT_NAME not set! Email sender name will be blank.")
         
         self.max_retries_per_company = 2
         self.retry_delay_days = 3  # Wait before retry

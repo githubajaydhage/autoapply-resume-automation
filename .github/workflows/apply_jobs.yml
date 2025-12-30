@@ -663,6 +663,28 @@ jobs:
           data/discovered_companies.csv
         key: job-data-shweta-${{ runner.os }}-v10-${{ github.run_number }}
 
+    - name: 💾 Commit HR Database to Repo (Permanent Storage)
+      run: |
+        echo "💾 Saving HR database permanently to repo..."
+        git config user.name "Job Automation Bot"
+        git config user.email "bot@github.com"
+        
+        # Count new emails
+        NEW_EMAILS=0
+        if [ -f data/discovered_hr_emails.csv ]; then
+          NEW_EMAILS=$(($(wc -l < data/discovered_hr_emails.csv) - 1))
+        fi
+        
+        # Add data files
+        git add data/discovered_hr_emails.csv data/discovered_companies.csv data/discovered_employees.csv data/sent_emails_log.csv data/applied_log.csv 2>/dev/null || true
+        
+        # Commit if there are changes
+        git diff --staged --quiet || git commit -m "🤖 Auto: HR Database updated (+$NEW_EMAILS emails) - $(date '+%Y-%m-%d %H:%M')"
+        
+        # Push changes
+        git push || echo "⚠️ Push failed (may need PAT with write access)"
+      continue-on-error: true
+
     - name: Upload Final Results
       uses: actions/upload-artifact@v4
       with:

@@ -125,7 +125,7 @@ on:
       applicant_experience:
         description: 'Years of Experience'
         required: false
-        default: '2'
+        default: '3'
         type: string
       applicant_target_role:
         description: 'Target Roles'

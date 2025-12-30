@@ -244,10 +244,10 @@ jobs:
           data/discovered_hr_emails.csv
           data/discovered_employees.csv
           data/discovered_companies.csv
-        key: job-data-shweta-${{ runner.os }}-v9-${{ github.run_number }}
+        key: job-data-shweta-${{ runner.os }}-v10-${{ github.run_number }}
         restore-keys: |
+          job-data-shweta-${{ runner.os }}-v10-
           job-data-shweta-${{ runner.os }}-v9-
-          job-data-shweta-${{ runner.os }}-v8-
           job-data-shweta-${{ runner.os }}-
 
     # PHASE 1: Scrape Jobs (Bulletproof Engine)
@@ -658,7 +658,10 @@ jobs:
           data/application_queue.csv
           data/pipeline_health.json
           data/source_health.json
-        key: job-data-shweta-${{ runner.os }}-v9-${{ github.run_number }}
+          data/discovered_hr_emails.csv
+          data/discovered_employees.csv
+          data/discovered_companies.csv
+        key: job-data-shweta-${{ runner.os }}-v10-${{ github.run_number }}
 
     - name: Upload Final Results
       uses: actions/upload-artifact@v4

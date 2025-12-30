@@ -347,15 +347,16 @@ jobs:
       env:
         PYTHONPATH: ${{ github.workspace }}
 
-    - name: Find HR Emails from Job Postings
+    - name: Find HR Emails from Job Postings (FAST MODE)
       run: |
-        echo "🔍 Finding HR emails..."
+        echo "🔍 Finding HR emails (fast mode - using cached data)..."
         python scripts/hr_email_finder.py
         python scripts/email_scraper.py || true
-        echo "📈 Running Advanced HR Discovery..."
+        echo "📈 Running Advanced HR Discovery (limited to 10 NEW companies only)..."
         python scripts/advanced_hr_discovery.py || true
       env:
         PYTHONPATH: ${{ github.workspace }}
+        MAX_DISCOVERY_COMPANIES: '10'  # Only discover 10 NEW companies per run
 
     # PHASE 2.1: AI HR Email Discovery (NEW - FREE AI!)
     - name: 🤖 AI HR Email Discovery

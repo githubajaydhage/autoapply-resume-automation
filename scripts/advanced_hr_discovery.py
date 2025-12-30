@@ -586,16 +586,43 @@ class AdvancedHRDiscovery:
         # Save after each company
         self._save_databases()
     
-    def discover_for_job_list(self, jobs_df: pd.DataFrame):
-        """Run discovery for all companies in a job list."""
+    def discover_for_job_list(self, jobs_df: pd.DataFrame, max_companies: int = None):
+        """Run discovery for companies in a job list.
+        
+        Args:
+            jobs_df: DataFrame with job listings
+            max_companies: Max NEW companies to discover (default: from env or 10)
+        """
         if 'company' not in jobs_df.columns:
             logging.error("No 'company' column in jobs dataframe")
             return
         
-        companies = jobs_df['company'].dropna().unique().tolist()
-        logging.info(f"🔍 Starting discovery for {len(companies)} companies...")
+        # Get limit from env or parameter
+        if max_companies is None:
+            max_companies = int(os.getenv('MAX_DISCOVERY_COMPANIES', '10'))
         
-        for company in companies:
+        all_companies = jobs_df['company'].dropna().unique().tolist()
+        
+        # Get already discovered companies
+        already_discovered = set()
+        if len(self.companies) > 0:
+            already_discovered = set(self.companies['company'].str.lower().tolist())
+        
+        # Filter to only NEW companies
+        new_companies = [c for c in all_companies if c.lower() not in already_discovered]
+        
+        if len(new_companies) == 0:
+            logging.info(f"✅ All {len(all_companies)} companies already in database! Using cached data.")
+            return
+        
+        # Limit to max_companies
+        companies_to_discover = new_companies[:max_companies]
+        
+        logging.info(f"🔍 Discovering {len(companies_to_discover)} NEW companies (of {len(all_companies)} total, {len(already_discovered)} already cached)")
+        logging.info(f"⏱️ Estimated time: ~{len(companies_to_discover) * 5} minutes")
+        
+        for i, company in enumerate(companies_to_discover, 1):
+            logging.info(f"[{i}/{len(companies_to_discover)}] Processing {company}...")
             try:
                 self.discover_for_company(company)
             except Exception as e:

@@ -26,6 +26,13 @@ name: Job Application - Yogeshwari Mane (Interior Design)
 # =================================================================
 
 on:
+  # Daily schedule - runs 3x daily (10:00 AM, 3:00 PM, 8:00 PM IST)
+  schedule:
+    - cron: '30 4 * * *'   # 10:00 AM IST
+    - cron: '30 9 * * *'   # 3:00 PM IST
+    - cron: '30 14 * * *'  # 8:00 PM IST
+  
+  # Manual trigger
   workflow_dispatch:
     inputs:
       job_location:
@@ -110,11 +117,6 @@ on:
         options:
         - 'false'
         - 'true'
-        
-  schedule:
-    # Runs 3 times per day (IST: 10:00 AM, 3:00 PM, 8:00 PM)
-    # UTC times: 4:30, 9:30, 14:30 (accounting for IST +5:30 offset)
-    - cron: '30 4,9,14 * * *'
     
   # DISABLED: Push trigger to avoid running on every commit
   # push:
@@ -293,15 +295,16 @@ jobs:
       env:
         PYTHONPATH: ${{ github.workspace }}
 
-    - name: Find HR Emails from Job Postings
+    - name: Find HR Emails from Job Postings (FAST MODE)
       run: |
-        echo "🔍 Finding HR emails..."
+        echo "🔍 Finding HR emails (fast mode - using cached data)..."
         python scripts/hr_email_finder.py
         python scripts/email_scraper.py || true
-        echo "📈 Running Advanced HR Discovery..."
+        echo "📈 Running Advanced HR Discovery (limited to 10 NEW companies only)..."
         python scripts/advanced_hr_discovery.py || true
       env:
         PYTHONPATH: ${{ github.workspace }}
+        MAX_DISCOVERY_COMPANIES: '10'  # Only discover 10 NEW companies per run
 
     - name: Resume Optimization Analysis
       run: |

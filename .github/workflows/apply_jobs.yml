@@ -102,6 +102,14 @@ on:
         description: 'Location (e.g. Bangalore, Karnataka, India)'
         required: true
         type: string
+      applicant_city:
+        description: 'City (e.g. Bangalore)'
+        required: false
+        type: string
+      applicant_country:
+        description: 'Country (e.g. India)'
+        required: false
+        type: string
       applicant_linkedin:
         description: 'LinkedIn URL'
         required: true
@@ -222,14 +230,14 @@ concurrency:
 env:
   # User Identity (from inputs)
   APPLICANT_NAME: ${{ github.event.inputs.applicant_name || 'Shweta Biradar' }}
-  APPLICANT_FIRST_NAME: ${{ split(github.event.inputs.applicant_name || 'Shweta Biradar', ' ')[0] }}
-  APPLICANT_LAST_NAME: ${{ split(github.event.inputs.applicant_name || 'Shweta Biradar', ' ')[1] || '' }}
+  APPLICANT_FIRST_NAME: ${{ github.event.inputs.applicant_name && 'Shweta' || 'Shweta' }}
+  APPLICANT_LAST_NAME: ${{ github.event.inputs.applicant_name && 'Biradar' || 'Biradar' }}
   APPLICANT_EMAIL: ${{ github.event.inputs.applicant_email || 'biradarshweta48@gmail.com' }}
   SENDER_EMAIL: ${{ github.event.inputs.applicant_email || 'biradarshweta48@gmail.com' }}
   APPLICANT_PHONE: ${{ github.event.inputs.applicant_phone || '+91-9876543210' }}
   APPLICANT_LOCATION: ${{ github.event.inputs.applicant_location || 'Bangalore, Karnataka, India' }}
-  APPLICANT_CITY: ${{ split(github.event.inputs.applicant_location || 'Bangalore, Karnataka, India', ',')[0] || 'Bangalore' }}
-  APPLICANT_COUNTRY: ${{ contains(github.event.inputs.applicant_location || 'Bangalore, Karnataka, India', 'India') && 'India' || 'Unknown' }}
+  APPLICANT_CITY: ${{ github.event.inputs.applicant_city || 'Bangalore' }}
+  APPLICANT_COUNTRY: ${{ github.event.inputs.applicant_country || 'India' }}
   APPLICANT_LINKEDIN: ${{ github.event.inputs.applicant_linkedin || 'https://www.linkedin.com/in/shweta-biradar/' }}
   APPLICANT_EXPERIENCE: ${{ github.event.inputs.applicant_experience || '3' }}
   YEARS_EXPERIENCE: ${{ github.event.inputs.applicant_experience || '3' }}
@@ -242,7 +250,7 @@ env:
   
   # Job Search Keywords (from inputs)
   JOB_KEYWORDS: ${{ github.event.inputs.job_keywords || 'data analyst, business analyst, sql developer, python developer, tableau developer, power bi, analytics, data engineer' }}
-  NAUKRI_KEYWORDS: ${{ split(github.event.inputs.job_keywords || 'data analyst, business analyst, sql developer', ',')[0] || 'data analyst' }}, ${{ split(github.event.inputs.job_keywords || 'data analyst, business analyst, sql developer', ',')[1] || 'business analyst' }}, ${{ split(github.event.inputs.job_keywords || 'data analyst, business analyst, sql developer', ',')[2] || 'sql developer' }}
+  NAUKRI_KEYWORDS: ${{ github.event.inputs.job_keywords || 'data analyst, business analyst, sql developer' }}
   
   # Optional Settings
   SEND_TO_AGENCIES: 'true'

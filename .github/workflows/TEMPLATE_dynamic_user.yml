@@ -117,14 +117,14 @@ concurrency:
 env:
   # User Identity (DYNAMIC - from workflow inputs)
   APPLICANT_NAME: ${{ github.event.inputs.applicant_name }}
-  APPLICANT_FIRST_NAME: ${{ github.event.inputs.applicant_name && split(github.event.inputs.applicant_name, ' ')[0] }}
-  APPLICANT_LAST_NAME: ${{ github.event.inputs.applicant_name && join(slice(split(github.event.inputs.applicant_name, ' '), 1), ' ') }}
+  APPLICANT_FIRST_NAME: ${{ github.event.inputs.applicant_name }}
+  APPLICANT_LAST_NAME: ${{ github.event.inputs.applicant_name }}
   APPLICANT_EMAIL: ${{ github.event.inputs.applicant_email }}
   SENDER_EMAIL: ${{ github.event.inputs.applicant_email }}
   APPLICANT_PHONE: ${{ github.event.inputs.applicant_phone }}
   APPLICANT_LOCATION: ${{ github.event.inputs.applicant_location }}
-  APPLICANT_CITY: ${{ github.event.inputs.applicant_location && split(github.event.inputs.applicant_location, ',')[0] }}
-  APPLICANT_COUNTRY: ${{ contains(github.event.inputs.applicant_location, 'India') && 'India' || 'Unknown' }}
+  APPLICANT_CITY: ${{ github.event.inputs.applicant_location }}
+  APPLICANT_COUNTRY: 'India'
   APPLICANT_LINKEDIN: ${{ github.event.inputs.applicant_linkedin }}
   APPLICANT_EXPERIENCE: ${{ github.event.inputs.applicant_experience }}
   YEARS_EXPERIENCE: ${{ github.event.inputs.applicant_experience }}
@@ -137,7 +137,7 @@ env:
   
   # Job Keywords (DYNAMIC)
   JOB_KEYWORDS: ${{ github.event.inputs.job_keywords }}
-  NAUKRI_KEYWORDS: ${{ github.event.inputs.job_keywords && split(github.event.inputs.job_keywords, ',')[0] }}, ${{ github.event.inputs.job_keywords && split(github.event.inputs.job_keywords, ',')[1] }}, ${{ github.event.inputs.job_keywords && split(github.event.inputs.job_keywords, ',')[2] }}
+  NAUKRI_KEYWORDS: ${{ github.event.inputs.job_keywords }}
   
   # Optional Settings
   SEND_TO_AGENCIES: 'true'

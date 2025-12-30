@@ -100,6 +100,49 @@ class AIHREmailDiscovery:
         
         return emails
     
+    def ai_research_company(self, company: str, job_description: str = None) -> Dict:
+        """
+        🤖 AI researches company for better email discovery.
+        """
+        try:
+            prompt = f"""Research company: {company}
+Job Context: {job_description[:500] if job_description else 'General inquiry'}
+
+Provide company intelligence:
+1. Industry and business type
+2. Company size estimate
+3. Likely email domain(s)
+4. HR department structure
+5. Hiring process style
+6. Best contact timing
+
+Respond in JSON:
+{{
+  "industry": "industry name",
+  "size": "startup|small|medium|large|enterprise",
+  "domains": ["primary.com", "alternate.com"],
+  "hr_structure": "centralized|distributed|outsourced",
+  "hiring_style": "fast|thorough|selective",
+  "best_timing": "morning|afternoon|any"
+}}"""
+            
+            ai_response = self.ai.generate(prompt, max_tokens=300)
+            if ai_response:
+                try:
+                    json_match = re.search(r'\{.*\}', ai_response, re.DOTALL)
+                    if json_match:
+                        research = json.loads(json_match.group())
+                        logging.info(f"🔍 AI research: {company} is {research.get('size', 'unknown')} {research.get('industry', 'company')}")
+                        return research
+                except:
+                    pass
+            
+            return {"industry": "unknown", "size": "medium", "domains": [], "hr_structure": "centralized", "hiring_style": "standard", "best_timing": "morning"}
+            
+        except Exception as e:
+            logging.warning(f"⚠️ AI company research failed: {e}")
+            return {"industry": "unknown", "size": "medium", "domains": [], "hr_structure": "centralized", "hiring_style": "standard", "best_timing": "morning"}
+    
     def _load_email_patterns(self) -> Dict:
         """Load company email patterns."""
         if os.path.exists(self.email_patterns_path):
@@ -135,7 +178,166 @@ class AIHREmailDiscovery:
         
         return list(set(valid_emails))
     
-    def generate_hr_emails_for_company(self, company: str, domain: str = None) -> List[Dict]:
+    def _ai_generate_smart_patterns(self, company: str, domain: str, industry: str = None, company_size: str = None) -> List[Dict]:
+        """
+        🤖 AI generates intelligent HR email patterns based on company profile.
+        """
+        try:
+            prompt = f"""Company: {company}
+Domain: {domain}
+Industry: {industry or 'Unknown'}
+Company Size: {company_size or 'Unknown'}
+
+Generate the 8 most likely HR/recruiting email patterns for this company. Consider:
+1. Industry standards and naming conventions
+2. Company culture (startup vs enterprise)
+3. Regional preferences
+4. Common HR department structures
+
+Respond with ONLY email patterns in this format:
+hr@{domain}
+careers@{domain}
+jobs@{domain}
+hiring@{domain}
+talent@{domain}
+recruitment@{domain}
+people@{domain}
+join@{domain}
+
+No explanation, just the email patterns."""
+            
+            ai_response = self.ai.generate(prompt, max_tokens=200)
+            if not ai_response:
+                return self._fallback_patterns(domain)
+            
+            # Extract email patterns from AI response
+            patterns = []
+            for line in ai_response.strip().split('\n'):
+                line = line.strip()
+                if '@' in line and domain in line:
+                    patterns.append({
+                        'email': line,
+                        'confidence': 'ai_high',
+                        'source': 'ai_generated'
+                    })
+            
+            # Store successful pattern for company
+            if patterns:
+                self.email_patterns[company.lower()] = patterns[0]['email'].replace(domain, '{domain}')
+                self._save_email_patterns()
+            
+            logging.info(f"✅ AI generated {len(patterns)} patterns for {company}")
+            return patterns[:5]  # Top 5 patterns
+            
+        except Exception as e:
+            logging.warning(f"⚠️ AI pattern generation failed: {e}")
+            return self._fallback_patterns(domain)
+    
+    def _fallback_patterns(self, domain: str) -> List[Dict]:
+        """Fallback patterns when AI fails."""
+        return [{'email': pattern.format(domain=domain), 'confidence': 'medium', 'source': 'fallback'} 
+                for pattern in self.HR_PATTERNS[:5]]
+    
+    def ai_extract_hidden_emails(self, page_content: str, company_url: str = None) -> List[str]:
+        """
+        🤖 AI extracts hidden/obfuscated emails from webpage content.
+        """
+        try:
+            prompt = f"""Webpage content from {company_url or 'unknown'}:
+{page_content[:2500]}
+
+Extract ALL possible contact emails, especially:
+1. Hidden emails (JavaScript encoded, base64, HTML entities)
+2. HR/recruiting contacts
+3. Careers/jobs contacts
+4. Contact form emails
+5. Alternative contact methods
+
+Find emails that regex might miss due to:
+- JavaScript obfuscation
+- CSS hiding
+- Character encoding
+- Split across elements
+- Dynamic generation
+
+Respond with ONLY email addresses, one per line. No explanations."""
+            
+            ai_response = self.ai.generate(prompt, max_tokens=300)
+            if not ai_response:
+                return []
+            
+            # Extract emails from AI response
+            found_emails = []
+            for line in ai_response.strip().split('\n'):
+                line = line.strip()
+                if '@' in line and '.' in line:
+                    # Clean up the email
+                    email_match = re.search(r'[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}', line)
+                    if email_match:
+                        email = email_match.group().lower()
+                        # Skip obvious non-HR emails
+                        skip_patterns = ['noreply', 'no-reply', 'support@', 'admin@', 'webmaster@', 'postmaster@']
+                        if not any(pat in email for pat in skip_patterns):
+                            found_emails.append(email)
+            
+            logging.info(f"🤖 AI extracted {len(found_emails)} hidden emails")
+            return list(set(found_emails))
+            
+        except Exception as e:
+            logging.warning(f"⚠️ AI email extraction failed: {e}")
+            return []
+    
+    def ai_analyze_company_hiring_patterns(self, company: str, recent_job_posts: List[str] = None) -> Dict:
+        """
+        🤖 AI analyzes company hiring patterns and predicts best contact strategy.
+        """
+        try:
+            job_context = '\n'.join(recent_job_posts[:3]) if recent_job_posts else 'No recent job posts available'
+            
+            prompt = f"""Company: {company}
+Recent Job Posts:
+{job_context}
+
+Analyze hiring patterns and provide:
+1. Best contact approach (email vs LinkedIn vs referral)
+2. Optimal outreach timing
+3. Preferred communication style
+4. Response probability factors
+5. Department structure insights
+
+Respond in JSON format:
+{{
+  "best_approach": "email|linkedin|referral",
+  "timing": "morning|afternoon|evening",
+  "style": "formal|casual|technical",
+  "response_probability": "high|medium|low",
+  "insights": "key insights about this company"
+}}"""
+            
+            ai_response = self.ai.generate(prompt, max_tokens=400)
+            if ai_response:
+                try:
+                    # Extract JSON from response
+                    json_match = re.search(r'\{.*\}', ai_response, re.DOTALL)
+                    if json_match:
+                        return json.loads(json_match.group())
+                except:
+                    pass
+            
+            # Fallback analysis
+            return {
+                "best_approach": "email",
+                "timing": "morning", 
+                "style": "professional",
+                "response_probability": "medium",
+                "insights": f"Standard outreach recommended for {company}"
+            }
+            
+        except Exception as e:
+            logging.warning(f"⚠️ AI company analysis failed: {e}")
+            return {"best_approach": "email", "timing": "morning", "style": "professional", "response_probability": "medium", "insights": "Standard approach"}
+    
+    def generate_hr_emails_for_company(self, company: str, domain: str = None, industry: str = None, company_size: str = None) -> List[Dict]:
         """
         🏢 Use AI to generate likely HR email patterns for a company.
         """
@@ -147,7 +349,12 @@ class AIHREmailDiscovery:
             pattern = self.email_patterns[company.lower()]
             return [{'email': pattern.format(domain=domain), 'confidence': 'high', 'source': 'pattern_cache'}]
         
-        logging.info(f"🔍 Generating HR emails for {company}...")
+        logging.info(f"🔍 Generating AI-powered HR emails for {company}...")
+        
+        # Use AI to generate smart email patterns
+        ai_patterns = self._ai_generate_smart_patterns(company, domain, industry, company_size)
+        if ai_patterns:
+            return ai_patterns
         
         prompt = f"""You are an HR email pattern expert. Generate likely HR email addresses for:
 

@@ -18,6 +18,13 @@ from urllib.parse import quote, urljoin
 # Add parent directory to path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+# AI integration
+try:
+    from scripts.free_ai_providers import get_ai
+    AI_AVAILABLE = True
+except ImportError:
+    AI_AVAILABLE = False
+
 logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] %(message)s')
 
 
@@ -28,6 +35,11 @@ class EnhancedJobScraper:
         self.base_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         self.data_path = os.path.join(self.base_path, 'data')
         self.output_path = os.path.join(self.data_path, 'enhanced_jobs.csv')
+        
+        # Initialize AI if available
+        self.ai = get_ai() if AI_AVAILABLE else None
+        if self.ai:
+            logging.info("🤖 AI-powered job analysis enabled")
         
         # Default search parameters
         self.keywords = ['data analyst', 'business analyst', 'data scientist', 'analytics']
@@ -476,16 +488,207 @@ class EnhancedJobScraper:
             # Save
             df.to_csv(self.output_path, index=False)
             
+            # 🤖 AI ENHANCEMENT: Analyze jobs with AI
+            if self.ai and not df.empty:
+                logging.info("🤖 Running AI analysis on scraped jobs...")
+                df = self.ai_enhance_job_data(df, max_jobs=30)  # Analyze top 30 jobs
+                # Save enhanced data
+                df.to_csv(self.output_path, index=False)
+            
             logging.info("="*60)
             logging.info(f"✅ ENHANCED SCRAPING COMPLETE")
             logging.info(f"   Total jobs: {len(df)}")
             logging.info(f"   Sources: {df['source'].nunique()}")
+            if self.ai:
+                ai_analyzed = len(df[df['ai_relevance_score'] != ''])
+                logging.info(f"   AI analyzed: {ai_analyzed} jobs")
+                if ai_analyzed > 0:
+                    avg_score = df[df['ai_relevance_score'] != '']['ai_relevance_score'].astype(float).mean()
+                    logging.info(f"   Avg relevance: {avg_score:.1f}/100")
             logging.info(f"   Saved to: {self.output_path}")
             logging.info("="*60)
         else:
             logging.warning("No jobs scraped from enhanced sources")
         
         return df
+    
+    def ai_analyze_job_relevance(self, job_description: str, job_title: str, company: str, user_profile: dict = None) -> dict:
+        """
+        🤖 AI analyzes job relevance and extracts hidden insights.
+        """
+        if not self.ai:
+            return {'score': 50, 'insights': 'AI not available', 'confidence': 'low'}
+        
+        try:
+            # Default user profile if not provided
+            if not user_profile:
+                user_profile = {
+                    'skills': 'data analysis, python, sql, business intelligence',
+                    'experience': '3-5 years',
+                    'preferences': 'remote work, growth opportunities'
+                }
+            
+            prompt = f"""Job Analysis Request:
+Title: {job_title}
+Company: {company}
+Description: {job_description[:2000]}
+
+User Profile:
+Skills: {user_profile.get('skills', 'general')}
+Experience: {user_profile.get('experience', '3+ years')}
+Preferences: {user_profile.get('preferences', 'career growth')}
+
+Analyze and respond in JSON:
+{{
+  "relevance_score": 85,
+  "match_reasons": ["reason1", "reason2"],
+  "missing_skills": ["skill1", "skill2"],
+  "salary_estimate": "80k-120k",
+  "remote_possible": true,
+  "growth_potential": "high|medium|low",
+  "application_difficulty": "easy|medium|hard",
+  "best_application_approach": "direct|referral|linkedin",
+  "key_requirements": ["req1", "req2"],
+  "hidden_insights": "insights about company/role"
+}}"""
+            
+            ai_response = self.ai.generate(prompt, max_tokens=600)
+            if ai_response:
+                try:
+                    json_match = re.search(r'\{.*\}', ai_response, re.DOTALL)
+                    if json_match:
+                        analysis = json.loads(json_match.group())
+                        analysis['ai_analyzed'] = True
+                        return analysis
+                except:
+                    pass
+            
+            # Fallback analysis
+            return {
+                'relevance_score': 50,
+                'match_reasons': ['Standard match'],
+                'missing_skills': [],
+                'salary_estimate': 'Not specified',
+                'remote_possible': 'remote' in job_description.lower(),
+                'growth_potential': 'medium',
+                'application_difficulty': 'medium',
+                'best_application_approach': 'direct',
+                'key_requirements': [],
+                'hidden_insights': 'Basic job posting',
+                'ai_analyzed': False
+            }
+            
+        except Exception as e:
+            logging.warning(f"⚠️ AI job analysis failed: {e}")
+            return {'relevance_score': 50, 'insights': f'Analysis error: {e}', 'confidence': 'low', 'ai_analyzed': False}
+    
+    def ai_extract_contact_info(self, job_description: str, company: str) -> dict:
+        """
+        🤖 AI extracts contact information from job descriptions.
+        """
+        if not self.ai:
+            return {'contacts': [], 'application_method': 'unknown'}
+        
+        try:
+            prompt = f"""Job Posting Analysis:
+Company: {company}
+Description: {job_description}
+
+Extract contact information:
+1. Hiring manager names
+2. HR contact emails
+3. Application instructions
+4. Referral contacts
+5. Application deadlines
+6. Interview process details
+
+Respond in JSON:
+{{
+  "contacts": [
+    {{"type": "email", "value": "hr@company.com", "role": "HR Manager"}},
+    {{"type": "name", "value": "John Smith", "role": "Hiring Manager"}}
+  ],
+  "application_method": "email|website|linkedin",
+  "application_url": "url-if-specified",
+  "deadline": "date-if-mentioned",
+  "process_insights": "insights about interview process"
+}}"""
+            
+            ai_response = self.ai.generate(prompt, max_tokens=400)
+            if ai_response:
+                try:
+                    json_match = re.search(r'\{.*\}', ai_response, re.DOTALL)
+                    if json_match:
+                        contacts = json.loads(json_match.group())
+                        return contacts
+                except:
+                    pass
+            
+            return {'contacts': [], 'application_method': 'website', 'process_insights': 'Standard application process'}
+            
+        except Exception as e:
+            logging.warning(f"⚠️ AI contact extraction failed: {e}")
+            return {'contacts': [], 'application_method': 'unknown', 'error': str(e)}
+    
+    def ai_enhance_job_data(self, jobs_df: pd.DataFrame, max_jobs: int = 20) -> pd.DataFrame:
+        """
+        🤖 AI enhances job dataframe with relevance scores and insights.
+        """
+        if not self.ai or jobs_df.empty:
+            return jobs_df
+        
+        logging.info(f"🤖 AI analyzing top {min(max_jobs, len(jobs_df))} jobs for relevance...")
+        
+        # Add new columns for AI insights
+        ai_columns = ['ai_relevance_score', 'ai_salary_estimate', 'ai_remote_possible', 
+                     'ai_growth_potential', 'ai_application_approach', 'ai_insights']
+        for col in ai_columns:
+            if col not in jobs_df.columns:
+                jobs_df[col] = ''
+        
+        # Analyze top jobs
+        for idx, row in jobs_df.head(max_jobs).iterrows():
+            try:
+                job_desc = str(row.get('description', ''))
+                job_title = str(row.get('title', ''))
+                company = str(row.get('company', ''))
+                
+                if job_desc and len(job_desc) > 50:  # Only analyze jobs with good descriptions
+                    analysis = self.ai_analyze_job_relevance(job_desc, job_title, company)
+                    
+                    # Update dataframe with AI insights
+                    jobs_df.at[idx, 'ai_relevance_score'] = analysis.get('relevance_score', 50)
+                    jobs_df.at[idx, 'ai_salary_estimate'] = analysis.get('salary_estimate', '')
+                    jobs_df.at[idx, 'ai_remote_possible'] = analysis.get('remote_possible', False)
+                    jobs_df.at[idx, 'ai_growth_potential'] = analysis.get('growth_potential', 'medium')
+                    jobs_df.at[idx, 'ai_application_approach'] = analysis.get('best_application_approach', 'direct')
+                    jobs_df.at[idx, 'ai_insights'] = analysis.get('hidden_insights', '')
+                    
+                    # Extract contacts
+                    contacts = self.ai_extract_contact_info(job_desc, company)
+                    if contacts.get('contacts'):
+                        contact_info = '; '.join([f"{c.get('role', '')}: {c.get('value', '')}" 
+                                                for c in contacts['contacts']])
+                        jobs_df.at[idx, 'ai_contacts'] = contact_info
+                
+                # Small delay to respect rate limits
+                time.sleep(0.5)
+                
+            except Exception as e:
+                logging.warning(f"⚠️ AI analysis failed for job {idx}: {e}")
+                continue
+        
+        # Sort by AI relevance score (highest first)
+        try:
+            jobs_df['ai_relevance_score'] = pd.to_numeric(jobs_df['ai_relevance_score'], errors='coerce').fillna(50)
+            jobs_df = jobs_df.sort_values('ai_relevance_score', ascending=False)
+        except:
+            pass
+        
+        ai_analyzed_count = jobs_df[jobs_df['ai_relevance_score'] != ''].shape[0]
+        logging.info(f"✅ AI analyzed {ai_analyzed_count} jobs with relevance scoring")
+        
+        return jobs_df
     
     def merge_with_existing(self) -> pd.DataFrame:
         """Merge enhanced jobs with existing jobs_today.csv."""

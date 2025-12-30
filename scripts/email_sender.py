@@ -40,6 +40,13 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from utils.config import USER_DETAILS, BASE_RESUME_PATH
 
+# AI integration for intelligent auto-application
+try:
+    from scripts.free_ai_providers import get_ai
+    AI_AVAILABLE = True
+except ImportError:
+    AI_AVAILABLE = False
+
 # Import email verifier for pre-send validation
 try:
     from scripts.email_verifier import EmailVerifier
@@ -304,6 +311,11 @@ class PersonalizedEmailSender:
             except:
                 pass
         
+        # Initialize AI for intelligent auto-application
+        self.ai = get_ai() if AI_AVAILABLE else None
+        if self.ai:
+            logging.info("   🤖 AI-powered auto-application enabled")
+        
         # Initialize email optimizer if available
         self.optimizer = None
         if OPTIMIZER_AVAILABLE:
@@ -369,6 +381,15 @@ class PersonalizedEmailSender:
     def generate_email_subject(self, job_title: str, company: str, recipient_email: str = None) -> str:
         """Generate a personalized email subject - optimized for high open rates."""
         
+        # Use AI for intelligent subject generation
+        if self.ai:
+            try:
+                subject = self.ai_generate_subject(job_title, company, recipient_email)
+                if subject:
+                    return subject
+            except Exception as e:
+                logging.debug(f"AI subject generation failed: {e}")
+        
         # Use optimizer if available for A/B tested subjects
         if self.optimizer:
             subject, template_id = self.optimizer.subject_optimizer.get_optimized_subject(
@@ -395,6 +416,15 @@ class PersonalizedEmailSender:
     
     def generate_email_body(self, job_title: str, company: str, job_url: str = None, recipient_email: str = None) -> str:
         """Generate a personalized email body with company-specific content."""
+        
+        # Use AI for intelligent, personalized email generation
+        if self.ai:
+            try:
+                body = self.ai_generate_personalized_email(job_title, company, job_url, recipient_email)
+                if body:
+                    return body
+            except Exception as e:
+                logging.debug(f"AI email generation failed: {e}")
         
         # Use optimizer for personalized content if available
         if self.optimizer and recipient_email:
@@ -552,15 +582,239 @@ ${name}
         
         df.to_csv(self.invalid_log_path, index=False)
     
+    def ai_generate_subject(self, job_title: str, company: str, recipient_email: str = None) -> str:
+        """
+        🤖 AI generates optimized email subject lines for maximum open rates.
+        """
+        if not self.ai:
+            return None
+        
+        try:
+            prompt = f"""Generate a compelling email subject line for a job application:
+
+Job Title: {job_title}
+Company: {company}
+Recipient: {recipient_email or 'HR Manager'}
+Applicant: {self.applicant_name}
+Experience: {self.applicant_experience}+ years
+Location: Bangalore, India
+
+Requirements:
+- Under 60 characters for mobile optimization
+- Professional but attention-grabbing
+- Include key differentiators
+- Avoid spam trigger words
+- Personalized for this specific role
+
+Generate 1 optimized subject line that maximizes open rates.
+Respond with ONLY the subject line, no quotes or explanations."""
+            
+            subject = self.ai.generate(prompt, max_tokens=50)
+            if subject:
+                subject = subject.strip().strip('"').strip("'")
+                if len(subject) > 10 and len(subject) < 80:
+                    logging.info(f"🤖 AI generated subject: {subject[:50]}...")
+                    return subject
+            
+        except Exception as e:
+            logging.debug(f"AI subject generation error: {e}")
+        
+        return None
+    
+    def ai_generate_personalized_email(self, job_title: str, company: str, job_url: str = None, recipient_email: str = None) -> str:
+        """
+        🤖 AI generates personalized job application email content.
+        """
+        if not self.ai:
+            return None
+        
+        try:
+            prompt = f"""Write a professional job application email:
+
+POSITION: {job_title}
+COMPANY: {company}
+RECIPIENT: {recipient_email or 'Hiring Manager'}
+
+APPLICANT PROFILE:
+Name: {self.applicant_name}
+Phone: {self.applicant_phone}
+LinkedIn: {self.applicant_linkedin}
+Experience: {self.applicant_experience}+ years
+Skills: {self.applicant_skills}
+Location: Bangalore, India (open to remote/hybrid/on-site)
+
+REQUIREMENTS:
+- Professional, confident tone
+- Highlight relevant experience and skills
+- Show genuine interest in the company
+- Include call-to-action
+- Keep concise (under 200 words)
+- Include phone number and LinkedIn
+- Mention resume attachment
+
+Write a compelling email that gets responses. Use specific details about the role and company when possible.
+Respond with the complete email body only."""
+            
+            body = self.ai.generate(prompt, max_tokens=800)
+            if body and len(body) > 100:
+                logging.info(f"🤖 AI generated personalized email ({len(body)} chars)")
+                return body.strip()
+            
+        except Exception as e:
+            logging.debug(f"AI email generation error: {e}")
+        
+        return None
+    
+    def ai_should_apply_to_job(self, job_title: str, company: str, job_description: str = None) -> dict:
+        """
+        🤖 AI determines if we should apply to this job and provides application strategy.
+        """
+        if not self.ai:
+            return {'should_apply': True, 'confidence': 'medium', 'strategy': 'standard'}
+        
+        try:
+            prompt = f"""Job Application Decision Analysis:
+
+JOB: {job_title}
+COMPANY: {company}
+DESCRIPTION: {job_description[:1000] if job_description else 'Not provided'}
+
+CANDIDATE PROFILE:
+Experience: {self.applicant_experience}+ years
+Skills: {self.applicant_skills}
+Location: Bangalore (flexible)
+
+Analyze and provide recommendation:
+1. Should we apply? (yes/no with confidence level)
+2. Match quality (0-100 score)
+3. Application strategy
+4. Key points to emphasize
+5. Success probability
+
+Respond in JSON:
+{{
+  "should_apply": true,
+  "match_score": 85,
+  "confidence": "high|medium|low",
+  "success_probability": 65,
+  "strategy": "direct|technical|referral",
+  "key_points": ["point1", "point2"],
+  "timing": "immediate|wait|skip",
+  "reasoning": "why this decision"
+}}"""
+            
+            ai_response = self.ai.generate(prompt, max_tokens=400)
+            if ai_response:
+                try:
+                    import json
+                    json_match = re.search(r'\\{.*\\}', ai_response, re.DOTALL)
+                    if json_match:
+                        analysis = json.loads(json_match.group())
+                        logging.info(f"🤖 AI job analysis: {analysis.get('match_score', 'unknown')}% match, {analysis.get('confidence', 'unknown')} confidence")
+                        return analysis
+                except:
+                    pass
+            
+            return {'should_apply': True, 'match_score': 70, 'confidence': 'medium', 'strategy': 'direct'}
+            
+        except Exception as e:
+            logging.debug(f"AI job analysis error: {e}")
+            return {'should_apply': True, 'confidence': 'low', 'strategy': 'standard', 'error': str(e)}
+    
+    def ai_optimize_application_timing(self, company: str, recipient_email: str = None) -> dict:
+        """
+        🤖 AI determines optimal timing for job application.
+        """
+        if not self.ai:
+            return {'send_now': True, 'timing': 'immediate'}
+        
+        try:
+            current_time = datetime.now()
+            day_of_week = current_time.strftime('%A')
+            hour = current_time.hour
+            
+            prompt = f"""Application Timing Optimization:
+
+COMPANY: {company}
+RECIPIENT: {recipient_email or 'HR'}
+CURRENT TIME: {day_of_week} {hour:02d}:00
+TIMEZONE: Indian Standard Time
+
+Analyze optimal timing:
+1. Should we send now or wait?
+2. Best day/time for this company
+3. Industry-specific timing patterns
+4. Response probability factors
+
+Consider:
+- HR work patterns
+- Company culture
+- Industry norms
+- Time zone preferences
+
+Respond in JSON:
+{{
+  "send_now": true,
+  "optimal_day": "Tuesday", 
+  "optimal_hour": 10,
+  "current_score": 85,
+  "wait_reason": "reason if should wait",
+  "timing_strategy": "immediate|morning|afternoon|next_week"
+}}"""
+            
+            ai_response = self.ai.generate(prompt, max_tokens=300)
+            if ai_response:
+                try:
+                    import json
+                    json_match = re.search(r'\\{.*\\}', ai_response, re.DOTALL)
+                    if json_match:
+                        timing = json.loads(json_match.group())
+                        return timing
+                except:
+                    pass
+            
+            # Fallback timing logic
+            if 9 <= hour <= 17 and current_time.weekday() < 5:  # Business hours, weekdays
+                return {'send_now': True, 'timing': 'business_hours', 'current_score': 80}
+            else:
+                return {'send_now': False, 'timing': 'wait_for_business_hours', 'current_score': 40}
+            
+        except Exception as e:
+            logging.debug(f"AI timing optimization error: {e}")
+            return {'send_now': True, 'timing': 'standard', 'error': str(e)}
+    
     def send_email(self, recipient_email: str, company: str, job_title: str, job_url: str = None) -> bool:
-        """Send a personalized email to a single recipient."""
+        """Send a personalized email to a single recipient with AI optimization."""
         
         recipient_lower = recipient_email.lower()
         
-        # Skip if already sent
+        # Skip if already sent  
         if recipient_lower in self.sent_emails:
             logging.info(f"⏭️ Skipping {recipient_email} - already contacted")
             return False
+        
+        # 🤖 AI DECISION: Should we apply to this job?
+        if self.ai:
+            try:
+                ai_decision = self.ai_should_apply_to_job(job_title, company)
+                if not ai_decision.get('should_apply', True):
+                    logging.info(f"🤖 AI Skip: {recipient_email} - {ai_decision.get('reasoning', 'Not a good match')}")
+                    return False
+                elif ai_decision.get('match_score', 50) < 60:
+                    logging.info(f"🤖 AI Low Match: {ai_decision.get('match_score')}% - proceeding with caution")
+            except:
+                pass  # Continue with standard logic if AI fails
+        
+        # 🤖 AI TIMING: Check optimal application timing
+        if self.ai:
+            try:
+                timing_analysis = self.ai_optimize_application_timing(company, recipient_email)
+                if not timing_analysis.get('send_now', True):
+                    logging.info(f"🤖 AI Timing: Delaying {recipient_email} - {timing_analysis.get('wait_reason', 'Better timing later')}")
+                    # Could implement scheduling here for later
+                    # For now, we continue but log the recommendation
+            except:
+                pass
         
         # CHECK KNOWN BAD EMAILS FIRST - Save time and quota
         if recipient_lower in self.KNOWN_BAD_EMAILS:

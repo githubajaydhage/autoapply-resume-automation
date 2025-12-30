@@ -12,6 +12,17 @@ import time
 import random
 from urllib.parse import urljoin, urlparse
 import json
+import sys
+
+# Add parent directory to path for AI integration
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+# AI integration
+try:
+    from scripts.free_ai_providers import get_ai
+    AI_AVAILABLE = True
+except ImportError:
+    AI_AVAILABLE = False
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] %(message)s')
@@ -34,6 +45,11 @@ class HREmailScraper:
     def __init__(self):
         self.session = requests.Session()
         self._update_headers()
+        
+        # Initialize AI if available
+        self.ai = get_ai() if AI_AVAILABLE else None
+        if self.ai:
+            logging.info("🤖 AI-powered email extraction enabled")
         
         # Email pattern
         self.email_pattern = re.compile(
@@ -168,6 +184,101 @@ class HREmailScraper:
         except Exception as e:
             logging.warning(f"Error scraping {url}: {e}")
             return []
+    
+    def ai_extract_hidden_emails(self, page_content: str, page_url: str = None) -> List[str]:
+        """
+        🤖 AI extracts hidden/obfuscated emails that regex misses.
+        """
+        if not self.ai:
+            return []
+        
+        try:
+            prompt = f"""Webpage: {page_url or 'unknown'}
+HTML Content:
+{page_content[:3000]}
+
+Find ALL email addresses, including:
+1. JavaScript obfuscated emails
+2. Base64/encoded emails 
+3. CSS hidden emails
+4. Split/concatenated emails
+5. Contact form emails
+6. Data attributes containing emails
+7. Comments containing emails
+
+Focus on HR/recruiting/careers emails. Skip support/admin emails.
+Respond with ONLY email addresses, one per line."""
+            
+            ai_response = self.ai.generate(prompt, max_tokens=400)
+            if not ai_response:
+                return []
+            
+            # Extract valid emails from AI response
+            ai_emails = []
+            for line in ai_response.strip().split('\n'):
+                line = line.strip()
+                if '@' in line:
+                    # Extract email using regex
+                    email_match = re.search(r'[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}', line)
+                    if email_match:
+                        email = email_match.group().lower()
+                        if self.is_valid_hr_email(email):
+                            ai_emails.append(email)
+            
+            unique_ai_emails = list(set(ai_emails))
+            if unique_ai_emails:
+                logging.info(f"🤖 AI found {len(unique_ai_emails)} hidden emails from {page_url or 'page'}")
+            
+            return unique_ai_emails
+            
+        except Exception as e:
+            logging.warning(f"⚠️ AI email extraction failed: {e}")
+            return []
+    
+    def ai_smart_page_analysis(self, page_content: str, page_url: str) -> dict:
+        """
+        🤖 AI analyzes webpage structure to find best contact methods.
+        """
+        if not self.ai:
+            return {'emails': [], 'contact_forms': [], 'insights': 'AI not available'}
+        
+        try:
+            prompt = f"""Analyze webpage: {page_url}
+Content: {page_content[:2000]}
+
+Identify:
+1. All contact emails (visible and hidden)
+2. Contact form URLs/endpoints
+3. Career page links
+4. Employee directory links
+5. Best contact approach
+
+Respond in JSON:
+{{
+  "emails": ["email1@domain.com", "email2@domain.com"],
+  "contact_forms": ["contact-form-url"],
+  "career_links": ["careers-page-url"],
+  "directory_links": ["employee-directory-url"],
+  "best_approach": "email|form|linkedin",
+  "confidence": "high|medium|low"
+}}"""
+            
+            ai_response = self.ai.generate(prompt, max_tokens=500)
+            if ai_response:
+                try:
+                    json_match = re.search(r'\{.*\}', ai_response, re.DOTALL)
+                    if json_match:
+                        analysis = json.loads(json_match.group())
+                        logging.info(f"🔍 AI page analysis: {analysis.get('confidence', 'unknown')} confidence")
+                        return analysis
+                except:
+                    pass
+            
+            return {'emails': [], 'contact_forms': [], 'insights': 'AI analysis failed'}
+            
+        except Exception as e:
+            logging.warning(f"⚠️ AI page analysis failed: {e}")
+            return {'emails': [], 'contact_forms': [], 'insights': f'Error: {e}'}
     
     def scrape_company_careers_page(self, company_name: str, careers_url: str) -> dict:
         """Scrape a company's careers page for HR emails."""

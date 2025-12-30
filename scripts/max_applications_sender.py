@@ -24,6 +24,9 @@ import logging
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+# Import CI mode utilities
+from scripts.ci_mode import is_ci_mode, confirm, print_ci_notice
+
 # Global flag for graceful shutdown on SIGTERM (GitHub Actions cancel)
 SHUTDOWN_REQUESTED = False
 
@@ -341,9 +344,14 @@ Thank you for considering my application.
             print("⚠️ No new emails to send to!")
             return
         
-        # Confirm
+        # Show CI notice
+        print_ci_notice()
+        
+        # Confirm (skip in CI mode)
         print(f"\n{'─'*60}")
-        input("Press ENTER to start sending (Ctrl+C to cancel)...")
+        if not confirm("Ready to start sending applications?", default=True):
+            print("❌ Campaign cancelled by user")
+            return
         print(f"{'─'*60}\n")
         
         # Send emails

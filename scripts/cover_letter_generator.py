@@ -106,6 +106,19 @@ ${email}"""
         
         'qa': "I have comprehensive experience in quality assurance, including test automation, performance testing, and implementing testing frameworks that ensure product reliability.",
         
+        # Interior Design & Architecture Experience Paragraphs
+        'interior_design': "In my previous roles, I have successfully designed and executed residential and commercial interior projects. My experience includes space planning, material selection, 3D visualization, and client presentations using AutoCAD, SketchUp, and 3ds Max.",
+        
+        'architecture': "I bring comprehensive experience in architectural design, from concept development to construction documentation. My portfolio includes residential, commercial, and mixed-use projects designed with attention to sustainability and building codes.",
+        
+        'estimation': "My experience includes preparing detailed quantity surveys, cost estimations, and billing analysis for construction projects. I excel at BOQ preparation, rate analysis, and ensuring projects stay within budget.",
+        
+        'autocad': "I am proficient in AutoCAD, creating precise 2D drawings and technical documentation. My experience includes floor plans, elevation drawings, section details, and construction documents.",
+        
+        'furniture': "I have extensive experience in furniture design and modular solutions. My work includes custom furniture conceptualization, production drawings, and vendor coordination for residential and commercial projects.",
+        
+        'project_management': "I have managed multiple interior and construction projects from inception to completion. My experience includes vendor management, site supervision, timeline coordination, and quality control.",
+        
         'default': "Throughout my career, I have demonstrated strong problem-solving abilities, attention to detail, and a commitment to delivering high-quality work. I adapt quickly to new technologies and thrive in collaborative environments."
     }
     
@@ -137,6 +150,20 @@ ${email}"""
         text = f"{job_title} {description}".lower()
         
         categories = {
+            # Interior Design & Architecture categories (check first for priority)
+            'interior_design': ['interior design', 'interior designer', 'space planning', 'home decor', 
+                               'residential design', 'commercial interior', '3ds max', 'sketchup', 
+                               'vray', 'modular kitchen', 'furniture design'],
+            'architecture': ['architect', 'architectural', 'building design', 'revit', 'bim', 
+                            'construction drawing', 'elevation'],
+            'estimation': ['estimator', 'quantity surveyor', 'boq', 'billing engineer', 'cost estimation',
+                          'rate analysis', 'material estimation', 'civil estimation'],
+            'autocad': ['autocad', 'drafting', 'cad', 'draughtsman', 'draftsman', 'technical drawing'],
+            'furniture': ['furniture', 'modular', 'woodwork', 'joinery', 'cabinetry'],
+            'project_management': ['project manager', 'site engineer', 'construction manager', 
+                                   'site supervisor', 'execution'],
+            
+            # IT/Tech categories
             'python': ['python', 'django', 'flask', 'pandas'],
             'data': ['data science', 'data analyst', 'machine learning', 'ml engineer', 'analytics'],
             'frontend': ['frontend', 'front-end', 'react', 'vue', 'angular', 'ui developer'],
@@ -172,19 +199,38 @@ ${email}"""
         """Extract key skills from job posting."""
         text = f"{job_title} {description}".lower()
         
+        # Detect job industry first
+        job_keywords = os.getenv('JOB_KEYWORDS', '').lower()
+        is_interior_design = any(kw in job_keywords for kw in ['interior', 'design', 'architect', 'autocad'])
+        
+        # Interior Design & Architecture skills
+        design_skills = [
+            'autocad', 'sketchup', '3ds max', 'vray', 'revit', 'photoshop', 'illustrator',
+            'space planning', 'interior design', 'furniture design', 'color theory',
+            'material selection', 'lighting design', 'project management', 'client presentation',
+            'boq', 'estimation', 'site supervision', 'vendor management', 'costing',
+            'modular design', 'kitchen design', 'residential design', 'commercial design',
+            'elevation', 'working drawings', 'technical drawings', 'bim'
+        ]
+        
         # Common tech skills
-        all_skills = [
+        tech_skills = [
             'python', 'java', 'javascript', 'typescript', 'react', 'angular', 'vue',
             'node.js', 'django', 'flask', 'sql', 'postgresql', 'mongodb', 'redis',
             'aws', 'azure', 'gcp', 'docker', 'kubernetes', 'git', 'ci/cd',
             'machine learning', 'data analysis', 'agile', 'scrum', 'rest api'
         ]
         
+        # Choose skills based on job type
+        all_skills = design_skills if is_interior_design else tech_skills
+        
         found_skills = [skill for skill in all_skills if skill in text]
         
         if not found_skills:
-            # Default based on job title
-            if 'python' in text:
+            # Default based on job type
+            if is_interior_design:
+                found_skills = ['AutoCAD', 'SketchUp', 'interior design', 'project management']
+            elif 'python' in text:
                 found_skills = ['python', 'sql', 'git']
             elif 'frontend' in text or 'react' in text:
                 found_skills = ['react', 'javascript', 'css']
@@ -192,8 +238,8 @@ ${email}"""
                 found_skills = ['programming', 'problem-solving', 'teamwork']
         
         return {
-            'primary': found_skills[0] if found_skills else 'software development',
-            'secondary': ', '.join(found_skills[1:4]) if len(found_skills) > 1 else 'related technologies',
+            'primary': found_skills[0] if found_skills else 'interior design' if is_interior_design else 'software development',
+            'secondary': ', '.join(found_skills[1:4]) if len(found_skills) > 1 else 'related skills',
             'all': ', '.join(found_skills[:6])
         }
     

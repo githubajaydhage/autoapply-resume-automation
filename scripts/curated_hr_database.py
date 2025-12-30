@@ -15,6 +15,130 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] %(me
 # These are general recruitment inboxes, not personal emails
 
 CURATED_HR_EMAILS = [
+    # =================================================================
+    # INTERIOR DESIGN, ARCHITECTURE & CONSTRUCTION COMPANIES
+    # Priority for Interior Design roles!
+    # =================================================================
+    
+    # Interior Design Firms (Bangalore/India)
+    {"company": "Livspace", "email": "careers@livspace.com", "type": "hr"},
+    {"company": "Livspace", "email": "hr@livspace.com", "type": "hr"},
+    {"company": "HomeLane", "email": "careers@homelane.com", "type": "hr"},
+    {"company": "HomeLane", "email": "hr@homelane.com", "type": "hr"},
+    {"company": "Design Cafe", "email": "careers@designcafe.com", "type": "hr"},
+    {"company": "Design Cafe", "email": "hr@designcafe.com", "type": "hr"},
+    {"company": "Bonito Designs", "email": "careers@bonito.in", "type": "hr"},
+    {"company": "Bonito Designs", "email": "hr@bonito.in", "type": "hr"},
+    {"company": "Decorpot", "email": "careers@decorpot.com", "type": "hr"},
+    {"company": "Decorpot", "email": "hr@decorpot.com", "type": "hr"},
+    {"company": "Interior Company", "email": "careers@interiorcompany.com", "type": "hr"},
+    {"company": "Arrivae", "email": "careers@arrivae.com", "type": "hr"},
+    {"company": "Wooden Street", "email": "careers@woodenstreet.com", "type": "hr"},
+    {"company": "Urban Ladder", "email": "careers@urbanladder.com", "type": "hr"},
+    {"company": "Pepperfry", "email": "careers@pepperfry.com", "type": "hr"},
+    {"company": "Nilkamal", "email": "careers@nilkamal.com", "type": "hr"},
+    {"company": "Godrej Interio", "email": "careers@godrejinterio.com", "type": "hr"},
+    {"company": "Sleek Kitchens", "email": "careers@sleekworld.com", "type": "hr"},
+    {"company": "IKEA India", "email": "recruitment.india@ikea.com", "type": "hr"},
+    
+    # Hardware & Fittings
+    {"company": "Hafele India", "email": "careers@hafeleindia.com", "type": "hr"},
+    {"company": "Hafele India", "email": "hr@hafeleindia.com", "type": "hr"},
+    {"company": "Hettich India", "email": "careers@hettich.in", "type": "hr"},
+    {"company": "Hettich India", "email": "hr@hettich.in", "type": "hr"},
+    {"company": "Kohler India", "email": "careers.india@kohler.com", "type": "hr"},
+    {"company": "Jaquar", "email": "careers@jaquar.com", "type": "hr"},
+    {"company": "Hindware", "email": "careers@hindware.com", "type": "hr"},
+    {"company": "Cera Sanitaryware", "email": "careers@cera-india.com", "type": "hr"},
+    
+    # Paint & Finishes
+    {"company": "Asian Paints", "email": "careers@asianpaints.com", "type": "hr"},
+    {"company": "Asian Paints", "email": "hr@asianpaints.com", "type": "hr"},
+    {"company": "Berger Paints", "email": "careers@bergerpaints.com", "type": "hr"},
+    {"company": "Nippon Paint India", "email": "careers@nipponpaint.co.in", "type": "hr"},
+    {"company": "Kansai Nerolac", "email": "careers@nerolac.com", "type": "hr"},
+    {"company": "Indigo Paints", "email": "careers@indigopaints.com", "type": "hr"},
+    {"company": "Saint-Gobain India", "email": "careers@saint-gobain.com", "type": "hr"},
+    
+    # Real Estate Developers (Bangalore)
+    {"company": "Prestige Group", "email": "careers@prestigeconstructions.com", "type": "hr"},
+    {"company": "Prestige Group", "email": "hr@prestigeconstructions.com", "type": "hr"},
+    {"company": "Brigade Group", "email": "careers@brigadegroup.com", "type": "hr"},
+    {"company": "Brigade Group", "email": "hr@brigadegroup.com", "type": "hr"},
+    {"company": "Sobha Limited", "email": "careers@sobha.com", "type": "hr"},
+    {"company": "Sobha Limited", "email": "hr@sobha.com", "type": "hr"},
+    {"company": "Puravankara", "email": "careers@puravankara.com", "type": "hr"},
+    {"company": "Puravankara", "email": "hr@puravankara.com", "type": "hr"},
+    {"company": "Godrej Properties", "email": "careers@godrejproperties.com", "type": "hr"},
+    {"company": "Embassy Group", "email": "careers@embassyindia.com", "type": "hr"},
+    {"company": "Total Environment", "email": "careers@totalenvironment.com", "type": "hr"},
+    {"company": "Salarpuria Sattva", "email": "careers@salarpuriasattva.com", "type": "hr"},
+    {"company": "Mantri Developers", "email": "careers@mantri.in", "type": "hr"},
+    {"company": "Shriram Properties", "email": "careers@shriramproperties.com", "type": "hr"},
+    {"company": "Century Real Estate", "email": "careers@centuryrealestate.in", "type": "hr"},
+    {"company": "Sumadhura Group", "email": "careers@sumadhura.com", "type": "hr"},
+    {"company": "Vaishnavi Group", "email": "careers@vaishnavigroup.com", "type": "hr"},
+    {"company": "Birla Estates", "email": "careers@birlaestates.com", "type": "hr"},
+    {"company": "Tata Housing", "email": "careers@tatahousing.in", "type": "hr"},
+    {"company": "DLF", "email": "careers@dlf.in", "type": "hr"},
+    {"company": "Lodha Group", "email": "careers@lodhagroup.com", "type": "hr"},
+    {"company": "Oberoi Realty", "email": "careers@oberoirealty.com", "type": "hr"},
+    {"company": "Hiranandani", "email": "careers@hiranandani.com", "type": "hr"},
+    {"company": "Kalpataru", "email": "careers@kalpataru.com", "type": "hr"},
+    {"company": "Rohan Builders", "email": "careers@rohanbuilders.com", "type": "hr"},
+    
+    # Construction & Engineering
+    {"company": "L&T Construction", "email": "careers@lntecc.com", "type": "hr"},
+    {"company": "L&T Realty", "email": "careers@ltrealty.in", "type": "hr"},
+    {"company": "Shapoorji Pallonji", "email": "careers@shapoorji.in", "type": "hr"},
+    {"company": "Nagarjuna Construction", "email": "careers@nccltd.in", "type": "hr"},
+    {"company": "Simplex Infrastructures", "email": "careers@simplexinfra.com", "type": "hr"},
+    {"company": "JMC Projects", "email": "careers@jmcprojects.com", "type": "hr"},
+    {"company": "Dilip Buildcon", "email": "careers@dilipbuildcon.com", "type": "hr"},
+    
+    # Building Materials
+    {"company": "UltraTech Cement", "email": "careers@ultratechcement.com", "type": "hr"},
+    {"company": "ACC Limited", "email": "careers@acclimited.com", "type": "hr"},
+    {"company": "Ambuja Cements", "email": "careers@ambujacement.com", "type": "hr"},
+    {"company": "Dalmia Cement", "email": "careers@dalmiacement.com", "type": "hr"},
+    {"company": "JK Cement", "email": "careers@jkcement.com", "type": "hr"},
+    {"company": "Kajaria Ceramics", "email": "careers@kajariaceramics.com", "type": "hr"},
+    {"company": "Somany Ceramics", "email": "careers@somanyceramics.com", "type": "hr"},
+    {"company": "Orient Bell", "email": "careers@orientbell.com", "type": "hr"},
+    
+    # Architecture & Design Consultants
+    {"company": "Jacobs India", "email": "careers.india@jacobs.com", "type": "hr"},
+    {"company": "AECOM India", "email": "careers.india@aecom.com", "type": "hr"},
+    {"company": "Arcadis India", "email": "careers.india@arcadis.com", "type": "hr"},
+    {"company": "WSP India", "email": "careers.india@wsp.com", "type": "hr"},
+    {"company": "Stantec India", "email": "careers.india@stantec.com", "type": "hr"},
+    {"company": "HOK India", "email": "careers.india@hok.com", "type": "hr"},
+    {"company": "Gensler India", "email": "careers.india@gensler.com", "type": "hr"},
+    {"company": "RSP Architects", "email": "careers@rfrsp.com", "type": "hr"},
+    {"company": "HKS India", "email": "careers.india@hksinc.com", "type": "hr"},
+    {"company": "Perkins&Will India", "email": "careers.india@perkinswill.com", "type": "hr"},
+    {"company": "M Moser Associates", "email": "careers.india@mmoser.com", "type": "hr"},
+    {"company": "Space Matrix", "email": "careers@spacematrix.com", "type": "hr"},
+    {"company": "Edifice Consultants", "email": "careers@edifice.in", "type": "hr"},
+    
+    # Property Consultants
+    {"company": "JLL India", "email": "careers.india@jll.com", "type": "hr"},
+    {"company": "CBRE India", "email": "careers.india@cbre.com", "type": "hr"},
+    {"company": "Cushman Wakefield India", "email": "careers.india@cushwake.com", "type": "hr"},
+    {"company": "Colliers India", "email": "careers.india@colliers.com", "type": "hr"},
+    {"company": "Knight Frank India", "email": "careers.india@knightfrank.com", "type": "hr"},
+    {"company": "Savills India", "email": "careers.india@savills.com", "type": "hr"},
+    {"company": "Anarock", "email": "careers@anarock.com", "type": "hr"},
+    {"company": "PropTiger", "email": "careers@proptiger.com", "type": "hr"},
+    {"company": "99acres", "email": "careers@99acres.com", "type": "hr"},
+    {"company": "Housing.com", "email": "careers@housing.com", "type": "hr"},
+    {"company": "MagicBricks", "email": "careers@magicbricks.com", "type": "hr"},
+    {"company": "NoBroker", "email": "careers@nobroker.com", "type": "hr"},
+    
+    # =================================================================
+    # MAJOR INDIAN IT COMPANIES
+    # =================================================================
+    
     # Major Indian IT Companies (VERIFIED - removed bounced emails)
     # Removed: careers@infosys.com, askhr@infosys.com, careers@tcs.com, resume@tcs.com (bounced)
     # Removed: recruitment@wipro.com (bounced), careers@mindtree.com (bounced)
@@ -149,19 +273,45 @@ class CuratedHRDatabase:
         'finance': ['finance', 'banking', 'analyst', 'accounting', 'audit'],
     }
     
-    # Companies by industry
+    # Companies by industry - used for prioritization
     INTERIOR_DESIGN_COMPANIES = [
-        'livspace', 'homelane', 'designcafe', 'bonito', 'urbanclap', 'decorpot',
-        'infini home', 'interior company', 'arrivae', 'godrej interio', 'asian paints',
-        'sleek', 'wooden street', 'urban ladder', 'pepperfry', 'nilkamal', 'hafele',
-        'hettich', 'prestige', 'sobha', 'brigade', 'puravankara', 'godrej properties',
-        'dlf', 'l&t realty', 'mahindra lifespace', 'lodha', 'oberoi realty', 'shapoorji',
-        'embassy', 'bengaluru development', 'total environment', 'mantri', 'salarpuria',
-        'century real estate', 'sumadhura', 'vaishnavi', 'shriram properties', 'birla estates',
-        'tata housing', 'rohan builders', 'nahar', 'hm constructions', 'hiranandani',
-        'kalpataru', 'l&t construction', 'simplex', 'nagarjuna construction', 'ultratech',
-        'acc cement', 'ambuja cement', 'dalmia cement', 'jk cement', 'saint-gobain',
-        'nippon paint', 'kansai nerolac', 'berger paints', 'indigo paints'
+        # Interior Design Firms
+        'livspace', 'homelane', 'designcafe', 'design cafe', 'bonito', 'urbanclap', 'decorpot',
+        'infini home', 'interior company', 'arrivae', 'wooden street', 'urban ladder', 'pepperfry',
+        'godrej interio', 'sleek', 'nilkamal', 'ikea',
+        
+        # Hardware & Fittings
+        'hafele', 'hettich', 'kohler', 'jaquar', 'hindware', 'cera',
+        
+        # Paints & Finishes
+        'asian paints', 'berger paints', 'nippon paint', 'kansai nerolac', 'nerolac', 
+        'indigo paints', 'saint-gobain',
+        
+        # Real Estate Developers (Bangalore)
+        'prestige', 'sobha', 'brigade', 'puravankara', 'godrej properties', 'embassy',
+        'total environment', 'salarpuria', 'sattva', 'mantri', 'shriram properties',
+        'century real estate', 'sumadhura', 'vaishnavi', 'birla estates', 'tata housing',
+        'rohan builders', 'hiranandani', 'kalpataru',
+        
+        # Real Estate Developers (National)
+        'dlf', 'l&t realty', 'mahindra lifespace', 'lodha', 'oberoi realty', 'nahar', 
+        'hm constructions',
+        
+        # Construction & Engineering
+        'l&t construction', 'shapoorji', 'simplex', 'nagarjuna construction', 'jmc projects',
+        'dilip buildcon',
+        
+        # Building Materials
+        'ultratech', 'acc cement', 'ambuja cement', 'dalmia cement', 'jk cement',
+        'kajaria', 'somany', 'orient bell',
+        
+        # Architecture & Design Consultants
+        'jacobs', 'aecom', 'arcadis', 'wsp', 'stantec', 'hok', 'gensler', 'rsp',
+        'hks', 'perkins', 'will', 'm moser', 'mmoser', 'space matrix', 'edifice',
+        
+        # Property Consultants
+        'jll', 'cbre', 'cushman', 'wakefield', 'colliers', 'knight frank', 'savills',
+        'anarock', 'proptiger', '99acres', 'housing.com', 'magicbricks', 'nobroker'
     ]
     
     def __init__(self):

@@ -109,6 +109,28 @@ class CompanyPersonalizer:
         
         # Known company achievements/news (fallback data)
         self.COMPANY_HIGHLIGHTS = {
+            # Interior Design / Architecture companies
+            'livspace': ['home interiors leader', 'tech-enabled design', 'unicorn status'],
+            'homelane': ['modular interiors pioneer', 'technology-driven', 'fast delivery'],
+            'design cafe': ['end-to-end interiors', 'German quality', 'premium designs'],
+            'designcafe': ['end-to-end interiors', 'German quality', 'premium designs'],
+            'bonito': ['luxury interiors', 'award-winning designs', 'Bangalore-based'],
+            'godrej interio': ['trusted brand', 'sustainable furniture', 'pan-India presence'],
+            'pepperfry': ['furniture marketplace leader', 'omnichannel presence', 'design variety'],
+            'urban ladder': ['premium furniture', 'design excellence', 'customer-first'],
+            'ikea': ['global design leader', 'affordable quality', 'sustainable living'],
+            'asian paints': ['color expertise', 'home décor solutions', 'market leader'],
+            'sobha': ['premium real estate', 'quality construction', 'backward integration'],
+            'brigade': ['real estate major', 'quality developments', 'Bangalore-based'],
+            'prestige': ['leading developer', 'luxury projects', 'pan-India'],
+            'total environment': ['sustainable design', 'luxury living', 'innovative architecture'],
+            'embassy': ['premium real estate', 'commercial excellence', 'trusted developer'],
+            'hafele': ['hardware solutions', 'German engineering', 'kitchen expertise'],
+            'hettich': ['furniture fittings', 'innovation leader', 'quality hardware'],
+            'kohler': ['bathroom luxury', 'design innovation', 'premium quality'],
+            'jaquar': ['bath fittings leader', 'design excellence', 'Indian brand'],
+            'sleek': ['modular kitchens', 'space solutions', 'design innovation'],
+            # Tech/IT companies (for reference)
             'razorpay': ['unicorn status', 'processing $60B annually', 'leading Indian fintech'],
             'phonepe': ['500M+ users', 'largest UPI player', 'Walmart-backed'],
             'swiggy': ['quick commerce leader', 'Instamart success', 'IPO-bound'],
@@ -296,28 +318,48 @@ class SubjectLineOptimizer:
         Get an optimized subject line and track which template was used.
         Returns: (subject, template_id)
         """
-        # High-performing subject templates (based on email marketing research)
-        templates = {
-            'specific_role': f"Application: {job_title} - {experience}+ Years Experience",
-            'location_focus': f"{job_title} Application - Bangalore - Immediate Availability",
-            'value_prop': f"Experienced {job_title} Seeking {company} Opportunity",
-            'direct_ask': f"Interested in {job_title} Role at {company}",
-            'achievement': f"{job_title} with Proven Track Record - Application",
-            'referral_style': f"Regarding {job_title} Opening at {company}",
-            'urgent': f"Immediate Availability: {job_title} Position",
-            'personalized': f"{job_title} Candidate - {company} Bangalore",
-        }
+        # Detect industry from job title for specialized templates
+        job_lower = job_title.lower() if job_title else ''
+        
+        # Interior Design / Architecture specific subject lines
+        if any(kw in job_lower for kw in ['interior', 'autocad', 'designer', 'estimation', 'drafts', 'revit', 'sketchup', 'architect']):
+            templates = {
+                'design_portfolio': f"Application: {job_title} - {experience}+ Years | AutoCAD & SketchUp Expert",
+                'project_exp': f"{job_title} with {experience}+ Years Project Experience - Bangalore",
+                'design_ready': f"Experienced {job_title} | Ready to Join Immediately",
+                'skills_focus': f"Application: {job_title} - AutoCAD, SketchUp, 3Ds Max, Revit",
+                'design_passion': f"Passionate {job_title} Seeking {company} Opportunity",
+                'interior_specific': f"{job_title} Application - Interior Design & Estimation Expert",
+                'residential_commercial': f"{job_title} - Residential & Commercial Projects - {experience}+ Yrs",
+                'design_bangalore': f"{job_title} Candidate - {company} Bangalore",
+            }
+        else:
+            # Generic templates for other roles
+            templates = {
+                'specific_role': f"Application: {job_title} - {experience}+ Years Experience",
+                'location_focus': f"{job_title} Application - Bangalore - Immediate Availability",
+                'value_prop': f"Experienced {job_title} Seeking {company} Opportunity",
+                'direct_ask': f"Interested in {job_title} Role at {company}",
+                'achievement': f"{job_title} with Proven Track Record - Application",
+                'referral_style': f"Regarding {job_title} Opening at {company}",
+                'urgent': f"Immediate Availability: {job_title} Position",
+                'personalized': f"{job_title} Candidate - {company} Bangalore",
+            }
         
         # Select template - prioritize ones with higher reply rates
         if not self.stats.empty:
-            # Use templates with proven success
+            # Use templates with proven success - but only from available templates
             best_templates = self.stats.nlargest(3, 'reply_rate')['subject_template'].tolist()
-            template_id = random.choice(best_templates) if best_templates else random.choice(list(templates.keys()))
+            # Filter to only templates that exist in current template set
+            valid_best = [t for t in best_templates if t in templates]
+            template_id = random.choice(valid_best) if valid_best else random.choice(list(templates.keys()))
         else:
             # Random selection for initial A/B testing
             template_id = random.choice(list(templates.keys()))
         
-        subject = templates.get(template_id, templates['specific_role'])
+        # Get subject with safe fallback to first available template
+        default_key = list(templates.keys())[0]
+        subject = templates.get(template_id, templates[default_key])
         
         return subject, template_id
     
@@ -461,9 +503,13 @@ class EmailOptimizer:
         """Generate a fully optimized email body with optional portfolio links."""
         
         # Handle NaN values for required fields
-        job_title = str(job_title) if not pd.isna(job_title) else "Data Analyst"
+        # Default based on environment target role
+        default_role = os.getenv('APPLICANT_TARGET_ROLE', 'AutoCAD Designer').split(',')[0].strip()
+        default_skills = os.getenv('APPLICANT_SKILLS', 'AutoCAD, Interior Design')
+        
+        job_title = str(job_title) if not pd.isna(job_title) else default_role
         company = str(company) if not pd.isna(company) else "your company"
-        applicant_skills = str(applicant_skills) if not pd.isna(applicant_skills) else "data analysis"
+        applicant_skills = str(applicant_skills) if not pd.isna(applicant_skills) else default_skills
         applicant_experience = str(applicant_experience) if not pd.isna(applicant_experience) else "3"
         
         optimization = self.optimize_email(

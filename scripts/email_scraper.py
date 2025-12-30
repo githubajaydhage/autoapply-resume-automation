@@ -175,9 +175,31 @@ class HREmailScraper:
         
         emails = self.scrape_page(careers_url, company_name)
         
+<<<<<<< HEAD
+        # Also try common career page paths
+        parsed = urlparse(careers_url)
+        base_url = f"{parsed.scheme}://{parsed.netloc}"
+        
+        career_paths = [
+            '/careers', '/jobs', '/careers/contact', '/contact', 
+            '/about/careers', '/join-us', '/work-with-us',
+            '/careers/openings', '/opportunities'
+        ]
+        
+        for path in career_paths:
+            try:
+                page_url = urljoin(base_url, path)
+                if page_url != careers_url:
+                    time.sleep(random.uniform(1, 3))
+                    page_emails = self.scrape_page(page_url, company_name)
+                    emails.extend(page_emails)
+            except:
+                continue
+=======
         # DISABLED: Additional path scraping generates too many 404 errors
         # Most company websites block bots or have non-standard URL structures
         # Using curated_hr_database.py for reliable email sources
+>>>>>>> 4162b6c (Fix 404/403 errors: Disable unreliable career page scraping)
         
         emails = list(set(emails))
         
@@ -246,26 +268,13 @@ class HREmailScraper:
         
         return list(set(emails))
     
-    def scrape_from_jobs_csv(self, jobs_csv_path: str, max_jobs: int = 50) -> pd.DataFrame:
-        """Scrape emails from jobs listed in the jobs CSV.
-        
-        Args:
-            jobs_csv_path: Path to the jobs CSV file
-            max_jobs: Maximum number of jobs to process (default 50 for speed)
-        """
+    def scrape_from_jobs_csv(self, jobs_csv_path: str) -> pd.DataFrame:
+        """Scrape emails from jobs listed in the jobs CSV."""
         if not os.path.exists(jobs_csv_path):
             logging.error(f"Jobs CSV not found: {jobs_csv_path}")
             return pd.DataFrame()
         
         jobs_df = pd.read_csv(jobs_csv_path)
-        total_jobs = len(jobs_df)
-        
-        # Limit jobs processed for speed (default 50, configurable via MAX_JOBS_TO_SCRAPE env)
-        max_jobs = int(os.getenv('MAX_JOBS_TO_SCRAPE', str(max_jobs)))
-        if total_jobs > max_jobs:
-            logging.info(f"⚡ Limiting to {max_jobs} jobs for speed (of {total_jobs} total)")
-            jobs_df = jobs_df.head(max_jobs)
-        
         logging.info(f"📊 Processing {len(jobs_df)} jobs from CSV")
         
         results = []
@@ -314,8 +323,8 @@ class HREmailScraper:
                 })
                 logging.info(f"  ⚠️ No emails found")
             
-            # Fast rate limiting - reduced from 2-5s to 0.3-0.8s for speed
-            time.sleep(random.uniform(0.3, 0.8))
+            # Be respectful with rate limiting
+            time.sleep(random.uniform(2, 5))
         
         return pd.DataFrame(results)
     
@@ -341,55 +350,33 @@ class HREmailScraper:
                         'scraped_at': pd.Timestamp.now().isoformat()
                     })
             
-            # Reduced delay for faster processing
-            time.sleep(random.uniform(0.5, 1.0))
+            time.sleep(random.uniform(2, 4))
         
         return pd.DataFrame(results)
 
 
-# Target companies with Bangalore offices - Architecture, Interior Design & Construction firms
+# Target companies with career pages
 TARGET_COMPANIES = [
-    # Interior Design & Architecture Firms in Bangalore
-    {"name": "Livspace", "careers_url": "https://www.livspace.com/in/careers"},
-    {"name": "HomeLane", "careers_url": "https://www.homelane.com/careers"},
-    {"name": "Design Cafe", "careers_url": "https://www.designcafe.com/careers"},
-    {"name": "Bonito Designs", "careers_url": "https://www.bonito.in/careers"},
-    {"name": "Decorpot", "careers_url": "https://www.decorpot.com/careers"},
-    {"name": "UrbanClap/Urban Company", "careers_url": "https://www.urbancompany.com/careers"},
-    
-    # Construction & Real Estate with Bangalore offices
-    {"name": "Prestige Group", "careers_url": "https://www.prestigeconstructions.com/careers"},
-    {"name": "Brigade Group", "careers_url": "https://www.brigadegroup.com/careers"},
-    {"name": "Sobha Limited", "careers_url": "https://www.sobha.com/careers/"},
-    {"name": "Puravankara", "careers_url": "https://www.puravankara.com/careers"},
-    {"name": "Embassy Group", "careers_url": "https://www.embassyofficeparks.com/careers"},
-    {"name": "Godrej Properties", "careers_url": "https://www.godrejproperties.com/careers"},
-    {"name": "L&T Construction", "careers_url": "https://www.lntecc.com/careers/"},
-    {"name": "Shapoorji Pallonji", "careers_url": "https://www.shapoorjipallonji.com/careers"},
-    
-    # Engineering & Consulting firms with design roles
-    {"name": "Jacobs", "careers_url": "https://www.jacobs.com/careers"},
-    {"name": "AECOM", "careers_url": "https://www.aecom.com/careers/"},
-    {"name": "Arup", "careers_url": "https://www.arup.com/careers"},
-    {"name": "WSP", "careers_url": "https://www.wsp.com/en-IN/careers"},
-    {"name": "Mott MacDonald", "careers_url": "https://www.mottmac.com/careers"},
-    {"name": "Stantec", "careers_url": "https://www.stantec.com/en/careers"},
-    
-    # IT/Tech companies with large Bangalore offices (for facility/interior roles)
-    {"name": "Wipro", "careers_url": "https://careers.wipro.com/"},
     {"name": "Infosys", "careers_url": "https://www.infosys.com/careers.html"},
     {"name": "TCS", "careers_url": "https://www.tcs.com/careers"},
-    {"name": "Accenture", "careers_url": "https://www.accenture.com/in-en/careers"},
+    {"name": "Wipro", "careers_url": "https://careers.wipro.com/"},
+    {"name": "HCL Technologies", "careers_url": "https://www.hcltech.com/careers"},
+    {"name": "Tech Mahindra", "careers_url": "https://careers.techmahindra.com/"},
     {"name": "Cognizant", "careers_url": "https://careers.cognizant.com/"},
+    {"name": "Capgemini", "careers_url": "https://www.capgemini.com/in-en/careers/"},
+    {"name": "Accenture", "careers_url": "https://www.accenture.com/in-en/careers"},
     {"name": "IBM", "careers_url": "https://www.ibm.com/careers/"},
+    {"name": "Oracle", "careers_url": "https://www.oracle.com/in/careers/"},
+    {"name": "SAP", "careers_url": "https://jobs.sap.com/"},
+    {"name": "Microsoft", "careers_url": "https://careers.microsoft.com/"},
+    {"name": "Google", "careers_url": "https://careers.google.com/"},
+    {"name": "Amazon", "careers_url": "https://www.amazon.jobs/"},
+    {"name": "Deloitte", "careers_url": "https://www2.deloitte.com/in/en/careers.html"},
+    {"name": "KPMG", "careers_url": "https://kpmg.com/in/en/home/careers.html"},
+    {"name": "EY", "careers_url": "https://www.ey.com/en_in/careers"},
+    {"name": "PwC", "careers_url": "https://www.pwc.in/careers.html"},
+    {"name": "Mindtree", "careers_url": "https://www.mindtree.com/careers"},
     {"name": "Mphasis", "careers_url": "https://www.mphasis.com/home/careers.html"},
-    
-    # Retail & Hospitality (interior design roles)
-    {"name": "IKEA India", "careers_url": "https://www.ikea.com/in/en/this-is-ikea/work-with-us/"},
-    {"name": "Titan Company", "careers_url": "https://www.titancompany.in/careers"},
-    {"name": "Reliance Retail", "careers_url": "https://careers.ril.com/"},
-    {"name": "ITC Hotels", "careers_url": "https://www.itchotels.com/in/en/careers"},
-    {"name": "Taj Hotels", "careers_url": "https://www.tajhotels.com/en-in/careers/"},
 ]
 
 

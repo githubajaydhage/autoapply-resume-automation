@@ -316,7 +316,7 @@ jobs:
   discover-hr:
     name: "📧 Phase 2: Find HR Emails"
     runs-on: ubuntu-latest
-    needs: apply
+    needs: scrape-jobs
     
     steps:
     - name: Checkout repository

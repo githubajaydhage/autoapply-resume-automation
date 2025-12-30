@@ -9,7 +9,7 @@ import ssl
 import os
 
 def test_gmail():
-    email = os.getenv('SENDER_EMAIL', 'shwetabiradar99@gmail.com')
+    email = os.getenv('SENDER_EMAIL', 'biradarshweta48@gmail.com')
     password = os.getenv('SENDER_PASSWORD') or os.getenv('GMAIL_APP_PASSWORD') or os.getenv('SENDER_PASSWORD_YOGESHWARI', '')
     
     print(f"📧 Testing: {email}")

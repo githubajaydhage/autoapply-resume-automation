@@ -20,7 +20,7 @@ jobs:
     - name: Test Gmail
       run: python scripts/quick_gmail_test.py
       env:
-        SENDER_EMAIL: 'shwetabiradar99@gmail.com'
+        SENDER_EMAIL: 'biradarshweta48@gmail.com'
         SENDER_PASSWORD: ${{ secrets.SENDER_PASSWORD }}
         GMAIL_APP_PASSWORD: ${{ secrets.SENDER_PASSWORD }}
         SENDER_PASSWORD_YOGESHWARI: ${{ secrets.SENDER_PASSWORD }}

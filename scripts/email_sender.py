@@ -234,8 +234,9 @@ class PersonalizedEmailSender:
         self.smtp_port = int(os.getenv('SMTP_PORT', '587'))
         
         # Use email from config (set via SENDER_EMAIL env var), password from secrets
-        self.sender_email = os.getenv('SENDER_EMAIL', USER_DETAILS.get('email', ''))
-        self.sender_password = os.getenv('SENDER_PASSWORD', '')  # App password from GitHub Secrets
+        # Support multiple env var names for compatibility
+        self.sender_email = os.getenv('SENDER_EMAIL') or os.getenv('GMAIL_USER') or USER_DETAILS.get('email', '')
+        self.sender_password = os.getenv('SENDER_PASSWORD') or os.getenv('GMAIL_APP_PASSWORD') or os.getenv('SENDER_PASSWORD_YOGESHWARI', '')
         self.sender_name = os.getenv('APPLICANT_NAME', USER_DETAILS.get('full_name', ''))
         
         # Applicant details from env vars or config.py

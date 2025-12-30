@@ -117,12 +117,13 @@ jobs:
           echo "=== Getting curated HR emails ==="
           python -c "from scripts.curated_hr_database import get_all_hr_emails; print(f'Curated emails: {len(get_all_hr_emails())}')" || true
       
-      - name: 📧 Find HR emails - Advanced discovery (FAST - 10 companies max)
+      - name: 📧 Find HR emails - Advanced discovery (FAST - 5 companies max)
         env:
           HUNTER_API_KEY: ${{ secrets.HUNTER_API_KEY }}
-          MAX_DISCOVERY_COMPANIES: '10'
+          MAX_DISCOVERY_COMPANIES: '5'
+          FAST_DISCOVERY: 'true'
         run: |
-          echo "=== Running advanced HR discovery (limited to 10 NEW companies) ==="
+          echo "=== Running advanced HR discovery (FAST mode - 5 NEW companies) ==="
           python scripts/advanced_hr_discovery.py || true
       
       - name: 📧 Find HR emails - Scraper

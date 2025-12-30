@@ -558,10 +558,16 @@ class AdvancedHRDiscovery:
     # MAIN DISCOVERY WORKFLOW
     # ================================================================
     
-    def discover_for_company(self, company: str, domain: str = None):
-        """Run full discovery workflow for a single company."""
+    def discover_for_company(self, company: str, domain: str = None, fast_mode: bool = True):
+        """Run discovery workflow for a single company.
+        
+        Args:
+            company: Company name
+            domain: Company domain (optional, will be inferred)
+            fast_mode: If True, only run 2 fastest methods (default: True for speed)
+        """
         logging.info(f"\n{'='*60}")
-        logging.info(f"🏢 FULL DISCOVERY: {company}")
+        logging.info(f"🏢 {'FAST' if fast_mode else 'FULL'} DISCOVERY: {company}")
         logging.info(f"{'='*60}")
         
         # Infer domain if not provided
@@ -571,17 +577,21 @@ class AdvancedHRDiscovery:
         if domain:
             self._add_company(company, domain)
         
-        # Run all discovery methods
-        self.discover_hr_profiles_linkedin(company)
-        
-        if domain:
-            self.discover_company_hr_emails(company, domain)
-            self.discover_email_patterns(company, domain)
-            self.discover_hr_from_documents(company, domain)
-            self.generate_email_patterns(company, domain)
-        
-        self.discover_hiring_announcements(company)
-        self.discover_job_portal_profiles(company)
+        if fast_mode:
+            # FAST MODE: Only 2 methods (~20 seconds per company)
+            self.discover_hr_profiles_linkedin(company)
+            if domain:
+                self.discover_company_hr_emails(company, domain)
+        else:
+            # FULL MODE: All 6 methods (~60 seconds per company)
+            self.discover_hr_profiles_linkedin(company)
+            if domain:
+                self.discover_company_hr_emails(company, domain)
+                self.discover_email_patterns(company, domain)
+                self.discover_hr_from_documents(company, domain)
+                self.generate_email_patterns(company, domain)
+            self.discover_hiring_announcements(company)
+            self.discover_job_portal_profiles(company)
         
         # Save after each company
         self._save_databases()
@@ -599,7 +609,7 @@ class AdvancedHRDiscovery:
         
         # Get limit from env or parameter
         if max_companies is None:
-            max_companies = int(os.getenv('MAX_DISCOVERY_COMPANIES', '10'))
+            max_companies = int(os.getenv('MAX_DISCOVERY_COMPANIES', '5'))
         
         all_companies = jobs_df['company'].dropna().unique().tolist()
         
@@ -618,13 +628,17 @@ class AdvancedHRDiscovery:
         # Limit to max_companies
         companies_to_discover = new_companies[:max_companies]
         
+        # Use FAST mode by default (can override with env var)
+        fast_mode = os.getenv('FAST_DISCOVERY', 'true').lower() == 'true'
+        
         logging.info(f"🔍 Discovering {len(companies_to_discover)} NEW companies (of {len(all_companies)} total, {len(already_discovered)} already cached)")
-        logging.info(f"⏱️ Estimated time: ~{len(companies_to_discover) * 5} minutes")
+        logging.info(f"⚡ Mode: {'FAST' if fast_mode else 'FULL'} (~{20 if fast_mode else 60}s per company)")
+        logging.info(f"⏱️ Estimated time: ~{len(companies_to_discover) * (0.3 if fast_mode else 1)} minutes")
         
         for i, company in enumerate(companies_to_discover, 1):
             logging.info(f"[{i}/{len(companies_to_discover)}] Processing {company}...")
             try:
-                self.discover_for_company(company)
+                self.discover_for_company(company, fast_mode=fast_mode)
             except Exception as e:
                 logging.error(f"Error discovering {company}: {e}")
                 continue

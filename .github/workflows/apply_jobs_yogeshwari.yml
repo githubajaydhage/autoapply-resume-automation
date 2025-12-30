@@ -307,11 +307,12 @@ jobs:
         echo "🔍 Finding HR emails (fast mode - using cached data)..."
         python scripts/hr_email_finder.py
         python scripts/email_scraper.py || true
-        echo "📈 Running Advanced HR Discovery (limited to 10 NEW companies only)..."
+        echo "📈 Running Advanced HR Discovery (FAST - 5 companies max)..."
         python scripts/advanced_hr_discovery.py || true
       env:
         PYTHONPATH: ${{ github.workspace }}
-        MAX_DISCOVERY_COMPANIES: '10'  # Only discover 10 NEW companies per run
+        MAX_DISCOVERY_COMPANIES: '5'  # Only discover 5 NEW companies per run
+        FAST_DISCOVERY: 'true'  # Use fast 2-method discovery instead of 6-method
 
     - name: Resume Optimization Analysis
       run: |

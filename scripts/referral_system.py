@@ -364,7 +364,7 @@ ${my_name}
     
     # Curated employee database for major companies (publicly available from LinkedIn, company websites)
     CURATED_EMPLOYEES = {
-        # Interior Design & Architecture Companies (for Yogeshwari)
+        # Interior Design & Architecture Companies
         'livspace': [
             {'name': 'Anuj Srivastava', 'role': 'CEO', 'email': 'anuj@livspace.com'},
             {'name': 'Ramakant Sharma', 'role': 'Co-founder', 'email': 'ramakant@livspace.com'},

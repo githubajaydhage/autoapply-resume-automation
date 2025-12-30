@@ -52,13 +52,13 @@ class SmartFollowUpSender:
         self.smtp_server = os.getenv('SMTP_SERVER', 'smtp.gmail.com')
         self.smtp_port = int(os.getenv('SMTP_PORT', '587'))
         
-        self.sender_email = USER_DETAILS.get('email', 'biradarshweta48@gmail.com')
+        self.sender_email = os.getenv('SENDER_EMAIL', USER_DETAILS.get('email', ''))
         self.sender_password = os.getenv('SENDER_PASSWORD', '')
-        self.sender_name = USER_DETAILS.get('full_name', 'Shweta Biradar')
+        self.sender_name = os.getenv('APPLICANT_NAME', USER_DETAILS.get('full_name', ''))
         
-        # Applicant details
-        self.applicant_name = USER_DETAILS.get('full_name', 'Shweta Biradar')
-        self.applicant_phone = USER_DETAILS.get('phone', '+91-7676294009')
+        # Applicant details from env vars or config.py
+        self.applicant_name = os.getenv('APPLICANT_NAME', USER_DETAILS.get('full_name', ''))
+        self.applicant_phone = os.getenv('APPLICANT_PHONE', USER_DETAILS.get('phone', ''))
         self.applicant_linkedin = USER_DETAILS.get('linkedin_url', '')
         
         # Paths

@@ -84,11 +84,6 @@ on:
   
   # Manual trigger
   workflow_dispatch:
-
-# Cancel any in-progress workflow when a new one starts
-concurrency:
-  group: job-application-shweta-${{ github.ref }}
-  cancel-in-progress: true
     inputs:
       job_location:
         description: 'Job Location'
@@ -172,6 +167,11 @@ concurrency:
         options:
         - 'false'
         - 'true'
+
+# Cancel any in-progress workflow when a new one starts
+concurrency:
+  group: job-application-shweta-${{ github.ref }}
+  cancel-in-progress: true
 
 # ============================================
 # 🎯 CENTRALIZED USER CONFIGURATION

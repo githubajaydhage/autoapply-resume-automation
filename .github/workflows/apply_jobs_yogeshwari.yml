@@ -34,11 +34,6 @@ on:
   
   # Manual trigger
   workflow_dispatch:
-
-# Cancel any in-progress workflow when a new one starts
-concurrency:
-  group: job-application-yogeshwari-${{ github.ref }}
-  cancel-in-progress: true
     inputs:
       job_location:
         description: 'Job Location'
@@ -127,6 +122,11 @@ concurrency:
   # push:
   #   branches:
   #     - v.1.2.0-geeta
+
+# Cancel any in-progress workflow when a new one starts
+concurrency:
+  group: job-application-yogeshwari-${{ github.ref }}
+  cancel-in-progress: true
 
 # ============================================
 # 🎯 CENTRALIZED USER CONFIGURATION

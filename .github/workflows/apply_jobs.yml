@@ -316,7 +316,7 @@ jobs:
   discover-hr:
     name: "📧 Phase 2: Find HR Emails"
     runs-on: ubuntu-latest
-    needs: apply
+    needs: scrape-jobs
     
     steps:
     - name: Checkout repository
@@ -447,7 +447,7 @@ jobs:
   send-referrals:
     name: "🤝 Phase 4: Referrals"
     runs-on: ubuntu-latest
-    needs: send-emails
+    needs: discover-hr
     if: ${{ github.event.inputs.scrape_only != 'true' }}
     
     steps:
@@ -555,7 +555,7 @@ jobs:
   notifications:
     name: "📊 Phase 6: Analytics & Notify"
     runs-on: ubuntu-latest
-    needs: [scrape-jobs, discover-hr, send-emails, send-referrals, followups]
+    needs: [scrape-jobs, discover-hr, send-referrals]
     if: always()
     
     steps:
@@ -673,7 +673,7 @@ jobs:
         echo "📊 JOB APPLICATION SUMMARY v7"
         echo "📊 =============================================="
         echo "🔍 Jobs Scraped: ${{ needs.scrape-jobs.outputs.jobs_count || 'N/A' }}"
-        echo "📧 HR Emails Found: ${{ needs.discover-hr.outputs.emails_count || 'N/A' }}"
+        echo "📧 HR Emails Found: See artifacts"
         if [ -f data/sent_emails_log.csv ]; then
           SENT=$(($(wc -l < data/sent_emails_log.csv) - 1))
           echo "✉️  Emails Sent (Total): $SENT"

@@ -253,16 +253,16 @@ env:
   APPLICANT_LINKEDIN: ${{ github.event.inputs.applicant_linkedin || 'https://www.linkedin.com/in/shweta-biradar' }}
   APPLICANT_EXPERIENCE: ${{ github.event.inputs.applicant_experience || '5' }}
   YEARS_EXPERIENCE: ${{ github.event.inputs.applicant_experience || '5' }}
-  APPLICANT_TARGET_ROLE: ${{ github.event.inputs.applicant_target_role || 'Interior Designer, Architect, Design Lead' }}
-  APPLICANT_SKILLS: ${{ github.event.inputs.applicant_skills || 'Interior Design, AutoCAD, Revit, Adobe Suite, Space Planning, 3D Visualization' }}
+  APPLICANT_TARGET_ROLE: ${{ github.event.inputs.applicant_target_role || 'Data Analyst, Business Analyst, SQL Developer, Data Engineer' }}
+  APPLICANT_SKILLS: ${{ github.event.inputs.applicant_skills || 'SQL, Python, Tableau, Power BI, Data Analysis, Excel, Database Management, Statistics' }}
   
   # Resume Configuration (from inputs)
   RESUME_FILENAME: ${{ github.event.inputs.resume_filename || 'Shweta_Biradar_Resume.pdf' }}
   RESUME_PATH: resumes/${{ github.event.inputs.resume_filename || 'Shweta_Biradar_Resume.pdf' }}
   
   # Job Search Keywords (from inputs)
-  JOB_KEYWORDS: ${{ github.event.inputs.job_keywords || 'interior designer, architect, design engineer, space planner' }}
-  NAUKRI_KEYWORDS: ${{ github.event.inputs.job_keywords || 'interior designer, architect, design professional' }}
+  JOB_KEYWORDS: ${{ github.event.inputs.job_keywords || 'data analyst, sql developer, business analyst, data engineer, data scientist' }}
+  NAUKRI_KEYWORDS: ${{ github.event.inputs.job_keywords || 'data analyst, business analyst, sql developer, data engineer' }}
   
   # Optional Settings
   SEND_TO_AGENCIES: 'true'

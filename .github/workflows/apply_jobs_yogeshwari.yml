@@ -35,7 +35,22 @@ on:
   # Manual trigger
   workflow_dispatch:
     inputs:
-      job_location:
+      applicant_name:
+        description: 'Full Name'
+        required: false
+        default: 'Yogeshwari Mane'
+        type: string
+      applicant_email:
+        description: 'Email Address'
+        required: false
+        default: 'maneyogeshwari09606@gmail.com'
+        type: string
+      applicant_phone:
+        description: 'Phone Number'
+        required: false
+        default: '+91-8147693539'
+        type: string
+      applicant_location:
         description: 'Job Location'
         required: false
         default: 'Bangalore'
@@ -49,6 +64,36 @@ on:
         - Chennai
         - Remote
         - India
+      applicant_linkedin:
+        description: 'LinkedIn Profile URL'
+        required: false
+        default: 'https://www.linkedin.com/in/yogeshwari-mane/'
+        type: string
+      applicant_experience:
+        description: 'Years of Experience'
+        required: false
+        default: '3.5'
+        type: string
+      applicant_target_role:
+        description: 'Target Job Role'
+        required: false
+        default: 'AutoCAD Designer, Interior Designer, Estimation Engineer'
+        type: string
+      applicant_skills:
+        description: 'Key Skills'
+        required: false
+        default: 'AutoCAD, SketchUp, 3Ds Max, Revit, Interior Design, Estimation, Quantity Surveying'
+        type: string
+      resume_filename:
+        description: 'Resume Filename'
+        required: false
+        default: 'Yogeshwari_Mane_Resume.pdf'
+        type: string
+      job_keywords:
+        description: 'Job Search Keywords'
+        required: false
+        default: 'autocad designer, interior designer, estimation engineer, quantity surveyor'
+        type: string
       max_emails:
         description: 'Max new emails to send'
         required: false
@@ -133,29 +178,29 @@ concurrency:
 # All scripts read from these environment variables
 # ============================================
 env:
-  # User Identity
-  APPLICANT_NAME: 'Yogeshwari Mane'
+  # User Identity (from inputs with proper defaults)
+  APPLICANT_NAME: ${{ github.event.inputs.applicant_name || 'Yogeshwari Mane' }}
   APPLICANT_FIRST_NAME: 'Yogeshwari'
   APPLICANT_LAST_NAME: 'Mane'
-  APPLICANT_EMAIL: 'maneyogeshwari09606@gmail.com'
-  SENDER_EMAIL: 'maneyogeshwari09606@gmail.com'
-  APPLICANT_PHONE: '+91-8147693539'
-  APPLICANT_LOCATION: 'Bangalore, Karnataka, India'
-  APPLICANT_CITY: 'Bangalore'
+  APPLICANT_EMAIL: ${{ github.event.inputs.applicant_email || 'maneyogeshwari09606@gmail.com' }}
+  SENDER_EMAIL: ${{ github.event.inputs.applicant_email || 'maneyogeshwari09606@gmail.com' }}
+  APPLICANT_PHONE: ${{ github.event.inputs.applicant_phone || '+91-8147693539' }}
+  APPLICANT_LOCATION: ${{ github.event.inputs.applicant_location || 'Bangalore, Karnataka, India' }}
+  APPLICANT_CITY: ${{ github.event.inputs.applicant_location || 'Bangalore' }}
   APPLICANT_COUNTRY: 'India'
-  APPLICANT_LINKEDIN: 'https://www.linkedin.com/in/yogeshwari-mane/'
-  APPLICANT_EXPERIENCE: '3.5'
-  YEARS_EXPERIENCE: '3.5'
-  APPLICANT_TARGET_ROLE: 'AutoCAD Designer, Interior Designer, Estimation Engineer'
-  APPLICANT_SKILLS: 'AutoCAD, SketchUp, 3Ds Max, Revit, Interior Design, Estimation, Quantity Surveying'
+  APPLICANT_LINKEDIN: ${{ github.event.inputs.applicant_linkedin || 'https://www.linkedin.com/in/yogeshwari-mane/' }}
+  APPLICANT_EXPERIENCE: ${{ github.event.inputs.applicant_experience || '3.5' }}
+  YEARS_EXPERIENCE: ${{ github.event.inputs.applicant_experience || '3.5' }}
+  APPLICANT_TARGET_ROLE: ${{ github.event.inputs.applicant_target_role || 'AutoCAD Designer, Interior Designer, Estimation Engineer' }}
+  APPLICANT_SKILLS: ${{ github.event.inputs.applicant_skills || 'AutoCAD, SketchUp, 3Ds Max, Revit, Interior Design, Estimation, Quantity Surveying' }}
   
-  # Resume Configuration
-  RESUME_FILENAME: 'Yogeshwari_Mane_Resume.pdf'
-  RESUME_PATH: 'resumes/Yogeshwari_Mane_Resume.pdf'
+  # Resume Configuration (from inputs)
+  RESUME_FILENAME: ${{ github.event.inputs.resume_filename || 'Yogeshwari_Mane_Resume.pdf' }}
+  RESUME_PATH: resumes/${{ github.event.inputs.resume_filename || 'Yogeshwari_Mane_Resume.pdf' }}
   
-  # ⚠️ JOB KEYWORDS - MOST IMPORTANT! (Interior Design focused)
-  JOB_KEYWORDS: 'autocad designer, interior designer, estimation engineer, quantity surveyor, billing engineer, drafting engineer, revit, civil draftsman, design coordinator'
-  NAUKRI_KEYWORDS: 'autocad designer, interior designer, estimation engineer, quantity surveyor'
+  # Job Search Keywords (from inputs)
+  JOB_KEYWORDS: ${{ github.event.inputs.job_keywords || 'autocad designer, interior designer, estimation engineer, quantity surveyor, billing engineer, drafting engineer, revit, civil draftsman, design coordinator' }}
+  NAUKRI_KEYWORDS: ${{ github.event.inputs.job_keywords || 'autocad designer, interior designer, estimation engineer, quantity surveyor' }}
   
   # 🚫 EXCLUDE IT COMPANIES - For Interior Design roles only!
   EXCLUDE_IT_COMPANIES: 'true'

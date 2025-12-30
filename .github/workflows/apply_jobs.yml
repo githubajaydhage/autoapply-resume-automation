@@ -279,7 +279,7 @@ jobs:
   discover-hr:
     name: "📧 Phase 2: Find HR Emails"
     runs-on: ubuntu-latest
-    needs: apply
+    needs: scrape-jobs
     
     steps:
     - name: Checkout repository
@@ -405,9 +405,36 @@ jobs:
         MAX_EMAILS: ${{ github.event.inputs.max_emails || '15' }}
         INCLUDE_PORTFOLIO_LINKS: ${{ github.event.inputs.include_portfolio_links || 'false' }}
 
-    # PHASE 3.5: Send Referral Requests (HIGH IMPACT - 10x response rate)
-    - name: Phase 3.5 - Send Referral Requests
-      if: ${{ github.event.inputs.scrape_only != 'true' }}
+    - name: Upload Email Results
+      uses: actions/upload-artifact@v4
+      with:
+        name: email-results
+        path: |
+          data/
+          cover_letters/
+        retention-days: 1
+
+  # ============================================
+  # JOB 4: SEND REFERRAL REQUESTS
+  # ============================================
+  send-referrals:
+    name: "🤝 Phase 4: Referrals"
+    runs-on: ubuntu-latest
+    needs: discover-hr
+    if: ${{ github.event.inputs.scrape_only != 'true' }}
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+      with:
+        ref: main
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+
+    - name: Install dependencies
       run: |
         echo "🤝 PHASE 3.5A: SENDING REFERRAL REQUESTS"
         echo "   Referrals have 10x higher response rate than cold emails!"
@@ -474,8 +501,62 @@ jobs:
     - name: Phase 6 - Update Application Tracker
       if: ${{ github.event.inputs.scrape_only != 'true' }}
       run: |
-        echo "📊 PHASE 6: SYNCING APPLICATION STATUS TRACKER"
-        echo "   Tracking: Applied → Acknowledged → Interview → Offer"
+        echo "🔄 Retrying failed emails..."
+        python scripts/auto_retry_emails.py || true
+      env:
+        PYTHONPATH: ${{ github.workspace }}
+        SENDER_PASSWORD: ${{ secrets.SENDER_PASSWORD }}
+
+    - name: Upload Follow-up Results
+      uses: actions/upload-artifact@v4
+      with:
+        name: followup-results
+        path: |
+          data/
+        retention-days: 1
+
+  # ============================================
+  # JOB 6: ANALYTICS & NOTIFICATIONS
+  # ============================================
+  notifications:
+    name: "📊 Phase 6: Analytics & Notify"
+    runs-on: ubuntu-latest
+    needs: [scrape-jobs, discover-hr, send-referrals]
+    if: always()
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+      with:
+        ref: main
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Download All Results
+      uses: actions/download-artifact@v4
+      with:
+        path: artifacts/
+      continue-on-error: true
+
+    - name: Merge Data Files
+      run: |
+        mkdir -p data
+        find artifacts -name "*.csv" -exec cp {} data/ \; 2>/dev/null || true
+        find artifacts -name "*.json" -exec cp {} data/ \; 2>/dev/null || true
+        find artifacts -name "*.txt" -exec cp {} data/ \; 2>/dev/null || true
+      continue-on-error: true
+
+    - name: Update Application Tracker
+      run: |
+        echo "📊 Updating application tracker..."
         python scripts/application_tracker.py || true
       env:
         PYTHONPATH: ${{ github.workspace }}
@@ -670,26 +751,8 @@ jobs:
         echo "📊 =============================================="
         echo "📊 JOB APPLICATION SUMMARY v6 - ULTIMATE EDITION"
         echo "📊 =============================================="
-        if [ -f data/jobs_today.csv ]; then
-          JOBS=$(wc -l < data/jobs_today.csv)
-          echo "🔍 Jobs Scraped: $((JOBS - 1))"
-        fi
-        if [ -f data/prioritized_jobs.csv ]; then
-          PRIORITY=$(grep -c "🔴 URGENT\|🟠 HIGH" data/prioritized_jobs.csv 2>/dev/null || echo "0")
-          echo "⚡ High Priority Jobs: $PRIORITY"
-        fi
-        if [ -f data/enhanced_jobs.csv ]; then
-          ENHANCED=$(wc -l < data/enhanced_jobs.csv)
-          echo "🚀 Enhanced Sources Jobs: $((ENHANCED - 1))"
-        fi
-        if [ -f data/naukri_jobs.csv ]; then
-          NAUKRI=$(wc -l < data/naukri_jobs.csv)
-          echo "🇮🇳 Naukri Jobs: $((NAUKRI - 1))"
-        fi
-        if [ -f data/all_hr_emails.csv ]; then
-          EMAILS=$(wc -l < data/all_hr_emails.csv)
-          echo "📧 HR Emails Available: $((EMAILS - 1))"
-        fi
+        echo "🔍 Jobs Scraped: ${{ needs.scrape-jobs.outputs.jobs_count || 'N/A' }}"
+        echo "📧 HR Emails Found: See artifacts"
         if [ -f data/sent_emails_log.csv ]; then
           SENT=$(wc -l < data/sent_emails_log.csv)
           echo "✉️  Total Emails Sent: $((SENT - 1))"

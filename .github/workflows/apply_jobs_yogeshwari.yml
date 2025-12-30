@@ -605,6 +605,7 @@ jobs:
       with:
         name: referral-results
         path: data/
+      continue-on-error: true
 
     - name: Send Multi-Stage Follow-Ups
       run: |

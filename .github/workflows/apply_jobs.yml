@@ -85,6 +85,48 @@ on:
   # Manual trigger
   workflow_dispatch:
     inputs:
+      # User Identity (Required)
+      applicant_name:
+        description: 'Full Name (e.g. Shweta Biradar)'
+        required: true
+        type: string
+      applicant_email:
+        description: 'Email Address'
+        required: true  
+        type: string
+      applicant_phone:
+        description: 'Phone Number'
+        required: true
+        type: string
+      applicant_location:
+        description: 'Location (e.g. Bangalore, Karnataka, India)'
+        required: true
+        type: string
+      applicant_linkedin:
+        description: 'LinkedIn URL'
+        required: true
+        type: string
+      applicant_experience:
+        description: 'Years of Experience'
+        required: true
+        type: string
+      applicant_target_role:
+        description: 'Target Roles (e.g. Data Analyst, Business Analyst)'
+        required: true
+        type: string
+      applicant_skills:
+        description: 'Key Skills (comma-separated)'
+        required: true
+        type: string
+      resume_filename:
+        description: 'Resume Filename (e.g. Shweta_Biradar_Resume.pdf)'
+        required: true
+        type: string
+      job_keywords:
+        description: 'Job Search Keywords (comma-separated)'
+        required: true
+        type: string
+      # Job Search Parameters
       job_location:
         description: 'Job Location'
         required: true
@@ -174,33 +216,33 @@ concurrency:
   cancel-in-progress: true
 
 # ============================================
-# 🎯 CENTRALIZED USER CONFIGURATION
-# All scripts read from these environment variables
+# 🎯 DYNAMIC USER CONFIGURATION
+# All values from workflow inputs - NO HARDCODING!
 # ============================================
 env:
-  # User Identity
-  APPLICANT_NAME: 'Shweta Biradar'
-  APPLICANT_FIRST_NAME: 'Shweta'
-  APPLICANT_LAST_NAME: 'Biradar'
-  APPLICANT_EMAIL: 'biradarshweta48@gmail.com'
-  SENDER_EMAIL: 'biradarshweta48@gmail.com'
-  APPLICANT_PHONE: '+91-9876543210'
-  APPLICANT_LOCATION: 'Bangalore, Karnataka, India'
-  APPLICANT_CITY: 'Bangalore'
-  APPLICANT_COUNTRY: 'India'
-  APPLICANT_LINKEDIN: 'https://www.linkedin.com/in/shweta-biradar/'
-  APPLICANT_EXPERIENCE: '3'
-  YEARS_EXPERIENCE: '3'
-  APPLICANT_TARGET_ROLE: 'Data Analyst, Business Analyst, Analytics'
-  APPLICANT_SKILLS: 'SQL, Python, Tableau, Power BI, Excel, Data Visualization'
+  # User Identity (from inputs)
+  APPLICANT_NAME: ${{ github.event.inputs.applicant_name || 'Shweta Biradar' }}
+  APPLICANT_FIRST_NAME: ${{ split(github.event.inputs.applicant_name || 'Shweta Biradar', ' ')[0] }}
+  APPLICANT_LAST_NAME: ${{ split(github.event.inputs.applicant_name || 'Shweta Biradar', ' ')[1] || '' }}
+  APPLICANT_EMAIL: ${{ github.event.inputs.applicant_email || 'biradarshweta48@gmail.com' }}
+  SENDER_EMAIL: ${{ github.event.inputs.applicant_email || 'biradarshweta48@gmail.com' }}
+  APPLICANT_PHONE: ${{ github.event.inputs.applicant_phone || '+91-9876543210' }}
+  APPLICANT_LOCATION: ${{ github.event.inputs.applicant_location || 'Bangalore, Karnataka, India' }}
+  APPLICANT_CITY: ${{ split(github.event.inputs.applicant_location || 'Bangalore, Karnataka, India', ',')[0] || 'Bangalore' }}
+  APPLICANT_COUNTRY: ${{ contains(github.event.inputs.applicant_location || 'Bangalore, Karnataka, India', 'India') && 'India' || 'Unknown' }}
+  APPLICANT_LINKEDIN: ${{ github.event.inputs.applicant_linkedin || 'https://www.linkedin.com/in/shweta-biradar/' }}
+  APPLICANT_EXPERIENCE: ${{ github.event.inputs.applicant_experience || '3' }}
+  YEARS_EXPERIENCE: ${{ github.event.inputs.applicant_experience || '3' }}
+  APPLICANT_TARGET_ROLE: ${{ github.event.inputs.applicant_target_role || 'Data Analyst, Business Analyst, Analytics' }}
+  APPLICANT_SKILLS: ${{ github.event.inputs.applicant_skills || 'SQL, Python, Tableau, Power BI, Excel, Data Visualization' }}
   
-  # Resume Configuration
-  RESUME_FILENAME: 'Shweta_Biradar_Resume.pdf'
-  RESUME_PATH: 'resumes/Shweta_Biradar_Resume.pdf'
+  # Resume Configuration (from inputs)
+  RESUME_FILENAME: ${{ github.event.inputs.resume_filename || 'Shweta_Biradar_Resume.pdf' }}
+  RESUME_PATH: resumes/${{ github.event.inputs.resume_filename || 'Shweta_Biradar_Resume.pdf' }}
   
-  # ⚠️ JOB KEYWORDS - MOST IMPORTANT!
-  JOB_KEYWORDS: 'data analyst, business analyst, sql developer, python developer, tableau developer, power bi, analytics, data engineer'
-  NAUKRI_KEYWORDS: 'data analyst, business analyst, sql developer'
+  # Job Search Keywords (from inputs)
+  JOB_KEYWORDS: ${{ github.event.inputs.job_keywords || 'data analyst, business analyst, sql developer, python developer, tableau developer, power bi, analytics, data engineer' }}
+  NAUKRI_KEYWORDS: ${{ split(github.event.inputs.job_keywords || 'data analyst, business analyst, sql developer', ',')[0] || 'data analyst' }}, ${{ split(github.event.inputs.job_keywords || 'data analyst, business analyst, sql developer', ',')[1] || 'business analyst' }}, ${{ split(github.event.inputs.job_keywords || 'data analyst, business analyst, sql developer', ',')[2] || 'sql developer' }}
   
   # Optional Settings
   SEND_TO_AGENCIES: 'true'

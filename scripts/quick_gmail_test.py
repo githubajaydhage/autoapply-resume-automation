@@ -9,9 +9,13 @@ import ssl
 import os
 
 def test_gmail():
-    email = os.getenv('SENDER_EMAIL', 'biradarshweta48@gmail.com')
+    email = os.getenv('SENDER_EMAIL')
     password = os.getenv('SENDER_PASSWORD') or os.getenv('GMAIL_APP_PASSWORD') or os.getenv('SENDER_PASSWORD_YOGESHWARI', '')
     
+    if not email:
+        print("❌ SENDER_EMAIL environment variable is required")
+        return False
+        
     print(f"📧 Testing: {email}")
     
     if not password:

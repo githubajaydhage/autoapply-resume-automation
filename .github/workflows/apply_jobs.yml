@@ -1,9 +1,17 @@
-name: Job Application System (Ultimate v5)
+name: Job Application System (Ultimate v7 - AI Powered)
 
 # =================================================================
-# ULTIMATE PRODUCTION SYSTEM v6 - Maximum Interview Generation
+# ULTIMATE PRODUCTION SYSTEM v7 - AI-POWERED MAXIMUM INTERVIEWS
 # =================================================================
-# NEW FEATURES in v6 (High Impact):
+# NEW FEATURES in v7 (AI Revolution):
+# ✅ AI Job Matcher (GPT-4/Gemini semantic matching)
+# ✅ AI Cover Letter Generator (personalized, industry-specific)
+# ✅ AI Email Personalizer (subject optimization, company research)
+# ✅ AI Response Classifier (auto-prioritize interview requests)
+# ✅ Skill Gap Analysis (know what to learn)
+# ✅ Multi-LLM Support (OpenAI, Gemini, Claude, Ollama)
+# =================================================================
+# v6 Features (High Impact):
 # ✅ Email Open Tracking (know when HR reads your email)
 # ✅ WhatsApp/Telegram Alerts (instant mobile notifications)
 # ✅ Auto-Retry Failed Emails (verify & retry with alternates)
@@ -189,15 +197,7 @@ jobs:
         restore-keys: |
           job-data-${{ runner.os }}-
 
-<<<<<<< HEAD
-    # PHASE 1: Scrape Jobs
-    - name: Phase 1 - Scrape Jobs (Multiple Sources)
-      run: |
-        echo "🔍 PHASE 1: SCRAPING JOBS FROM ALL SOURCES"
-        echo "   Sources: RemoteOK, Arbeitnow, Himalayas, Jobicy, Adzuna"
-        python scripts/reliable_job_scraper.py
-        echo ""
-=======
+    # PHASE 1: Scrape Jobs (Bulletproof Engine)
     - name: 🛡️ Bulletproof Job Scraping (15+ sources)
       run: |
         echo "🛡️ Running BULLETPROOF job engine (15+ sources with failover)..."
@@ -206,9 +206,8 @@ jobs:
         PYTHONPATH: ${{ github.workspace }}
         JOB_LOCATION: ${{ github.event.inputs.job_location || 'Bangalore' }}
 
-    - name: Scrape Naukri.com
+    - name: Scrape Naukri.com & Enhanced Sources
       run: |
->>>>>>> 295b1ca (Add bulletproof job engine: 15+ sources, self-healing, auto-application pipeline)
         echo "🇮🇳 Scraping Naukri.com..."
         python scripts/naukri_scraper.py || true
         echo ""
@@ -229,6 +228,19 @@ jobs:
       env:
         PYTHONPATH: ${{ github.workspace }}
 
+    # PHASE 1.6: AI-Powered Job Scoring & Matching (NEW!)
+    - name: Phase 1.6 - AI Job Matching & Scoring
+      run: |
+        echo "🤖 PHASE 1.6: AI-POWERED JOB SCORING"
+        echo "   Using GPT-4/Gemini/Ollama for semantic matching..."
+        echo "   Analyzing skill gaps and experience fit..."
+        python scripts/ai_job_matcher.py || true
+      env:
+        PYTHONPATH: ${{ github.workspace }}
+        OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        OLLAMA_HOST: ${{ secrets.OLLAMA_HOST }}
+
     # PHASE 2: Load HR Emails
     - name: Phase 2 - Load HR Email Database
       run: |
@@ -245,15 +257,20 @@ jobs:
         PYTHONPATH: ${{ github.workspace }}
 
     # PHASE 3: Generate Cover Letters & Send Application Emails
-    - name: Phase 3 - Generate Cover Letters
+    - name: Phase 3 - AI-Powered Cover Letters
       if: ${{ github.event.inputs.scrape_only != 'true' }}
       run: |
-        echo "📝 PHASE 3A: GENERATING COVER LETTERS"
-        python scripts/cover_letter_generator.py || true
+        echo "📝 PHASE 3A: AI-POWERED COVER LETTER GENERATION"
+        echo "   Using GPT-4/Gemini/Claude for personalized cover letters..."
+        echo "   Industry-specific templates with match insights..."
+        python scripts/ai_cover_letter.py || python scripts/cover_letter_generator.py || true
       env:
         PYTHONPATH: ${{ github.workspace }}
         YEARS_EXPERIENCE: '3+'
         APPLICANT_ROLE: 'Software Engineer'
+        OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
 
     - name: Phase 3 - Send Application Emails
       if: ${{ github.event.inputs.scrape_only != 'true' }}
@@ -295,6 +312,19 @@ jobs:
       env:
         PYTHONPATH: ${{ github.workspace }}
         SENDER_PASSWORD: ${{ secrets.SENDER_PASSWORD }}
+
+    # PHASE 3.7: AI Response Classification (NEW!)
+    - name: Phase 3.7 - AI Response Classification
+      if: ${{ github.event.inputs.scrape_only != 'true' }}
+      run: |
+        echo "🤖 PHASE 3.7: AI RESPONSE CLASSIFICATION"
+        echo "   Classifying HR responses using AI..."
+        echo "   Prioritizing: Interviews > Assessments > Follow-ups..."
+        python scripts/ai_response_classifier.py || true
+      env:
+        PYTHONPATH: ${{ github.workspace }}
+        OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
 
     # PHASE 4: Send Smart Follow-Up Emails
     - name: Phase 4 - Send Multi-Stage Follow-Ups
@@ -483,8 +513,6 @@ jobs:
         TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
         TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
 
-<<<<<<< HEAD
-=======
     - name: 🔧 Self-Healing Monitor (detect & recover issues)
       run: |
         echo "🔧 Running self-healing monitor..."
@@ -519,7 +547,6 @@ jobs:
           interview_prep/
         retention-days: 30
 
->>>>>>> 295b1ca (Add bulletproof job engine: 15+ sources, self-healing, auto-application pipeline)
     - name: Summary Report
       run: |
         echo ""

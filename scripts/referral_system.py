@@ -785,23 +785,23 @@ ${my_name}
         """Generate email subject line."""
         subjects = {
             'connection': [
-                f"Quick question about {company}",
-                f"Coffee chat request - {company}",
-                f"Seeking advice about {job_title} at {company}",
+                f"Application for {job_title} - {company}",
+                f"Interested in {job_title} role at {company}",
+                f"Job Application: {job_title} at {company}",
             ],
             'direct_referral': [
-                f"Referral request for {job_title} position",
-                f"Would you consider referring me? - {job_title}",
-                f"Seeking referral: {job_title} at {company}",
+                f"Application for {job_title} position at {company}",
+                f"Experienced candidate for {job_title} - {company}",
+                f"Job Application: {job_title} at {company}",
             ],
             'alumni': [
-                f"Fellow alumni reaching out - {company}",
-                f"Connection request from a fellow graduate",
-                f"Alumni networking - {job_title} opportunity",
+                f"Application for {job_title} at {company}",
+                f"Experienced candidate for {job_title} role",
+                f"Job Application: {job_title} opportunity at {company}",
             ],
             'short': [
-                f"Quick referral request - {job_title}",
-                f"Referral for {job_title}?",
+                f"Application: {job_title} - {company}",
+                f"Job Application for {job_title}",
             ]
         }
         

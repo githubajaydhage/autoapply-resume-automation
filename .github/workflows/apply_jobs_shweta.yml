@@ -89,17 +89,17 @@ on:
       applicant_name:
         description: 'Full Name'
         required: false
-        default: 'Ajay Dhage'
+        default: 'Shweta Biradar'
         type: string
       applicant_email:
         description: 'Email Address'
         required: false
-        default: 'ajay.dhage@gmail.com'
+        default: 'biradarshweta48@gmail.com'
         type: string
       applicant_phone:
         description: 'Phone Number'
         required: false
-        default: '+91-8888888888'
+        default: '+91-9876543210'
         type: string
       applicant_location:
         description: 'Location'
@@ -119,32 +119,32 @@ on:
       applicant_linkedin:
         description: 'LinkedIn URL'
         required: false
-        default: 'https://www.linkedin.com/in/ajay-dhage'
+        default: 'https://www.linkedin.com/in/shweta-biradar'
         type: string
       applicant_experience:
         description: 'Years of Experience'
         required: false
-        default: '3'
+        default: '2'
         type: string
       applicant_target_role:
         description: 'Target Roles'
         required: false
-        default: 'Data Analyst, Business Analyst, Software Engineer'
+        default: 'Data Analyst, Business Analyst, SQL Developer, Data Engineer'
         type: string
       applicant_skills:
         description: 'Key Skills (comma-separated)'
         required: false
-        default: 'Python, SQL, Data Analysis, Machine Learning, Excel, PowerBI'
+        default: 'SQL, Python, Tableau, Power BI, Data Analysis, Excel'
         type: string
       resume_filename:
         description: 'Resume Filename'
         required: false
-        default: 'Ajay_Dhage_Resume.pdf'
+        default: 'Shweta_Biradar_Resume.pdf'
         type: string
       job_keywords:
         description: 'Job Search Keywords (comma-separated)'
         required: false
-        default: 'data analyst, python developer, business analyst, software engineer'
+        default: 'data analyst, sql developer, business analyst, data engineer'
         type: string
       # Job Search Parameters
       job_location:

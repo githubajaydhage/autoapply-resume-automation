@@ -1,26 +1,37 @@
-# 🚀 Job Application Automation System v7 - Ultimate Edition
+# 🚀 Job Application Automation System v8 - FREE AI Powered
 
-**Production-Ready Automated Job Application System with Cold Email Outreach, Referral Requests, Recruiting Agencies, and Multi-Channel Notifications**
+**Production-Ready Automated Job Application System with FREE AI-Powered Matching, Cold Email Outreach, Referral Requests, and Multi-Channel Notifications**
 
 [![GitHub Actions](https://img.shields.io/badge/GitHub%20Actions-Automated-2088FF?logo=github-actions&logoColor=white)](../../actions)
 [![Python 3.9](https://img.shields.io/badge/Python-3.9-blue.svg)](https://www.python.org/)
+[![AI Powered](https://img.shields.io/badge/AI-FREE%20LLMs-green.svg)](https://groq.com/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
 ---
 
-## 🆕 What's New in v7
+## 🆕 What's New in v8 (FREE AI Revolution!)
 
 | Feature | Description |
 |---------|-------------|
-| 🏢 **Recruiting Agencies** | Auto-send resumes to 50+ staffing firms (TeamLease, Randstad, etc.) |
-| 🔄 **New Job Detection** | Apply to NEW job openings at same company (tracks by email+job_title) |
-| 🎯 **Centralized Config** | All user settings in ONE place in workflow file |
-| 🔍 **Bot-Friendly Search** | DuckDuckGo/Bing instead of blocked Google/career pages |
-| 📧 **Multi-Source HR Discovery** | Curated database + DuckDuckGo + targeted generation |
-| ⚡ **Speed Optimized** | Reduced delays (5-15s), limited jobs to 50, disabled slow APIs |
-| 🚫 **No Hardcoded Values** | ALL scripts read from `JOB_KEYWORDS` environment variable |
-| 🔧 **Fast Referrals** | 10 referrals max, 1 per company, 5-15s delays |
-| 🌐 **UTF-8 Email Support** | Proper encoding for emojis and special characters |
+| 🤖 **FREE AI Providers** | Groq, HuggingFace, Cohere, Together.ai, OpenRouter - NO COST! |
+| 🔍 **AI Job Researcher** | Discovers best job sources & hiring companies for your role |
+| 🎯 **AI Job Matcher** | Scores each job 0-100 based on resume fit |
+| 📝 **AI Cover Letters** | Generates personalized, industry-specific cover letters |
+| 📧 **AI Email Personalizer** | Creates attention-grabbing subject lines |
+| 🔎 **AI HR Discovery** | Generates likely HR email patterns (hr@, careers@) |
+| 📬 **AI Response Classifier** | Auto-prioritizes interview requests from HR replies |
+| 🛡️ **Bulletproof Engine** | 15+ job sources with automatic failover |
+
+### 🆓 FREE AI API Keys (Pick Any One!)
+
+| Provider | Speed | Get Key |
+|----------|-------|---------|
+| 🚀 **Groq** | FASTEST (500 tok/s) | https://console.groq.com/keys |
+| 🌟 **Google Gemini** | Fast | https://makersuite.google.com/app/apikey |
+| 🤗 **HuggingFace** | Medium | https://huggingface.co/settings/tokens |
+| 🤝 **Together.ai** | Fast ($25 free) | https://api.together.xyz/ |
+| 💎 **Cohere** | Fast | https://dashboard.cohere.ai/api-keys |
+| 🔀 **OpenRouter** | Medium | https://openrouter.ai/keys |
 
 ---
 

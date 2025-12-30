@@ -8,7 +8,7 @@ Uses AI/ML to:
 4. Prioritize applications based on match quality
 5. Learn from application outcomes
 
-Supports: OpenAI, Google Gemini, Ollama (local), or TF-IDF fallback
+Supports: FREE AI (Groq, Gemini, HuggingFace, Cohere, Together.ai) + OpenAI, Ollama
 
 Author: AutoApply Automation
 """
@@ -28,25 +28,15 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] %(message)s')
 
-# Try to import AI libraries
-AI_BACKEND = None
+# Try to import FREE AI providers first
+FREE_AI_AVAILABLE = False
 try:
-    import openai
-    AI_BACKEND = 'openai'
+    from scripts.free_ai_providers import get_ai, FreeAIManager
+    FREE_AI_AVAILABLE = True
 except ImportError:
-    pass
-
-if not AI_BACKEND:
     try:
-        import google.generativeai as genai
-        AI_BACKEND = 'gemini'
-    except ImportError:
-        pass
-
-if not AI_BACKEND:
-    try:
-        import ollama
-        AI_BACKEND = 'ollama'
+        from free_ai_providers import get_ai, FreeAIManager
+        FREE_AI_AVAILABLE = True
     except ImportError:
         pass
 
@@ -76,6 +66,9 @@ class AIJobMatcher:
         self.data_path = os.path.join(self.base_path, 'data')
         self.resumes_path = os.path.join(self.base_path, 'resumes')
         
+        # Initialize FREE AI Manager
+        self.free_ai = get_ai() if FREE_AI_AVAILABLE else None
+        
         # AI Configuration
         self.ai_backend = self._detect_ai_backend()
         self.model = self._get_model()
@@ -92,13 +85,16 @@ class AIJobMatcher:
         logging.info(f"📄 Resume loaded: {len(self.resume_text)} chars, {len(self.resume_skills)} skills detected")
     
     def _detect_ai_backend(self) -> str:
-        """Detect available AI backend."""
-        # Check for API keys
+        """Detect available AI backend (prioritize FREE options)."""
+        # Check for FREE AI providers first
+        if self.free_ai and self.free_ai.available_providers:
+            return 'free_ai'
+        # Fallback to direct API keys
         if os.getenv('OPENAI_API_KEY'):
             return 'openai'
         if os.getenv('GEMINI_API_KEY') or os.getenv('GOOGLE_API_KEY'):
             return 'gemini'
-        if os.getenv('OLLAMA_HOST') or AI_BACKEND == 'ollama':
+        if os.getenv('OLLAMA_HOST'):
             return 'ollama'
         if SKLEARN_AVAILABLE:
             return 'tfidf'
@@ -107,6 +103,7 @@ class AIJobMatcher:
     def _get_model(self) -> str:
         """Get model name for the backend."""
         models = {
+            'free_ai': 'free-ai-provider',
             'openai': os.getenv('OPENAI_MODEL', 'gpt-4o-mini'),
             'gemini': os.getenv('GEMINI_MODEL', 'gemini-1.5-flash'),
             'ollama': os.getenv('OLLAMA_MODEL', 'llama3.2'),
@@ -218,13 +215,51 @@ class AIJobMatcher:
         
         job_text = f"{job_title} {job_description} {company}"
         
-        # Use appropriate matching method
-        if self.ai_backend in ['openai', 'gemini', 'ollama']:
+        # Use appropriate matching method (prioritize FREE AI)
+        if self.ai_backend == 'free_ai' and self.free_ai:
+            return self._free_ai_match(job)
+        elif self.ai_backend in ['openai', 'gemini', 'ollama']:
             return self._ai_match(job)
         elif self.ai_backend == 'tfidf':
             return self._tfidf_match(job_text)
         else:
             return self._keyword_match(job)
+    
+    def _free_ai_match(self, job: Dict) -> Dict:
+        """Use FREE AI providers for matching."""
+        job_title = job.get('title', '')
+        job_description = job.get('description', '')[:1500]
+        company = job.get('company', '')
+        
+        prompt = f"""Analyze job match. Return JSON only.
+
+CANDIDATE SKILLS: {', '.join(self.resume_skills[:20])}
+
+JOB: {job_title} at {company}
+DESCRIPTION: {job_description[:800]}
+
+Return ONLY this JSON:
+{{"score": 0-100, "matching_skills": ["skill1"], "missing_skills": ["skill1"], "experience_fit": "good|partial|low", "recommendation": "apply|maybe|skip", "talking_points": "2 sentences why candidate fits"}}"""
+
+        try:
+            result = self.free_ai.generate(prompt, max_tokens=300)
+            if result:
+                json_match = re.search(r'\{[\s\S]*\}', result)
+                if json_match:
+                    data = json.loads(json_match.group())
+                    return {
+                        'score': data.get('score', 50),
+                        'skill_match': data.get('matching_skills', []),
+                        'skill_gaps': data.get('missing_skills', []),
+                        'experience_fit': data.get('experience_fit', 'partial'),
+                        'recommendation': data.get('recommendation', 'maybe'),
+                        'personalization': data.get('talking_points', '')
+                    }
+        except Exception as e:
+            logging.warning(f"Free AI match failed: {e}")
+        
+        # Fallback to keyword matching
+        return self._keyword_match(job)
     
     def _ai_match(self, job: Dict) -> Dict:
         """Use LLM for intelligent matching."""

@@ -18,8 +18,22 @@ import logging
 import time
 import random
 import re
+import signal
 from datetime import datetime
 from string import Template
+
+# Global flag for graceful shutdown on SIGTERM (GitHub Actions cancel)
+SHUTDOWN_REQUESTED = False
+
+def signal_handler(signum, frame):
+    """Handle SIGTERM/SIGINT for graceful shutdown"""
+    global SHUTDOWN_REQUESTED
+    SHUTDOWN_REQUESTED = True
+    logging.info("🛑 Shutdown signal received - finishing current operation and exiting...")
+
+# Register signal handlers for graceful cancellation
+signal.signal(signal.SIGTERM, signal_handler)
+signal.signal(signal.SIGINT, signal_handler)
 
 # Add parent directory to path for imports
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -647,6 +661,11 @@ ${name}
         stats = {'sent': 0, 'failed': 0, 'skipped': 0}
         
         for idx, row in emails_to_send.iterrows():
+            # Check for shutdown signal (GitHub Actions cancel)
+            if SHUTDOWN_REQUESTED:
+                logging.info("🛑 Shutdown requested - stopping email campaign gracefully")
+                break
+                
             recipient = row['hr_email']
             company = row.get('company', 'Your Company')
             job_title = row.get('job_title', 'Open Position')
@@ -668,7 +687,11 @@ ${name}
             if idx < len(emails_to_send) - 1:
                 delay = random.uniform(*delay_range)
                 logging.info(f"⏳ Waiting {delay:.0f} seconds before next email...")
-                time.sleep(delay)
+                # Interruptible sleep - check for shutdown every second
+                for _ in range(int(delay)):
+                    if SHUTDOWN_REQUESTED:
+                        break
+                    time.sleep(1)
         
         logging.info(f"\n📊 Email Campaign Summary:")
         logging.info(f"   ✅ Sent: {stats['sent']}")

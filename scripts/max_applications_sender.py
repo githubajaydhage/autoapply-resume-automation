@@ -11,6 +11,7 @@ import sys
 import csv
 import time
 import random
+import signal
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
@@ -19,8 +20,22 @@ from email import encoders
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Dict, List, Optional
+import logging
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+# Global flag for graceful shutdown on SIGTERM (GitHub Actions cancel)
+SHUTDOWN_REQUESTED = False
+
+def signal_handler(signum, frame):
+    """Handle SIGTERM/SIGINT for graceful shutdown"""
+    global SHUTDOWN_REQUESTED
+    SHUTDOWN_REQUESTED = True
+    logging.info("🛑 Shutdown signal received - finishing current operation and exiting...")
+
+# Register signal handlers for graceful cancellation
+signal.signal(signal.SIGTERM, signal_handler)
+signal.signal(signal.SIGINT, signal_handler)
 
 
 class MaxApplicationsSender:
@@ -333,6 +348,11 @@ Thank you for considering my application.
         
         # Send emails
         for i, job in enumerate(to_send[:max_emails], 1):
+            # Check for shutdown signal (GitHub Actions cancel)
+            if SHUTDOWN_REQUESTED:
+                print("🛑 Shutdown requested - stopping email campaign gracefully")
+                break
+            
             email = job['email']
             company = job.get('company', 'Unknown')
             
@@ -357,7 +377,11 @@ Thank you for considering my application.
             if i < len(to_send[:max_emails]):
                 delay = random.uniform(delay_min, delay_max)
                 print(f"    ⏳ Waiting {delay:.0f}s...")
-                time.sleep(delay)
+                # Interruptible sleep - check for shutdown every second
+                for _ in range(int(delay)):
+                    if SHUTDOWN_REQUESTED:
+                        break
+                    time.sleep(1)
         
         # Summary
         print("\n" + "="*60)

@@ -25,10 +25,16 @@ on:
   schedule:
     - cron: '0 6,9,12,15,18 * * 1-5'  # Mon-Fri, every 3 hours
 
+# Cancel any in-progress workflow when a new one starts or when cancelled from UI
+concurrency:
+  group: fast-track-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   # Phase 1: Scrape jobs from ALL sources
   scrape-all-sources:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     if: ${{ github.event.inputs.run_mode != 'apply_only' }}
     
     steps:
@@ -84,6 +90,7 @@ jobs:
   discover-hr-emails:
     needs: scrape-all-sources
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     if: always() && (github.event.inputs.run_mode != 'apply_only')
     
     steps:
@@ -135,6 +142,7 @@ jobs:
   send-applications:
     needs: discover-hr-emails
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     if: always()
     
     steps:

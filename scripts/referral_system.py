@@ -254,8 +254,12 @@ ${my_name}
         
         logging.info(f"🔍 Auto-discovering employees at {company}...")
         
-        # Method 1: Check curated employee database first
-        employees.extend(self._get_curated_employees(company, job_title))
+        # Method 0: Check growing employees database first (from advanced discovery)
+        employees.extend(self._get_discovered_employees(company))
+        
+        # Method 1: Check curated employee database
+        if len(employees) < max_contacts:
+            employees.extend(self._get_curated_employees(company, job_title))
         
         # Method 2: Search LinkedIn via DuckDuckGo (more bot-friendly than Google)
         if len(employees) < max_contacts:
@@ -278,6 +282,38 @@ ${my_name}
         
         logging.info(f"✅ Found {len(unique_employees)} potential contacts at {company}")
         return unique_employees
+    
+    def _get_discovered_employees(self, company: str) -> List[Dict]:
+        """Get employees from growing discovered database."""
+        employees = []
+        discovered_path = os.path.join(self.output_dir, 'discovered_employees.csv')
+        
+        if os.path.exists(discovered_path):
+            try:
+                df = pd.read_csv(discovered_path)
+                company_lower = company.lower()
+                
+                # Find matches
+                matches = df[df['company'].str.lower().str.contains(company_lower, na=False)]
+                
+                for _, row in matches.head(3).iterrows():
+                    if row.get('email') or row.get('linkedin_url'):
+                        employees.append({
+                            'name': row.get('name', 'Employee'),
+                            'role': row.get('role', 'Employee'),
+                            'company': company,
+                            'email': row.get('email', ''),
+                            'linkedin_url': row.get('linkedin_url', ''),
+                            'source': 'discovered_database'
+                        })
+                
+                if employees:
+                    logging.info(f"   📈 Found {len(employees)} from discovered database")
+                    
+            except Exception as e:
+                logging.debug(f"Error loading discovered employees: {e}")
+        
+        return employees
     
     def _search_linkedin_profiles(self, company: str, job_title: str) -> List[Dict]:
         """Search for LinkedIn profiles of employees at the company."""

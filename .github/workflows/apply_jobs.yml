@@ -185,10 +185,10 @@ jobs:
           job-data-shweta-${{ runner.os }}-v8-
           job-data-shweta-${{ runner.os }}-
 
-    - name: Scrape Jobs (RemoteOK, Arbeitnow, Jobicy, Adzuna)
+    - name: 🛡️ Bulletproof Job Scraping (15+ sources)
       run: |
-        echo "🔍 Scraping jobs from multiple sources..."
-        python scripts/reliable_job_scraper.py
+        echo "🛡️ Running BULLETPROOF job engine (15+ sources with failover)..."
+        python scripts/bulletproof_job_engine.py || python scripts/reliable_job_scraper.py
       env:
         PYTHONPATH: ${{ github.workspace }}
         JOB_LOCATION: ${{ github.event.inputs.job_location || 'Bangalore' }}
@@ -569,6 +569,13 @@ jobs:
         TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
         TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
 
+    - name: 🔧 Self-Healing Monitor (detect & recover issues)
+      run: |
+        echo "🔧 Running self-healing monitor..."
+        python scripts/self_healing_monitor.py || true
+      env:
+        PYTHONPATH: ${{ github.workspace }}
+
     - name: Save Data Cache
       uses: actions/cache/save@v3
       with:
@@ -580,7 +587,11 @@ jobs:
           data/bounced_emails.csv
           data/verified_hr_emails.csv
           data/referral_requests_log.csv
-        key: job-data-shweta-${{ runner.os }}-v8-${{ github.run_number }}
+          data/all_jobs_database.csv
+          data/application_queue.csv
+          data/pipeline_health.json
+          data/source_health.json
+        key: job-data-shweta-${{ runner.os }}-v9-${{ github.run_number }}
 
     - name: Upload Final Results
       uses: actions/upload-artifact@v4

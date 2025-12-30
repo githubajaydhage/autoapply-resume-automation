@@ -212,10 +212,13 @@ class ResumeOptimizer:
         
         skill_score = (len(matching_skills) / len(jd_skills)) * 100 if jd_skills else 0
         
-        # Calculate experience match
-        user_experience = int(USER_DETAILS.get('years_experience', '3'))
+        # Calculate experience match (handle float values like '3.5')
+        try:
+            user_experience = int(float(USER_DETAILS.get('years_experience', '3')))
+        except (ValueError, TypeError):
+            user_experience = 3
         exp_required = jd_keywords['min_experience']
-        exp_score = 100 if user_experience >= exp_required else (user_experience / exp_required) * 100
+        exp_score = 100 if user_experience >= exp_required else (user_experience / exp_required) * 100 if exp_required > 0 else 100
         
         # Overall score (skills 70%, experience 30%)
         overall_score = (skill_score * 0.7) + (exp_score * 0.3)

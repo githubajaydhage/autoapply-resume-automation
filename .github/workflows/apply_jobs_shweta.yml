@@ -1,0 +1,893 @@
+name: Job Application - Shweta Biradar (Data Analyst)
+
+# =================================================================
+# SHWETA BIRADAR - Data Analyst Job Application Automation
+# Branch: main
+# =================================================================
+# NEW FEATURES in v8 (FREE AI Revolution):
+# ✅ FREE AI Providers (Groq, HuggingFace, Cohere, Together.ai)
+# ✅ AI Job Research (discover job sources & companies)
+# ✅ AI HR Email Discovery (smart email pattern generation)
+# ✅ Zero-cost AI matching and personalization
+# ✅ Multi-provider fallback (never fails!)
+# =================================================================
+# v7 Features (AI Powered):
+# ✅ AI Job Matcher (GPT-4/Gemini semantic matching)
+# ✅ AI Cover Letter Generator (personalized, industry-specific)
+# ✅ AI Email Personalizer (subject optimization, company research)
+# ✅ AI Response Classifier (auto-prioritize interview requests)
+# ✅ Skill Gap Analysis (know what to learn)
+# ✅ Multi-LLM Support (OpenAI, Gemini, Claude, Ollama)
+# =================================================================
+# v6 Features (High Impact):
+# ✅ Email Open Tracking (know when HR reads your email)
+# ✅ WhatsApp/Telegram Alerts (instant mobile notifications)
+# ✅ Auto-Retry Failed Emails (verify & retry with alternates)
+# =================================================================
+# v5 Features:
+# ✅ ATS Keyword Optimizer (70%+ match filter)
+# ✅ Salary Intelligence System (market rate insights)
+# ✅ Job Priority Engine (urgent jobs first)
+# ✅ LinkedIn Warm-Up Plans (3x higher response)
+# ✅ Multi-Channel Analytics Dashboard
+# ✅ Slack Integration (instant interview alerts!)
+# =================================================================
+# v4 Features:
+# ✅ Skills Match Filter (70%+ threshold)
+# ✅ Interview Prep Generator (company research docs)
+# ✅ Thank You Email Automation
+# ✅ Weekly Summary Digest
+# ✅ Portfolio/GitHub links in emails
+# =================================================================
+# v3 Features:
+# ✅ Email Optimizer (personalized company openers, A/B subject testing)
+# ✅ Recruiter Name Finder ("Dear Priya" vs "Dear Hiring Manager")
+# ✅ Referral Request System (10x higher response rate!)
+# ✅ Optimal Send Timing (Tue-Thu, 9-11 AM IST)
+# ✅ Company-specific highlights in emails
+# =================================================================
+# v2 Features:
+# ✅ Smart Job-to-HR matching (only email when job found at company)
+# ✅ Reply detection (monitors inbox for HR responses)
+# ✅ Application status tracking (applied → interview → offer)
+# ✅ Enhanced job sources (Wellfound, Instahyre, Cutshort, etc.)
+# ✅ Job-specific email templates (not generic anymore)
+# ✅ Priority-based application queue
+# =================================================================
+# v1 Features:
+# ✅ Multiple job sources (RemoteOK API, Naukri, career pages, RSS)
+# ✅ Curated HR email database (100+ verified company emails)
+# ✅ Email verification before sending (deliverability scoring)
+# ✅ Smart multi-stage follow-ups (Day 3, 7, 14)
+# ✅ Bounce detection and email quality tracking
+# ✅ Resume keyword optimization and match scoring
+# ✅ Auto-generated cover letters
+# ✅ Duplicate prevention and tracking
+# ✅ Resume attachment
+# =================================================================
+# FREE AI API KEYS (Pick any one - all are free!):
+# - GROQ_API_KEY: https://console.groq.com/keys (FASTEST)
+# - GEMINI_API_KEY: https://makersuite.google.com/app/apikey
+# - HUGGINGFACE_API_KEY: https://huggingface.co/settings/tokens
+# - TOGETHER_API_KEY: https://api.together.xyz/
+# - COHERE_API_KEY: https://dashboard.cohere.ai/api-keys
+# - OPENROUTER_API_KEY: https://openrouter.ai/keys
+# =================================================================
+# ONLY 1 REQUIRED SECRET: SENDER_PASSWORD (Gmail App Password)
+# =================================================================
+
+on:
+  # Daily schedule - runs 3x daily (10:00 AM, 3:00 PM, 8:00 PM IST)
+  schedule:
+    - cron: '30 4 * * *'   # 10:00 AM IST
+    - cron: '30 9 * * *'   # 3:00 PM IST
+    - cron: '30 14 * * *'  # 8:00 PM IST
+  
+  # Manual trigger
+  workflow_dispatch:
+    inputs:
+      # User Identity (All Optional with Defaults - NO PROMPTS!)
+      applicant_name:
+        description: 'Full Name'
+        required: false
+        default: 'Shweta Biradar'
+        type: string
+      applicant_email:
+        description: 'Email Address'
+        required: false
+        default: 'biradarshweta48@gmail.com'
+        type: string
+      applicant_phone:
+        description: 'Phone Number'
+        required: false
+        default: '+91-9876543210'
+        type: string
+      applicant_location:
+        description: 'Location'
+        required: false
+        default: 'Bangalore, Karnataka, India'
+        type: string
+      applicant_city:
+        description: 'City'
+        required: false
+        default: 'Bangalore'
+        type: string
+      applicant_country:
+        description: 'Country'
+        required: false
+        default: 'India'
+        type: string
+      applicant_linkedin:
+        description: 'LinkedIn URL'
+        required: false
+        default: 'https://www.linkedin.com/in/shweta-biradar'
+        type: string
+      applicant_experience:
+        description: 'Years of Experience'
+        required: false
+        default: '3'
+        type: string
+      applicant_target_role:
+        description: 'Target Roles'
+        required: false
+        default: 'Data Analyst, Business Analyst, SQL Developer, Data Engineer'
+        type: string
+      applicant_skills:
+        description: 'Key Skills (comma-separated)'
+        required: false
+        default: 'SQL, Python, Tableau, Power BI, Data Analysis, Excel'
+        type: string
+      resume_filename:
+        description: 'Resume Filename'
+        required: false
+        default: 'Shweta_Biradar_Resume.pdf'
+        type: string
+      job_keywords:
+        description: 'Job Search Keywords (comma-separated)'
+        required: false
+        default: 'data analyst, sql developer, business analyst, data engineer'
+        type: string
+      # Job Search Parameters
+      job_location:
+        description: 'Job Location'
+        required: false
+        default: 'Bangalore'
+        type: choice
+        options:
+        - Bangalore
+        - Mumbai
+        - Delhi
+        - Hyderabad
+        - Pune
+        - Chennai
+        - Remote
+        - India
+      max_emails:
+        description: 'Max new emails to send'
+        required: false
+        default: '15'
+        type: choice
+        options:
+        - '5'
+        - '10'
+        - '15'
+        - '20'
+        - '30'
+        - '50'
+      send_followups:
+        description: 'Send follow-up emails?'
+        required: false
+        default: 'true'
+        type: choice
+        options:
+        - 'true'
+        - 'false'
+      scrape_only:
+        description: 'Only scrape (no emails)'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+        - 'false'
+        - 'true'
+      include_portfolio_links:
+        description: 'Include GitHub/Portfolio links?'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+        - 'false'
+        - 'true'
+      send_slack_notifications:
+        description: 'Slack notifications?'
+        required: false
+        default: 'true'
+        type: choice
+        options:
+        - 'true'
+        - 'false'
+      enable_mobile_alerts:
+        description: 'WhatsApp/Telegram alerts?'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+        - 'false'
+        - 'true'
+      enable_whatsapp:
+        description: 'Enable WhatsApp (requires WHATSAPP_PHONE, CALLMEBOT_API_KEY secrets)'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+        - 'false'
+        - 'true'
+      enable_telegram:
+        description: 'Enable Telegram (requires TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID secrets)'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+        - 'false'
+        - 'true'
+
+# Cancel any in-progress workflow when a new one starts
+concurrency:
+  group: job-application-shweta-${{ github.ref }}
+  cancel-in-progress: true
+
+# ============================================
+# 🎯 DYNAMIC USER CONFIGURATION
+# All values from workflow inputs - NO HARDCODING!
+# ============================================
+env:
+  # User Identity (from inputs with proper defaults)
+  APPLICANT_NAME: ${{ github.event.inputs.applicant_name || 'Shweta Biradar' }}
+  APPLICANT_FIRST_NAME: 'Shweta'
+  APPLICANT_LAST_NAME: 'Biradar'
+  APPLICANT_EMAIL: ${{ github.event.inputs.applicant_email || 'biradarshweta48@gmail.com' }}
+  SENDER_EMAIL: ${{ github.event.inputs.applicant_email || 'biradarshweta48@gmail.com' }}
+  APPLICANT_PHONE: ${{ github.event.inputs.applicant_phone || '+91-9876543210' }}
+  APPLICANT_LOCATION: ${{ github.event.inputs.applicant_location || 'Bangalore, Karnataka, India' }}
+  APPLICANT_CITY: ${{ github.event.inputs.applicant_city || 'Bangalore' }}
+  APPLICANT_COUNTRY: ${{ github.event.inputs.applicant_country || 'India' }}
+  APPLICANT_LINKEDIN: ${{ github.event.inputs.applicant_linkedin || 'https://www.linkedin.com/in/shweta-biradar' }}
+  APPLICANT_EXPERIENCE: ${{ github.event.inputs.applicant_experience || '2' }}
+  YEARS_EXPERIENCE: ${{ github.event.inputs.applicant_experience || '2' }}
+  APPLICANT_TARGET_ROLE: ${{ github.event.inputs.applicant_target_role || 'Data Analyst, Business Analyst, SQL Developer, Data Engineer' }}
+  APPLICANT_SKILLS: ${{ github.event.inputs.applicant_skills || 'SQL, Python, Tableau, Power BI, Data Analysis, Excel' }}
+  
+  # Resume Configuration (from inputs)
+  RESUME_FILENAME: ${{ github.event.inputs.resume_filename || 'Shweta_Biradar_Resume.pdf' }}
+  RESUME_PATH: resumes/${{ github.event.inputs.resume_filename || 'Shweta_Biradar_Resume.pdf' }}
+  
+  # Job Search Keywords (from inputs)
+  JOB_KEYWORDS: ${{ github.event.inputs.job_keywords || 'data analyst, sql developer, business analyst, data engineer, data scientist' }}
+  NAUKRI_KEYWORDS: ${{ github.event.inputs.job_keywords || 'data analyst, business analyst, sql developer, data engineer' }}
+  
+  # Optional Settings
+  SEND_TO_AGENCIES: 'true'
+  MAX_REFERRAL_REQUESTS: '10'
+  MAX_REFERRALS_PER_COMPANY: '1'
+
+# Permissions for git push (permanent HR data storage)
+permissions:
+  contents: write
+
+jobs:
+  # ============================================
+  # JOB 0: APPLY IMMEDIATELY (PARALLEL - Uses CACHED data)
+  # Runs at same time as research - NO dependencies!
+  # ============================================
+  apply-cached:
+    name: "⚡ Instant Apply (Cached)"
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    if: ${{ github.event.inputs.scrape_only != 'true' && github.event.inputs.max_emails != '0' }}
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+      with:
+        ref: main
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Restore Cached HR Emails
+      uses: actions/cache@v3
+      with:
+        path: |
+          data/sent_emails_log.csv
+          data/all_hr_emails.csv
+          data/curated_hr_emails.csv
+          data/verified_hr_emails.csv
+          data/discovered_hr_emails.csv
+          data/jobs_today.csv
+        key: job-data-shweta-${{ runner.os }}-v10-${{ github.run_number }}
+        restore-keys: |
+          job-data-shweta-${{ runner.os }}-v10-
+          job-data-shweta-${{ runner.os }}-v9-
+          job-data-shweta-${{ runner.os }}-
+
+    - name: Load Curated HR Database (100+ verified emails)
+      run: |
+        echo "📚 Loading CURATED HR database..."
+        python scripts/curated_hr_database.py
+        if [ -f data/curated_hr_emails.csv ]; then
+          CURATED=$(($(wc -l < data/curated_hr_emails.csv) - 1))
+          echo "✅ Curated emails: $CURATED"
+        fi
+      env:
+        PYTHONPATH: ${{ github.workspace }}
+
+    - name: Send Emails NOW (Using Cached Data)
+      run: |
+        echo "⚡ INSTANT APPLY - Using cached HR emails!"
+        echo "   No waiting for research - applying NOW!"
+        if [ -f data/curated_hr_emails.csv ] && [ $(wc -l < data/curated_hr_emails.csv) -gt 1 ]; then
+          python scripts/email_sender.py
+        else
+          echo "⚠️ No cached emails found - will wait for research phase"
+          exit 0
+        fi
+      env:
+        PYTHONPATH: ${{ github.workspace }}
+        SENDER_PASSWORD: ${{ secrets.SENDER_PASSWORD }}
+        GMAIL_APP_PASSWORD: ${{ secrets.SENDER_PASSWORD }}
+        SENDER_PASSWORD_YOGESHWARI: ${{ secrets.SENDER_PASSWORD }}
+        MAX_EMAILS: ${{ github.event.inputs.max_emails || '10' }}
+        INCLUDE_PORTFOLIO_LINKS: ${{ github.event.inputs.include_portfolio_links || 'false' }}
+        USE_CACHED_ONLY: 'true'
+      continue-on-error: true
+
+    - name: Upload Instant Results
+      uses: actions/upload-artifact@v4
+      with:
+        name: instant-apply-results
+        path: data/
+        retention-days: 1
+
+  # ============================================
+  # JOB 1: RESEARCH - SCRAPE JOBS (PARALLEL)
+  # ============================================
+  scrape-jobs:
+    name: "🔍 Phase 1: Scrape Jobs"
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    
+    outputs:
+      jobs_count: ${{ steps.count.outputs.jobs }}
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+      with:
+        ref: main
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Restore Previous Data
+      uses: actions/cache@v3
+      with:
+        path: |
+          data/sent_emails_log.csv
+          data/followup_log.csv
+          data/all_hr_emails.csv
+          data/curated_hr_emails.csv
+          data/bounced_emails.csv
+          data/verified_hr_emails.csv
+          data/referral_requests_log.csv
+          data/discovered_hr_emails.csv
+          data/discovered_employees.csv
+          data/discovered_companies.csv
+        key: job-data-shweta-${{ runner.os }}-v10-${{ github.run_number }}
+        restore-keys: |
+          job-data-shweta-${{ runner.os }}-v10-
+          job-data-shweta-${{ runner.os }}-v9-
+          job-data-shweta-${{ runner.os }}-
+
+    # PHASE 1: Scrape Jobs (Bulletproof Engine)
+    - name: 🛡️ Bulletproof Job Scraping (15+ sources)
+      run: |
+        echo "🛡️ Running BULLETPROOF job engine (15+ sources with failover)..."
+        python scripts/bulletproof_job_engine.py || python scripts/reliable_job_scraper.py
+      env:
+        PYTHONPATH: ${{ github.workspace }}
+        JOB_LOCATION: ${{ github.event.inputs.job_location || 'Bangalore' }}
+
+    # PHASE 1.1: AI Job Research (NEW - FREE AI!)
+    - name: 🤖 AI Job Research & Discovery
+      run: |
+        echo "🤖 Running AI-powered job research..."
+        echo "   Using FREE AI: Groq/Gemini/HuggingFace/Cohere"
+        python scripts/ai_job_researcher.py || true
+      env:
+        PYTHONPATH: ${{ github.workspace }}
+        GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+        GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        HUGGINGFACE_API_KEY: ${{ secrets.HUGGINGFACE_API_KEY }}
+        TOGETHER_API_KEY: ${{ secrets.TOGETHER_API_KEY }}
+        COHERE_API_KEY: ${{ secrets.COHERE_API_KEY }}
+        OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+
+    - name: Scrape Naukri.com & Enhanced Sources
+      run: |
+        echo "🇮🇳 Scraping Naukri.com..."
+        python scripts/naukri_scraper.py || true
+      env:
+        PYTHONPATH: ${{ github.workspace }}
+        NAUKRI_LOCATION: ${{ github.event.inputs.job_location || 'bangalore' }}
+        NAUKRI_EXPERIENCE: 'mid'
+
+    - name: Scrape Enhanced Sources
+      run: |
+        echo "🚀 Scraping Wellfound, LinkedIn, etc..."
+        python scripts/enhanced_job_scraper.py || true
+      env:
+        PYTHONPATH: ${{ github.workspace }}
+
+    - name: Count Jobs
+      id: count
+      run: |
+        if [ -f data/jobs_today.csv ]; then
+          JOBS=$(($(wc -l < data/jobs_today.csv) - 1))
+          echo "jobs=$JOBS" >> $GITHUB_OUTPUT
+          echo "✅ Found $JOBS jobs"
+        else
+          echo "jobs=0" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Upload Scraped Jobs
+      uses: actions/upload-artifact@v4
+      with:
+        name: scraped-jobs
+        path: |
+          data/jobs_today.csv
+          data/naukri_jobs.csv
+          data/enhanced_jobs.csv
+          data/sent_emails_log.csv
+          data/followup_log.csv
+        retention-days: 1
+
+  # ============================================
+  # JOB 2: DISCOVER HR EMAILS
+  # ============================================
+  discover-hr:
+    name: "📧 Phase 2: Find HR Emails"
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    needs: scrape-jobs
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+      with:
+        ref: main
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Download Scraped Jobs
+      uses: actions/download-artifact@v4
+      with:
+        name: scraped-jobs
+        path: data/
+
+    - name: Load Curated HR Database
+      run: |
+        echo "📚 Loading HR emails..."
+        python scripts/curated_hr_database.py
+      env:
+        PYTHONPATH: ${{ github.workspace }}
+
+    - name: Find HR Emails from Job Postings (FAST MODE)
+      run: |
+        echo "🔍 Finding HR emails (fast mode - using cached data)..."
+        python scripts/hr_email_finder.py
+        python scripts/email_scraper.py || true
+        echo "📈 Running Advanced HR Discovery (FAST - 5 companies max)..."
+        python scripts/advanced_hr_discovery.py || true
+      env:
+        PYTHONPATH: ${{ github.workspace }}
+        MAX_DISCOVERY_COMPANIES: '5'  # Only discover 5 NEW companies per run
+        FAST_DISCOVERY: 'true'  # Use fast 2-method discovery instead of 6-method
+
+    # PHASE 2.1: AI HR Email Discovery (NEW - FREE AI!)
+    - name: 🤖 AI HR Email Discovery
+      run: |
+        echo "🤖 Using AI to discover HR emails..."
+        echo "   Generating email patterns for companies..."
+        python scripts/ai_hr_email_discovery.py || true
+      env:
+        PYTHONPATH: ${{ github.workspace }}
+        GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+        GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        HUGGINGFACE_API_KEY: ${{ secrets.HUGGINGFACE_API_KEY }}
+        TOGETHER_API_KEY: ${{ secrets.TOGETHER_API_KEY }}
+        COHERE_API_KEY: ${{ secrets.COHERE_API_KEY }}
+
+    - name: Resume Optimization Analysis
+      run: |
+        echo "📄 Analyzing resume match scores..."
+        python scripts/resume_optimizer.py || true
+      env:
+        PYTHONPATH: ${{ github.workspace }}
+
+    # PHASE 1.6: AI-Powered Job Scoring & Matching (FREE AI!)
+    - name: Phase 1.6 - AI Job Matching & Scoring
+      run: |
+        echo "🤖 PHASE 1.6: AI-POWERED JOB SCORING"
+        echo "   Using FREE AI: Groq/Gemini/HuggingFace/Cohere..."
+        echo "   Analyzing skill gaps and experience fit..."
+        python scripts/ai_job_matcher.py || true
+      env:
+        PYTHONPATH: ${{ github.workspace }}
+        GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+        GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        HUGGINGFACE_API_KEY: ${{ secrets.HUGGINGFACE_API_KEY }}
+        TOGETHER_API_KEY: ${{ secrets.TOGETHER_API_KEY }}
+        COHERE_API_KEY: ${{ secrets.COHERE_API_KEY }}
+        OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        OLLAMA_HOST: ${{ secrets.OLLAMA_HOST }}
+
+    # PHASE 2: Load HR Emails
+    - name: Phase 2 - Load HR Email Database
+      run: |
+        if [ -f data/all_hr_emails.csv ]; then
+          EMAILS=$(($(wc -l < data/all_hr_emails.csv) - 1))
+          echo "emails=$EMAILS" >> $GITHUB_OUTPUT
+          echo "✅ Found $EMAILS HR emails"
+        else
+          echo "emails=0" >> $GITHUB_OUTPUT
+        fi
+
+    # PHASE 3: Generate Cover Letters & Send Application Emails
+    - name: Phase 3 - AI-Powered Cover Letters
+      if: ${{ github.event.inputs.scrape_only != 'true' }}
+      run: |
+        echo "📝 PHASE 3A: AI-POWERED COVER LETTER GENERATION"
+        echo "   Using GPT-4/Gemini/Claude for personalized cover letters..."
+        echo "   Industry-specific templates with match insights..."
+        python scripts/ai_cover_letter.py || python scripts/cover_letter_generator.py || true
+      env:
+        PYTHONPATH: ${{ github.workspace }}
+        YEARS_EXPERIENCE: '3+'
+        APPLICANT_ROLE: 'Software Engineer'
+        OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+
+    - name: Send Application Emails
+      run: |
+        echo "📤 Sending application emails (max: ${{ github.event.inputs.max_emails || '15' }})..."
+        python scripts/email_sender.py
+      env:
+        PYTHONPATH: ${{ github.workspace }}
+        SENDER_PASSWORD: ${{ secrets.SENDER_PASSWORD }}
+        MAX_EMAILS: ${{ github.event.inputs.max_emails || '15' }}
+        INCLUDE_PORTFOLIO_LINKS: ${{ github.event.inputs.include_portfolio_links || 'false' }}
+
+    - name: Upload Email Results
+      uses: actions/upload-artifact@v4
+      with:
+        name: email-results
+        path: |
+          data/
+          cover_letters/
+        retention-days: 1
+
+  # ============================================
+  # JOB 4: SEND REFERRAL REQUESTS (waits for both parallel jobs)
+  # ============================================
+  send-referrals:
+    name: "🤝 Phase 4: Referrals"
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    needs: [apply-cached, discover-hr]  # Wait for BOTH parallel jobs
+    if: ${{ always() && github.event.inputs.scrape_only != 'true' }}
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+      with:
+        ref: main
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Download Email Results
+      uses: actions/download-artifact@v4
+      with:
+        name: email-results
+        path: data/
+      continue-on-error: true
+
+    - name: Download Instant Apply Results
+      uses: actions/download-artifact@v4
+      with:
+        name: instant-apply-results
+        path: data/
+      continue-on-error: true
+
+    - name: Send Referral Requests (10x response rate!)
+      run: |
+        echo "🤝 Sending referral requests..."
+        echo "   Max: $MAX_REFERRAL_REQUESTS referrals"
+        python scripts/referral_system.py || true
+      env:
+        PYTHONPATH: ${{ github.workspace }}
+        SENDER_PASSWORD: ${{ secrets.SENDER_PASSWORD }}
+
+    - name: Detect HR Replies
+      run: |
+        echo "📬 Scanning inbox for HR replies..."
+        python scripts/reply_detector.py || true
+      env:
+        PYTHONPATH: ${{ github.workspace }}
+        SENDER_PASSWORD: ${{ secrets.SENDER_PASSWORD }}
+
+    # PHASE 3.7: AI Response Classification (NEW!)
+    - name: Phase 3.7 - AI Response Classification
+      if: ${{ github.event.inputs.scrape_only != 'true' }}
+      run: |
+        echo "🤖 PHASE 3.7: AI RESPONSE CLASSIFICATION"
+        echo "   Classifying HR responses using AI..."
+        echo "   Prioritizing: Interviews > Assessments > Follow-ups..."
+        python scripts/ai_response_classifier.py || true
+      env:
+        PYTHONPATH: ${{ github.workspace }}
+        OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+
+    # PHASE 4: Send Smart Follow-Up Emails
+    - name: Phase 4 - Send Multi-Stage Follow-Ups
+      if: ${{ github.event.inputs.scrape_only != 'true' && github.event.inputs.send_followups != 'false' }}
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Download Referral Results
+      uses: actions/download-artifact@v4
+      with:
+        name: referral-results
+        path: data/
+
+    - name: Send Multi-Stage Follow-Ups
+      run: |
+        echo "🔄 Sending follow-ups (Day 3, 7, 14)..."
+        python scripts/followup_sender.py
+      env:
+        PYTHONPATH: ${{ github.workspace }}
+        SENDER_PASSWORD: ${{ secrets.SENDER_PASSWORD }}
+        MAX_FOLLOWUPS: '15'
+
+    - name: Check Email Bounces
+      run: |
+        echo "📬 Checking for bounced emails..."
+        python scripts/bounce_checker.py || true
+        python scripts/verified_emails_db.py || true
+      env:
+        PYTHONPATH: ${{ github.workspace }}
+        SENDER_PASSWORD: ${{ secrets.SENDER_PASSWORD }}
+
+    - name: Auto-Retry Failed Emails
+      run: |
+        echo "🔄 Retrying failed emails..."
+        python scripts/auto_retry_emails.py || true
+      env:
+        PYTHONPATH: ${{ github.workspace }}
+        SENDER_PASSWORD: ${{ secrets.SENDER_PASSWORD }}
+
+    - name: Upload Follow-up Results
+      uses: actions/upload-artifact@v4
+      with:
+        name: followup-results
+        path: |
+          data/
+        retention-days: 1
+
+  # ============================================
+  # JOB 6: ANALYTICS & NOTIFICATIONS
+  # ============================================
+  notifications:
+    name: "📊 Phase 6: Analytics & Notify"
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    needs: [apply-cached, send-referrals]  # Wait for both parallel tracks
+    if: always()
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+      with:
+        ref: main
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Download All Results
+      uses: actions/download-artifact@v4
+      with:
+        path: artifacts/
+      continue-on-error: true
+
+    - name: Merge Data Files
+      run: |
+        mkdir -p data
+        find artifacts -name "*.csv" -exec cp {} data/ \; 2>/dev/null || true
+        find artifacts -name "*.json" -exec cp {} data/ \; 2>/dev/null || true
+        find artifacts -name "*.txt" -exec cp {} data/ \; 2>/dev/null || true
+      continue-on-error: true
+
+    - name: Update Application Tracker
+      run: |
+        echo "📊 Updating application tracker..."
+        python scripts/application_tracker.py || true
+      env:
+        PYTHONPATH: ${{ github.workspace }}
+
+    - name: Interview Prep & Weekly Summary
+      run: |
+        echo "🎯 Generating interview prep & summary..."
+        python scripts/interview_success_suite.py || true
+      env:
+        PYTHONPATH: ${{ github.workspace }}
+
+    - name: Run Analysis Phases
+      run: |
+        echo "📊 Running analytics..."
+        python scripts/run_analysis_phases.py || true
+      env:
+        PYTHONPATH: ${{ github.workspace }}
+
+    - name: Send Slack Notifications
+      if: ${{ github.event.inputs.send_slack_notifications != 'false' }}
+      run: |
+        echo "💬 Sending Slack notifications..."
+        python scripts/slack_notifier.py || true
+      env:
+        PYTHONPATH: ${{ github.workspace }}
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+    - name: Send Mobile Alerts
+      if: ${{ github.event.inputs.enable_mobile_alerts == 'true' }}
+      run: |
+        echo "📱 Sending mobile alerts..."
+        python scripts/mobile_alerts.py || true
+      env:
+        PYTHONPATH: ${{ github.workspace }}
+        ENABLE_WHATSAPP: ${{ github.event.inputs.enable_whatsapp }}
+        WHATSAPP_PHONE: ${{ secrets.WHATSAPP_PHONE }}
+        CALLMEBOT_API_KEY: ${{ secrets.CALLMEBOT_API_KEY }}
+        ENABLE_TELEGRAM: ${{ github.event.inputs.enable_telegram }}
+        TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+        TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+
+    - name: 🔧 Self-Healing Monitor (detect & recover issues)
+      run: |
+        echo "🔧 Running self-healing monitor..."
+        python scripts/self_healing_monitor.py || true
+      env:
+        PYTHONPATH: ${{ github.workspace }}
+
+    - name: Save Data Cache
+      uses: actions/cache/save@v3
+      with:
+        path: |
+          data/sent_emails_log.csv
+          data/followup_log.csv
+          data/all_hr_emails.csv
+          data/curated_hr_emails.csv
+          data/bounced_emails.csv
+          data/verified_hr_emails.csv
+          data/referral_requests_log.csv
+          data/all_jobs_database.csv
+          data/application_queue.csv
+          data/pipeline_health.json
+          data/source_health.json
+          data/discovered_hr_emails.csv
+          data/discovered_employees.csv
+          data/discovered_companies.csv
+        key: job-data-shweta-${{ runner.os }}-v10-${{ github.run_number }}
+
+    - name: 💾 Commit HR Database to Repo (Permanent Storage)
+      run: |
+        echo "💾 Saving HR database permanently to repo..."
+        git config user.name "Job Automation Bot"
+        git config user.email "bot@github.com"
+        
+        # Count new emails
+        NEW_EMAILS=0
+        if [ -f data/discovered_hr_emails.csv ]; then
+          NEW_EMAILS=$(($(wc -l < data/discovered_hr_emails.csv) - 1))
+        fi
+        
+        # Add data files
+        git add data/discovered_hr_emails.csv data/discovered_companies.csv data/discovered_employees.csv data/sent_emails_log.csv data/applied_log.csv 2>/dev/null || true
+        
+        # Commit if there are changes
+        git diff --staged --quiet || git commit -m "🤖 Auto: HR Database updated (+$NEW_EMAILS emails) - $(date '+%Y-%m-%d %H:%M')"
+        
+        # Push changes
+        git push || echo "⚠️ Push failed (may need PAT with write access)"
+      continue-on-error: true
+
+    - name: Upload Final Results
+      uses: actions/upload-artifact@v4
+      with:
+        name: final-results-${{ github.run_number }}
+        path: |
+          data/
+          cover_letters/
+          interview_prep/
+        retention-days: 30
+
+    - name: Summary Report
+      run: |
+        echo ""
+        echo "📊 =============================================="
+        echo "📊 JOB APPLICATION SUMMARY v8 - FREE AI POWERED"
+        echo "📊 =============================================="
+        echo "🔍 Jobs Scraped: See artifacts"
+        echo "📧 HR Emails Found: See artifacts"
+        if [ -f data/sent_emails_log.csv ]; then
+          SENT=$(($(wc -l < data/sent_emails_log.csv) - 1))
+          echo "✉️  Emails Sent (Total): $SENT"
+        fi
+        if [ -f data/referral_requests_log.csv ]; then
+          REF=$(($(wc -l < data/referral_requests_log.csv) - 1))
+          echo "🤝 Referrals Sent: $REF"
+        fi
+        if [ -f data/followup_log.csv ]; then
+          FU=$(($(wc -l < data/followup_log.csv) - 1))
+          echo "🔄 Follow-ups Sent: $FU"
+        fi
+        if [ -f data/hr_replies.csv ]; then
+          REPLIES=$(($(wc -l < data/hr_replies.csv) - 1))
+          echo "📬 HR Replies: $REPLIES"
+        fi
+        if [ -f data/interview_requests.csv ]; then
+          INT=$(($(wc -l < data/interview_requests.csv) - 1))
+          echo "🎯 Interviews Detected: $INT"
+        fi
+        echo "📊 =============================================="
+        echo "💡 Download 'final-results' artifact for full reports!"
+        echo "📊 =============================================="

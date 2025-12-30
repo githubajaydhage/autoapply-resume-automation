@@ -167,10 +167,6 @@ on:
         options:
         - 'false'
         - 'true'
-        
-  schedule:
-    # Runs 3 times per day (IST: 9:30 AM, 2:30 PM, 7:30 PM)
-    - cron: '0 4,9,14 * * *'
 
 # ============================================
 # 🎯 CENTRALIZED USER CONFIGURATION

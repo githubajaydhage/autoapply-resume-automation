@@ -160,7 +160,8 @@ jobs:
         env:
           SENDER_EMAIL: ${{ secrets.GMAIL_USER }}
           GMAIL_USER: ${{ secrets.GMAIL_USER }}
-          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+          GMAIL_APP_PASSWORD: ${{ secrets.SENDER_PASSWORD }}
+          SENDER_PASSWORD: ${{ secrets.SENDER_PASSWORD }}
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
           APPLICANT_NAME: ${{ secrets.APPLICANT_NAME }}
@@ -185,7 +186,8 @@ jobs:
       - name: 📤 Send via referral system
         env:
           GMAIL_USER: ${{ secrets.GMAIL_USER }}
-          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+          GMAIL_APP_PASSWORD: ${{ secrets.SENDER_PASSWORD }}
+          SENDER_PASSWORD: ${{ secrets.SENDER_PASSWORD }}
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
         run: |
           echo "=== Sending referral requests ==="

@@ -29,7 +29,7 @@ class MaxApplicationsSender:
     def __init__(self):
         # Email config
         self.sender_email = os.getenv('SENDER_EMAIL') or os.getenv('GMAIL_USER')
-        self.sender_password = os.getenv('GMAIL_APP_PASSWORD')
+        self.sender_password = os.getenv('GMAIL_APP_PASSWORD') or os.getenv('SENDER_PASSWORD')
         self.smtp_server = os.getenv('SMTP_SERVER', 'smtp.gmail.com')
         self.smtp_port = int(os.getenv('SMTP_PORT', '587'))
         

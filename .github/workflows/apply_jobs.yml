@@ -1,14 +1,61 @@
-name: Job Application - Shweta Biradar (Data Analyst)
+name: Job Application System (Ultimate v7 - AI Powered)
 
 # =================================================================
-# SHWETA BIRADAR - Data Analyst / Business Analyst
-# Branch: main
+# ULTIMATE PRODUCTION SYSTEM v7 - AI-POWERED MAXIMUM INTERVIEWS
 # =================================================================
-# v7 FEATURES (Latest):
-# ✅ Multi-Job Workflow (each phase visible in UI, can cancel individually)
-# ✅ No Hardcoded Values (all config from JOB_KEYWORDS)
-# ✅ Industry-Prioritized HR Database
-# ✅ Fast Referrals (5-15s delays, 10 max)
+# NEW FEATURES in v7 (AI Revolution):
+# ✅ AI Job Matcher (GPT-4/Gemini semantic matching)
+# ✅ AI Cover Letter Generator (personalized, industry-specific)
+# ✅ AI Email Personalizer (subject optimization, company research)
+# ✅ AI Response Classifier (auto-prioritize interview requests)
+# ✅ Skill Gap Analysis (know what to learn)
+# ✅ Multi-LLM Support (OpenAI, Gemini, Claude, Ollama)
+# =================================================================
+# v6 Features (High Impact):
+# ✅ Email Open Tracking (know when HR reads your email)
+# ✅ WhatsApp/Telegram Alerts (instant mobile notifications)
+# ✅ Auto-Retry Failed Emails (verify & retry with alternates)
+# =================================================================
+# v5 Features:
+# ✅ ATS Keyword Optimizer (70%+ match filter)
+# ✅ Salary Intelligence System (market rate insights)
+# ✅ Job Priority Engine (urgent jobs first)
+# ✅ LinkedIn Warm-Up Plans (3x higher response)
+# ✅ Multi-Channel Analytics Dashboard
+# ✅ Slack Integration (instant interview alerts!)
+# =================================================================
+# v4 Features:
+# ✅ Skills Match Filter (70%+ threshold)
+# ✅ Interview Prep Generator (company research docs)
+# ✅ Thank You Email Automation
+# ✅ Weekly Summary Digest
+# ✅ Portfolio/GitHub links in emails
+# =================================================================
+# v3 Features:
+# ✅ Email Optimizer (personalized company openers, A/B subject testing)
+# ✅ Recruiter Name Finder ("Dear Priya" vs "Dear Hiring Manager")
+# ✅ Referral Request System (10x higher response rate!)
+# ✅ Optimal Send Timing (Tue-Thu, 9-11 AM IST)
+# ✅ Company-specific highlights in emails
+# =================================================================
+# v2 Features:
+# ✅ Smart Job-to-HR matching (only email when job found at company)
+# ✅ Reply detection (monitors inbox for HR responses)
+# ✅ Application status tracking (applied → interview → offer)
+# ✅ Enhanced job sources (Wellfound, Instahyre, Cutshort, etc.)
+# ✅ Job-specific email templates (not generic anymore)
+# ✅ Priority-based application queue
+# =================================================================
+# v1 Features:
+# ✅ Multiple job sources (RemoteOK API, Naukri, career pages, RSS)
+# ✅ Curated HR email database (100+ verified company emails)
+# ✅ Email verification before sending (deliverability scoring)
+# ✅ Smart multi-stage follow-ups (Day 3, 7, 14)
+# ✅ Bounce detection and email quality tracking
+# ✅ Resume keyword optimization and match scoring
+# ✅ Auto-generated cover letters
+# ✅ Duplicate prevention and tracking
+# ✅ Resume attachment
 # =================================================================
 # ONLY 1 SECRET NEEDED: SENDER_PASSWORD (Gmail App Password)
 # =================================================================
@@ -185,6 +232,7 @@ jobs:
           job-data-shweta-${{ runner.os }}-v8-
           job-data-shweta-${{ runner.os }}-
 
+    # PHASE 1: Scrape Jobs (Bulletproof Engine)
     - name: 🛡️ Bulletproof Job Scraping (15+ sources)
       run: |
         echo "🛡️ Running BULLETPROOF job engine (15+ sources with failover)..."
@@ -193,7 +241,7 @@ jobs:
         PYTHONPATH: ${{ github.workspace }}
         JOB_LOCATION: ${{ github.event.inputs.job_location || 'Bangalore' }}
 
-    - name: Scrape Naukri.com
+    - name: Scrape Naukri.com & Enhanced Sources
       run: |
         echo "🇮🇳 Scraping Naukri.com..."
         python scripts/naukri_scraper.py || true
@@ -289,8 +337,21 @@ jobs:
       env:
         PYTHONPATH: ${{ github.workspace }}
 
-    - name: Count HR Emails
-      id: count
+    # PHASE 1.6: AI-Powered Job Scoring & Matching (NEW!)
+    - name: Phase 1.6 - AI Job Matching & Scoring
+      run: |
+        echo "🤖 PHASE 1.6: AI-POWERED JOB SCORING"
+        echo "   Using GPT-4/Gemini/Ollama for semantic matching..."
+        echo "   Analyzing skill gaps and experience fit..."
+        python scripts/ai_job_matcher.py || true
+      env:
+        PYTHONPATH: ${{ github.workspace }}
+        OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        OLLAMA_HOST: ${{ secrets.OLLAMA_HOST }}
+
+    # PHASE 2: Load HR Emails
+    - name: Phase 2 - Load HR Email Database
       run: |
         if [ -f data/all_hr_emails.csv ]; then
           EMAILS=$(($(wc -l < data/all_hr_emails.csv) - 1))
@@ -300,51 +361,21 @@ jobs:
           echo "emails=0" >> $GITHUB_OUTPUT
         fi
 
-    - name: Upload HR Data
-      uses: actions/upload-artifact@v4
-      with:
-        name: hr-emails
-        path: |
-          data/
-        retention-days: 1
-
-  # ============================================
-  # JOB 3: SEND APPLICATION EMAILS
-  # ============================================
-  send-emails:
-    name: "✉️ Phase 3: Send Emails"
-    runs-on: ubuntu-latest
-    needs: discover-hr
-    if: ${{ github.event.inputs.scrape_only != 'true' }}
-    
-    steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
-      with:
-        ref: main
-
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.9'
-
-    - name: Install dependencies
+    # PHASE 3: Generate Cover Letters & Send Application Emails
+    - name: Phase 3 - AI-Powered Cover Letters
+      if: ${{ github.event.inputs.scrape_only != 'true' }}
       run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
-
-    - name: Download HR Data
-      uses: actions/download-artifact@v4
-      with:
-        name: hr-emails
-        path: data/
-
-    - name: Generate Cover Letters
-      run: |
-        echo "📝 Generating personalized cover letters..."
-        python scripts/cover_letter_generator.py || true
+        echo "📝 PHASE 3A: AI-POWERED COVER LETTER GENERATION"
+        echo "   Using GPT-4/Gemini/Claude for personalized cover letters..."
+        echo "   Industry-specific templates with match insights..."
+        python scripts/ai_cover_letter.py || python scripts/cover_letter_generator.py || true
       env:
         PYTHONPATH: ${{ github.workspace }}
+        YEARS_EXPERIENCE: '3+'
+        APPLICANT_ROLE: 'Software Engineer'
+        OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
 
     - name: Send Application Emails
       run: |
@@ -413,35 +444,22 @@ jobs:
         PYTHONPATH: ${{ github.workspace }}
         SENDER_PASSWORD: ${{ secrets.SENDER_PASSWORD }}
 
-    - name: Upload Referral Results
-      uses: actions/upload-artifact@v4
-      with:
-        name: referral-results
-        path: |
-          data/
-        retention-days: 1
+    # PHASE 3.7: AI Response Classification (NEW!)
+    - name: Phase 3.7 - AI Response Classification
+      if: ${{ github.event.inputs.scrape_only != 'true' }}
+      run: |
+        echo "🤖 PHASE 3.7: AI RESPONSE CLASSIFICATION"
+        echo "   Classifying HR responses using AI..."
+        echo "   Prioritizing: Interviews > Assessments > Follow-ups..."
+        python scripts/ai_response_classifier.py || true
+      env:
+        PYTHONPATH: ${{ github.workspace }}
+        OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
 
-  # ============================================
-  # JOB 5: FOLLOW-UPS & BOUNCE CHECKING
-  # ============================================
-  followups:
-    name: "🔄 Phase 5: Follow-ups"
-    runs-on: ubuntu-latest
-    needs: send-referrals
-    if: ${{ github.event.inputs.scrape_only != 'true' && github.event.inputs.send_followups != 'false' }}
-    
-    steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
-      with:
-        ref: main
-
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.9'
-
-    - name: Install dependencies
+    # PHASE 4: Send Smart Follow-Up Emails
+    - name: Phase 4 - Send Multi-Stage Follow-Ups
+      if: ${{ github.event.inputs.scrape_only != 'true' && github.event.inputs.send_followups != 'false' }}
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt

@@ -364,14 +364,16 @@ CURATED_HR_EMAILS = [
 class CuratedHRDatabase:
     """Provides curated, pre-verified HR contact emails."""
     
-    # Industry keywords mapping
+    # Industry keywords mapping - order matters, first match wins
     INDUSTRY_KEYWORDS = {
-        'interior_design': ['interior', 'design', 'architect', 'autocad', 'revit', 'sketchup',
+        'interior_design': ['interior', 'autocad', 'revit', 'sketchup',
                            'estimation', 'quantity surveyor', 'billing', 'drafting', 'civil',
-                           'construction', '3ds max', 'furniture', 'decor'],
-        'it_tech': ['software', 'developer', 'devops', 'cloud', 'data', 'python', 'java',
-                   'engineer', 'backend', 'frontend', 'fullstack', 'sre', 'kubernetes', 'aws'],
-        'finance': ['finance', 'banking', 'analyst', 'accounting', 'audit'],
+                           'construction', '3ds max', 'furniture', 'decor', 'architect'],
+        'it_tech': ['software', 'developer', 'devops', 'cloud', 'data analyst', 'data engineer',
+                   'data science', 'python', 'java', 'sql', 'tableau', 'power bi', 'powerbi',
+                   'engineer', 'backend', 'frontend', 'fullstack', 'sre', 'kubernetes', 'aws',
+                   'azure', 'gcp', 'machine learning', 'ml', 'ai', 'analyst', 'analytics'],
+        'finance': ['finance manager', 'banking', 'accounting', 'audit', 'chartered accountant', 'ca '],
     }
     
     # Companies by industry - used for prioritization
@@ -435,22 +437,35 @@ class CuratedHRDatabase:
         return any(ic in company_lower for ic in self.INTERIOR_DESIGN_COMPANIES)
         
     def get_all_emails(self) -> pd.DataFrame:
-        """Get all curated HR emails as DataFrame, prioritized by industry."""
+        """Get all curated HR emails as DataFrame, FILTERED by industry."""
         df = pd.DataFrame(self.emails)
         df['source'] = 'curated_database'
         df['scraped_at'] = datetime.now().isoformat()
         
-        # Detect industry and prioritize
+        # Detect industry and FILTER appropriately
         industry = self._detect_industry()
         logging.info(f"🎯 Detected industry from JOB_KEYWORDS: {industry}")
         
+        # Add interior design company flag
+        df['is_interior_company'] = df['company'].apply(self._is_interior_design_company)
+        
         if industry == 'interior_design':
-            # Add priority column - interior design companies first
-            df['is_priority'] = df['company'].apply(self._is_interior_design_company)
-            df = df.sort_values('is_priority', ascending=False).reset_index(drop=True)
-            priority_count = df['is_priority'].sum()
-            logging.info(f"📊 Prioritized {priority_count} interior design companies to the top")
-            df = df.drop(columns=['is_priority'])
+            # For Interior Design roles - ONLY show interior design companies
+            original_count = len(df)
+            df = df[df['is_interior_company'] == True]
+            logging.info(f"📊 Filtered to {len(df)} interior design companies (excluded {original_count - len(df)} non-relevant IT/Tech companies)")
+            df = df.drop(columns=['is_interior_company'])
+        elif industry in ['it_tech', 'finance']:
+            # For IT/Tech/Finance roles - EXCLUDE interior design companies
+            original_count = len(df)
+            df = df[df['is_interior_company'] == False]
+            excluded = original_count - len(df)
+            logging.info(f"📊 Filtered to {len(df)} IT/Tech companies (excluded {excluded} interior design companies like Livspace, HomeLane)")
+            df = df.drop(columns=['is_interior_company'])
+        else:
+            # For other/unknown roles - return all (existing behavior)
+            df = df.drop(columns=['is_interior_company'])
+            logging.info(f"📊 Returning all {len(df)} companies (no industry-specific filtering)")
         
         return df
     

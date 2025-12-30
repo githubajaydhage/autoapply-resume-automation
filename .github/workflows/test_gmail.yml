@@ -1,0 +1,33 @@
+name: Test Gmail Connection
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test-gmail:
+    name: "🔐 Test Gmail SMTP"
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+      
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+        
+    - name: Test Gmail Connection (Shweta)
+      run: |
+        python scripts/test_gmail.py
+      env:
+        SENDER_EMAIL: 'shwetabiradar99@gmail.com'
+        SENDER_PASSWORD: ${{ secrets.SENDER_PASSWORD }}
+        
+    - name: Test Gmail Connection (Yogeshwari)
+      run: |
+        python scripts/test_gmail.py
+      env:
+        SENDER_EMAIL: 'maneyogeshwari09606@gmail.com'
+        SENDER_PASSWORD: ${{ secrets.SENDER_PASSWORD_YOGESHWARI }}

@@ -233,14 +233,14 @@ class PersonalizedEmailSender:
         self.smtp_server = os.getenv('SMTP_SERVER', 'smtp.gmail.com')
         self.smtp_port = int(os.getenv('SMTP_PORT', '587'))
         
-        # Use email from config, password from secrets
-        self.sender_email = USER_DETAILS.get('email', 'biradarshweta48@gmail.com')
+        # Use email from config (set via SENDER_EMAIL env var), password from secrets
+        self.sender_email = os.getenv('SENDER_EMAIL', USER_DETAILS.get('email', ''))
         self.sender_password = os.getenv('SENDER_PASSWORD', '')  # App password from GitHub Secrets
-        self.sender_name = USER_DETAILS.get('full_name', 'Shweta Biradar')
+        self.sender_name = os.getenv('APPLICANT_NAME', USER_DETAILS.get('full_name', ''))
         
-        # Applicant details from config.py - no secrets needed!
-        self.applicant_name = USER_DETAILS.get('full_name', 'Shweta Biradar')
-        self.applicant_phone = USER_DETAILS.get('phone', '+91-7676294009')
+        # Applicant details from env vars or config.py
+        self.applicant_name = os.getenv('APPLICANT_NAME', USER_DETAILS.get('full_name', ''))
+        self.applicant_phone = os.getenv('APPLICANT_PHONE', USER_DETAILS.get('phone', ''))
         self.applicant_linkedin = USER_DETAILS.get('linkedin_url', '')
         self.applicant_experience = USER_DETAILS.get('years_experience', '3')
         self.applicant_skills = USER_DETAILS.get('key_skills', 'Data Analysis, Python, SQL, Excel, Tableau, Power BI')

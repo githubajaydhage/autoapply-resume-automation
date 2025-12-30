@@ -39,27 +39,21 @@ class ReliableJobScraper:
         })
         self.all_jobs = []
         
-        # Target keywords for jobs - read from environment variable or use defaults
+        # Target keywords for jobs - read from environment variable (REQUIRED)
         # JOB_KEYWORDS should be comma-separated: "data analyst, python developer, sql developer"
         keywords_env = os.getenv('JOB_KEYWORDS', '')
         if keywords_env:
             self.search_keywords = [k.strip() for k in keywords_env.split(',') if k.strip()]
             logging.info(f"📋 Using job keywords from environment: {self.search_keywords}")
         else:
-            # Default fallback - Yogeshwari Mane (Interior Design / AutoCAD)
+            # Generic fallback - workflow MUST provide JOB_KEYWORDS for proper targeting
+            logging.warning("⚠️ JOB_KEYWORDS not set! Using generic job search terms.")
+            logging.warning("   Set JOB_KEYWORDS in your workflow for targeted job scraping.")
             self.search_keywords = [
-                "autocad designer",
-                "interior designer",
-                "junior interior designer",
-                "estimation engineer",
-                "quantity surveyor",
-                "billing engineer",
-                "drafting engineer",
-                "revit",
-                "civil draftsman",
-                "design coordinator",
-                "interior design",
-                "tender engineer",
+                "jobs",
+                "careers",
+                "hiring",
+                "openings",
             ]
         
     def scrape_all_sources(self) -> list:

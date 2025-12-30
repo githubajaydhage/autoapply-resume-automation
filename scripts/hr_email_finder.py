@@ -110,13 +110,14 @@ class RealHREmailFinder:
         """Search for career/HR emails using DuckDuckGo (bot-friendly)."""
         logging.info("📡 Searching career emails via DuckDuckGo (bot-friendly)...")
         
-        # Get keywords from environment or use defaults
+        # Get keywords from environment - REQUIRED, no hardcoded defaults
         keywords_env = os.getenv('JOB_KEYWORDS', '')
         if keywords_env:
             # Extract company-related terms from job keywords
             search_terms = [k.strip() for k in keywords_env.split(',')[:3]]
         else:
-            search_terms = ["interior designer", "autocad designer"]
+            # Generic fallback - will be overridden by workflow
+            search_terms = ["jobs", "careers", "hiring"]
         
         # Search for career page emails
         for term in search_terms:
@@ -190,12 +191,14 @@ class RealHREmailFinder:
         """Scrape real recruiter emails from Naukri job listings with anti-detection."""
         logging.info("📡 Scraping Naukri for recruiter emails...")
         
-        # Use JOB_KEYWORDS if available, otherwise use interior design defaults
+        # Use JOB_KEYWORDS from workflow - REQUIRED
         keywords_env = os.getenv('JOB_KEYWORDS', '')
+        location = os.getenv('TARGET_LOCATION', os.getenv('JOB_LOCATION', 'bangalore'))
         if keywords_env:
-            keywords = [k.strip() + " bangalore" for k in keywords_env.split(',')[:3]]  # Limit to 3
+            keywords = [f"{k.strip()} {location}" for k in keywords_env.split(',')[:3]]  # Limit to 3
         else:
-            keywords = ["interior designer bangalore", "autocad designer bangalore"]
+            # Generic fallback - workflow should always provide JOB_KEYWORDS
+            keywords = [f"jobs {location}", f"careers {location}"]
         
         for keyword in keywords:
             try:

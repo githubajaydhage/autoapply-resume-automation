@@ -106,6 +106,19 @@ ${email}"""
         
         'qa': "I have comprehensive experience in quality assurance, including test automation, performance testing, and implementing testing frameworks that ensure product reliability.",
         
+        # Interior Design & Architecture Experience Paragraphs
+        'interior_design': "In my previous roles, I have successfully designed and executed residential and commercial interior projects. My experience includes space planning, material selection, 3D visualization, and client presentations using AutoCAD, SketchUp, and 3ds Max.",
+        
+        'architecture': "I bring comprehensive experience in architectural design, from concept development to construction documentation. My portfolio includes residential, commercial, and mixed-use projects designed with attention to sustainability and building codes.",
+        
+        'estimation': "My experience includes preparing detailed quantity surveys, cost estimations, and billing analysis for construction projects. I excel at BOQ preparation, rate analysis, and ensuring projects stay within budget.",
+        
+        'autocad': "I am proficient in AutoCAD, creating precise 2D drawings and technical documentation. My experience includes floor plans, elevation drawings, section details, and construction documents.",
+        
+        'furniture': "I have extensive experience in furniture design and modular solutions. My work includes custom furniture conceptualization, production drawings, and vendor coordination for residential and commercial projects.",
+        
+        'project_management': "I have managed multiple interior and construction projects from inception to completion. My experience includes vendor management, site supervision, timeline coordination, and quality control.",
+        
         'default': "Throughout my career, I have demonstrated strong problem-solving abilities, attention to detail, and a commitment to delivering high-quality work. I adapt quickly to new technologies and thrive in collaborative environments."
     }
     
@@ -126,19 +139,86 @@ ${email}"""
         self.applicant_linkedin = os.getenv('APPLICANT_LINKEDIN', '')
         self.years_experience = os.getenv('YEARS_EXPERIENCE', '3+')
         
+        # Get JOB_KEYWORDS from workflow - this determines the industry/role
+        self.job_keywords = os.getenv('JOB_KEYWORDS', '').lower()
+        self.applicant_skills = os.getenv('APPLICANT_SKILLS', '')
+        
+        # Detect industry from JOB_KEYWORDS
+        self.detected_industry = self._detect_industry_from_keywords()
+        
         # Path for saving cover letters
         self.output_dir = 'cover_letters'
         os.makedirs(self.output_dir, exist_ok=True)
         
         logging.info(f"📝 Cover Letter Generator initialized for {self.applicant_name}")
+        logging.info(f"   Industry detected from JOB_KEYWORDS: {self.detected_industry}")
+        logging.info(f"   Keywords: {self.job_keywords[:50]}...")
+    
+    def _detect_industry_from_keywords(self) -> str:
+        """Detect the industry/domain from JOB_KEYWORDS environment variable."""
+        keywords = self.job_keywords
+        
+        # Industry detection based on keywords
+        industry_patterns = {
+            'interior_design': ['interior', 'autocad', 'sketchup', '3ds max', 'furniture', 
+                               'modular', 'decor', 'space planning', 'vray', 'residential design'],
+            'architecture': ['architect', 'revit', 'bim', 'building design', 'construction drawing'],
+            'data_analytics': ['data analyst', 'business analyst', 'sql', 'tableau', 'power bi', 
+                              'analytics', 'data engineer', 'bi developer'],
+            'software_dev': ['python', 'java', 'javascript', 'developer', 'engineer', 'fullstack',
+                            'frontend', 'backend', 'react', 'node'],
+            'devops': ['devops', 'cloud', 'aws', 'azure', 'kubernetes', 'docker', 'sre'],
+            'data_science': ['data science', 'machine learning', 'ml', 'ai', 'deep learning'],
+            'project_management': ['project manager', 'scrum', 'agile', 'pmp'],
+            'hr_recruiting': ['hr', 'human resources', 'recruiter', 'talent acquisition'],
+            'marketing': ['marketing', 'digital marketing', 'seo', 'social media', 'content'],
+            'finance': ['finance', 'accounting', 'ca', 'cfa', 'financial analyst'],
+        }
+        
+        for industry, patterns in industry_patterns.items():
+            if any(pattern in keywords for pattern in patterns):
+                return industry
+        
+        return 'general'
     
     def detect_job_category(self, job_title: str, description: str = '') -> str:
-        """Detect the job category based on title and description."""
+        """Detect the job category based on title, description, AND JOB_KEYWORDS from workflow."""
         text = f"{job_title} {description}".lower()
         
+        # First priority: Use detected industry from JOB_KEYWORDS (workflow config)
+        if self.detected_industry != 'general':
+            # Map industry to category for experience paragraph selection
+            industry_to_category = {
+                'interior_design': 'interior_design',
+                'architecture': 'architecture',
+                'data_analytics': 'data',
+                'software_dev': 'fullstack',
+                'devops': 'devops',
+                'data_science': 'data',
+                'project_management': 'project_management',
+            }
+            if self.detected_industry in industry_to_category:
+                return industry_to_category[self.detected_industry]
+        
+        # Second priority: Detect from job title and description
         categories = {
+            # Interior Design & Architecture categories
+            'interior_design': ['interior design', 'interior designer', 'space planning', 'home decor', 
+                               'residential design', 'commercial interior', '3ds max', 'sketchup', 
+                               'vray', 'modular kitchen', 'furniture design'],
+            'architecture': ['architect', 'architectural', 'building design', 'revit', 'bim', 
+                            'construction drawing', 'elevation'],
+            'estimation': ['estimator', 'quantity surveyor', 'boq', 'billing engineer', 'cost estimation',
+                          'rate analysis', 'material estimation', 'civil estimation'],
+            'autocad': ['autocad', 'drafting', 'cad', 'draughtsman', 'draftsman', 'technical drawing'],
+            'furniture': ['furniture', 'modular', 'woodwork', 'joinery', 'cabinetry'],
+            'project_management': ['project manager', 'site engineer', 'construction manager', 
+                                   'site supervisor', 'execution'],
+            
+            # IT/Tech categories
             'python': ['python', 'django', 'flask', 'pandas'],
-            'data': ['data science', 'data analyst', 'machine learning', 'ml engineer', 'analytics'],
+            'data': ['data science', 'data analyst', 'machine learning', 'ml engineer', 'analytics',
+                    'business analyst', 'bi developer', 'tableau', 'power bi'],
             'frontend': ['frontend', 'front-end', 'react', 'vue', 'angular', 'ui developer'],
             'backend': ['backend', 'back-end', 'api', 'microservices', 'server'],
             'fullstack': ['full stack', 'fullstack', 'full-stack'],
@@ -169,31 +249,79 @@ ${email}"""
             return 'standard'
     
     def extract_skills_from_job(self, job_title: str, description: str = '') -> Dict[str, str]:
-        """Extract key skills from job posting."""
+        """Extract key skills from job posting based on JOB_KEYWORDS from workflow."""
         text = f"{job_title} {description}".lower()
         
-        # Common tech skills
-        all_skills = [
-            'python', 'java', 'javascript', 'typescript', 'react', 'angular', 'vue',
-            'node.js', 'django', 'flask', 'sql', 'postgresql', 'mongodb', 'redis',
-            'aws', 'azure', 'gcp', 'docker', 'kubernetes', 'git', 'ci/cd',
-            'machine learning', 'data analysis', 'agile', 'scrum', 'rest api'
-        ]
+        # Use detected industry from JOB_KEYWORDS (set in __init__)
+        industry = self.detected_industry
         
-        found_skills = [skill for skill in all_skills if skill in text]
+        # Skills by industry - based on JOB_KEYWORDS, not hardcoded
+        industry_skills = {
+            'interior_design': [
+                'autocad', 'sketchup', '3ds max', 'vray', 'revit', 'photoshop', 'illustrator',
+                'space planning', 'interior design', 'furniture design', 'color theory',
+                'material selection', 'lighting design', 'project management', 'client presentation',
+                'boq', 'estimation', 'site supervision', 'vendor management', 'costing',
+                'modular design', 'kitchen design', 'residential design', 'commercial design'
+            ],
+            'architecture': [
+                'autocad', 'revit', 'bim', 'sketchup', '3ds max', 'rhino',
+                'architectural design', 'construction drawings', 'building codes',
+                'sustainable design', 'project coordination', 'site analysis'
+            ],
+            'data_analytics': [
+                'sql', 'python', 'tableau', 'power bi', 'excel', 'data visualization',
+                'data analysis', 'business intelligence', 'reporting', 'dashboards',
+                'etl', 'data warehousing', 'statistics', 'a/b testing'
+            ],
+            'software_dev': [
+                'python', 'java', 'javascript', 'typescript', 'react', 'angular', 'vue',
+                'node.js', 'django', 'flask', 'sql', 'postgresql', 'mongodb', 'redis',
+                'git', 'ci/cd', 'agile', 'rest api', 'microservices'
+            ],
+            'devops': [
+                'aws', 'azure', 'gcp', 'docker', 'kubernetes', 'terraform', 'ansible',
+                'jenkins', 'gitlab ci', 'prometheus', 'grafana', 'linux', 'bash',
+                'infrastructure as code', 'ci/cd pipelines'
+            ],
+            'data_science': [
+                'python', 'machine learning', 'deep learning', 'tensorflow', 'pytorch',
+                'scikit-learn', 'pandas', 'numpy', 'nlp', 'computer vision',
+                'statistics', 'data modeling', 'feature engineering'
+            ],
+            'project_management': [
+                'project planning', 'agile', 'scrum', 'kanban', 'stakeholder management',
+                'risk management', 'budgeting', 'resource allocation', 'jira', 'confluence'
+            ],
+            'general': [
+                'communication', 'problem-solving', 'teamwork', 'analytical skills',
+                'time management', 'attention to detail'
+            ]
+        }
         
+        # Get skills for detected industry
+        available_skills = industry_skills.get(industry, industry_skills['general'])
+        
+        # First try: Extract from APPLICANT_SKILLS env var (from workflow)
+        if self.applicant_skills:
+            workflow_skills = [s.strip() for s in self.applicant_skills.split(',')]
+            found_skills = workflow_skills[:6]  # Use workflow-defined skills
+        else:
+            # Second try: Find skills from job text
+            found_skills = [skill for skill in available_skills if skill in text]
+        
+        # If still no skills, use defaults for the detected industry
         if not found_skills:
-            # Default based on job title
-            if 'python' in text:
-                found_skills = ['python', 'sql', 'git']
-            elif 'frontend' in text or 'react' in text:
-                found_skills = ['react', 'javascript', 'css']
+            # Extract from JOB_KEYWORDS
+            keyword_skills = [kw.strip() for kw in self.job_keywords.split(',') if kw.strip()]
+            if keyword_skills:
+                found_skills = keyword_skills[:4]
             else:
-                found_skills = ['programming', 'problem-solving', 'teamwork']
+                found_skills = available_skills[:4]
         
         return {
-            'primary': found_skills[0] if found_skills else 'software development',
-            'secondary': ', '.join(found_skills[1:4]) if len(found_skills) > 1 else 'related technologies',
+            'primary': found_skills[0] if found_skills else 'professional skills',
+            'secondary': ', '.join(found_skills[1:4]) if len(found_skills) > 1 else 'related skills',
             'all': ', '.join(found_skills[:6])
         }
     

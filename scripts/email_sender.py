@@ -756,6 +756,19 @@ def main():
             if 'hr_email' in scraped_df.columns:
                 emails_df = pd.concat([emails_df, scraped_df], ignore_index=True)
                 logging.info(f"🔍 Loaded {len(scraped_df)} scraped HR emails")
+        
+        # Source 3: Growing HR database from advanced discovery
+        discovered_path = os.path.join(os.path.dirname(__file__), '..', 'data', 'discovered_hr_emails.csv')
+        if os.path.exists(discovered_path):
+            discovered_df = pd.read_csv(discovered_path)
+            if 'email' in discovered_df.columns:
+                discovered_df = discovered_df.rename(columns={'email': 'hr_email'})
+            # Use JOB_KEYWORDS for job title
+            job_keywords_str = os.environ.get('JOB_KEYWORDS', 'Open Position')
+            job_title_default = job_keywords_str.split(',')[0].strip().title() if job_keywords_str else 'Open Position'
+            discovered_df['job_title'] = job_title_default
+            emails_df = pd.concat([emails_df, discovered_df], ignore_index=True)
+            logging.info(f"📈 Loaded {len(discovered_df)} discovered HR emails (growing database)")
     
     # ============================================
     # NEW: Add Recruiting Agencies to email list

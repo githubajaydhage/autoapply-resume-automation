@@ -618,6 +618,28 @@ def main():
         logging.info("   Most job sites hide recruiter emails.")
         logging.info("   System will use curated database (130+ verified emails)")
     
+    # Also run advanced discovery to grow the database
+    try:
+        from scripts.advanced_hr_discovery import AdvancedHRDiscovery
+        logging.info("\n🔄 Running Advanced HR Discovery to grow database...")
+        discovery = AdvancedHRDiscovery()
+        
+        # Get keywords from environment
+        keywords_env = os.getenv('JOB_KEYWORDS', '')
+        if keywords_env:
+            keywords = [k.strip() for k in keywords_env.split(',')[:3]]
+            discovery.discover_from_keywords(keywords)
+        
+        # Merge discovered emails with scraped emails
+        discovered_df = discovery.get_hr_emails_df()
+        if not discovered_df.empty:
+            logging.info(f"📊 Advanced discovery added {len(discovered_df)} emails to database")
+            
+    except ImportError:
+        logging.debug("Advanced HR Discovery module not available")
+    except Exception as e:
+        logging.warning(f"Advanced discovery error: {e}")
+    
     logging.info("="*60)
     return df
 

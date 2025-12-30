@@ -26,11 +26,11 @@ name: Job Application - Yogeshwari Mane (Interior Design)
 # =================================================================
 
 on:
-  # Daily schedule - runs 3x daily (10:00 AM, 3:00 PM, 8:00 PM IST)
+  # Daily schedule - runs 3x daily (10:30 AM, 3:30 PM, 8:30 PM IST) - 30 min after Shweta
   schedule:
-    - cron: '30 4 * * *'   # 10:00 AM IST
-    - cron: '30 9 * * *'   # 3:00 PM IST
-    - cron: '30 14 * * *'  # 8:00 PM IST
+    - cron: '0 5 * * *'    # 10:30 AM IST
+    - cron: '0 10 * * *'   # 3:30 PM IST
+    - cron: '0 15 * * *'   # 8:30 PM IST
   
   # Manual trigger
   workflow_dispatch:

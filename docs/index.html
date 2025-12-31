@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Job Automation Dashboard</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="dashboard">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <div class="logo">
+                    <span class="logo-icon">🚀</span>
+                    <h1>AutoApply Dashboard</h1>
+                </div>
+                <div class="header-info">
+                    <span class="status-badge" id="status-badge">● Live</span>
+                    <span class="last-updated" id="last-updated">Last updated: --</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- User Tabs -->
+        <section class="user-tabs-section">
+            <div class="user-tabs" id="user-tabs">
+                <button class="user-tab active" data-user="all">
+                    <span class="tab-icon">👥</span>
+                    <span class="tab-name">All Users</span>
+                    <span class="tab-count" id="count-all">--</span>
+                </button>
+                <button class="user-tab" data-user="ajay">
+                    <span class="tab-icon">👤</span>
+                    <span class="tab-name">Ajay</span>
+                    <span class="tab-count" id="count-ajay">--</span>
+                </button>
+                <button class="user-tab" data-user="shweta">
+                    <span class="tab-icon">👤</span>
+                    <span class="tab-name">Shweta</span>
+                    <span class="tab-count" id="count-shweta">--</span>
+                </button>
+                <button class="user-tab" data-user="yogeshwari">
+                    <span class="tab-icon">👤</span>
+                    <span class="tab-name">Yogeshwari</span>
+                    <span class="tab-count" id="count-yogeshwari">--</span>
+                </button>
+            </div>
+        </section>
+
+        <!-- Stats Cards -->
+        <section class="stats-grid">
+            <div class="stat-card jobs">
+                <div class="stat-icon">💼</div>
+                <div class="stat-content">
+                    <h3>Jobs Discovered</h3>
+                    <p class="stat-number" id="jobs-count">--</p>
+                    <span class="stat-label">Today</span>
+                </div>
+            </div>
+            <div class="stat-card applications">
+                <div class="stat-icon">📨</div>
+                <div class="stat-content">
+                    <h3>Applications Sent</h3>
+                    <p class="stat-number" id="applications-count">--</p>
+                    <span class="stat-label">Total</span>
+                </div>
+            </div>
+            <div class="stat-card emails">
+                <div class="stat-icon">📧</div>
+                <div class="stat-content">
+                    <h3>Emails Sent</h3>
+                    <p class="stat-number" id="emails-count">--</p>
+                    <span class="stat-label">Total</span>
+                </div>
+            </div>
+            <div class="stat-card companies">
+                <div class="stat-icon">🏢</div>
+                <div class="stat-content">
+                    <h3>Companies Found</h3>
+                    <p class="stat-number" id="companies-count">--</p>
+                    <span class="stat-label">Unique</span>
+                </div>
+            </div>
+            <div class="stat-card hr">
+                <div class="stat-icon">👤</div>
+                <div class="stat-content">
+                    <h3>HR Contacts</h3>
+                    <p class="stat-number" id="hr-count">--</p>
+                    <span class="stat-label">Discovered</span>
+                </div>
+            </div>
+            <div class="stat-card response">
+                <div class="stat-icon">📊</div>
+                <div class="stat-content">
+                    <h3>Response Rate</h3>
+                    <p class="stat-number" id="response-rate">--</p>
+                    <span class="stat-label">Percentage</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Charts Section -->
+        <section class="charts-section">
+            <div class="chart-container">
+                <h3>📈 Applications Over Time</h3>
+                <canvas id="applicationsChart"></canvas>
+            </div>
+            <div class="chart-container">
+                <h3>🎯 Application Status</h3>
+                <canvas id="statusChart"></canvas>
+            </div>
+        </section>
+
+        <!-- Recent Activity -->
+        <section class="activity-section">
+            <div class="activity-container">
+                <h3>🕐 Recent Jobs</h3>
+                <div class="activity-list" id="recent-jobs">
+                    <div class="loading">Loading...</div>
+                </div>
+            </div>
+            <div class="activity-container">
+                <h3>📬 Recent Emails</h3>
+                <div class="activity-list" id="recent-emails">
+                    <div class="loading">Loading...</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Companies Table -->
+        <section class="table-section">
+            <h3>🏢 Discovered Companies</h3>
+            <div class="table-wrapper">
+                <table id="companies-table">
+                    <thead>
+                        <tr>
+                            <th>User</th>
+                            <th>Company</th>
+                            <th>HR Contact</th>
+                            <th>Email</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="companies-tbody">
+                        <tr><td colspan="5" class="loading">Loading...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Schedule Info -->
+        <section class="schedule-section">
+            <h3>⏰ Automation Schedule</h3>
+            <div class="schedule-grid">
+                <div class="schedule-item">
+                    <span class="time">9:30 AM IST</span>
+                    <span class="label">Morning Run</span>
+                </div>
+                <div class="schedule-item">
+                    <span class="time">2:30 PM IST</span>
+                    <span class="label">Afternoon Run</span>
+                </div>
+                <div class="schedule-item">
+                    <span class="time">7:30 PM IST</span>
+                    <span class="label">Evening Run</span>
+                </div>
+            </div>
+            <p class="schedule-note">Next run: <span id="next-run">Calculating...</span></p>
+        </section>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>AutoApply Job Automation Dashboard | Built with ❤️ for job seekers</p>
+            <p class="footer-links">
+                <a href="https://github.com" target="_blank">View on GitHub</a>
+            </p>
+        </footer>
+    </div>
+
+    <script src="dashboard.js"></script>
+</body>
+</html>

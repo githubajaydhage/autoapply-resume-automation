@@ -1,16 +1,45 @@
 {
-  "lastUpdated": "2025-12-31 00:00:00 IST",
+  "lastUpdated": "2025-12-31 10:14:59 IST",
   "users": {
     "ajay": {
       "stats": {
-        "jobsToday": 0,
+        "jobsToday": 12,
         "totalApplications": 0,
-        "emailsSent": 0,
-        "companiesFound": 0,
+        "emailsSent": 11,
+        "companiesFound": 5,
         "hrContacts": 0,
-        "responseRate": 0
+        "responseRate": 0.0
       },
-      "applicationsOverTime": [],
+      "applicationsOverTime": [
+        {
+          "date": "Dec 25",
+          "count": 0
+        },
+        {
+          "date": "Dec 26",
+          "count": 0
+        },
+        {
+          "date": "Dec 27",
+          "count": 0
+        },
+        {
+          "date": "Dec 28",
+          "count": 0
+        },
+        {
+          "date": "Dec 29",
+          "count": 0
+        },
+        {
+          "date": "Dec 30",
+          "count": 0
+        },
+        {
+          "date": "Dec 31",
+          "count": 0
+        }
+      ],
       "applicationStatus": {
         "applied": 0,
         "contacted": 0,
@@ -21,14 +50,43 @@
     },
     "shweta": {
       "stats": {
-        "jobsToday": 0,
+        "jobsToday": 12,
         "totalApplications": 0,
-        "emailsSent": 0,
-        "companiesFound": 0,
+        "emailsSent": 11,
+        "companiesFound": 5,
         "hrContacts": 0,
-        "responseRate": 0
+        "responseRate": 0.0
       },
-      "applicationsOverTime": [],
+      "applicationsOverTime": [
+        {
+          "date": "Dec 25",
+          "count": 0
+        },
+        {
+          "date": "Dec 26",
+          "count": 0
+        },
+        {
+          "date": "Dec 27",
+          "count": 0
+        },
+        {
+          "date": "Dec 28",
+          "count": 0
+        },
+        {
+          "date": "Dec 29",
+          "count": 0
+        },
+        {
+          "date": "Dec 30",
+          "count": 0
+        },
+        {
+          "date": "Dec 31",
+          "count": 0
+        }
+      ],
       "applicationStatus": {
         "applied": 0,
         "contacted": 0,
@@ -39,14 +97,43 @@
     },
     "yogeshwari": {
       "stats": {
-        "jobsToday": 0,
+        "jobsToday": 12,
         "totalApplications": 0,
-        "emailsSent": 0,
-        "companiesFound": 0,
+        "emailsSent": 11,
+        "companiesFound": 5,
         "hrContacts": 0,
-        "responseRate": 0
+        "responseRate": 0.0
       },
-      "applicationsOverTime": [],
+      "applicationsOverTime": [
+        {
+          "date": "Dec 25",
+          "count": 0
+        },
+        {
+          "date": "Dec 26",
+          "count": 0
+        },
+        {
+          "date": "Dec 27",
+          "count": 0
+        },
+        {
+          "date": "Dec 28",
+          "count": 0
+        },
+        {
+          "date": "Dec 29",
+          "count": 0
+        },
+        {
+          "date": "Dec 30",
+          "count": 0
+        },
+        {
+          "date": "Dec 31",
+          "count": 0
+        }
+      ],
       "applicationStatus": {
         "applied": 0,
         "contacted": 0,
@@ -56,7 +143,395 @@
       }
     }
   },
-  "recentJobs": [],
-  "recentEmails": [],
-  "companies": []
+  "recentJobs": [
+    {
+      "title": "Senior Data Analyst",
+      "company": "Microsoft",
+      "location": "Bangalore",
+      "source": "Job Board",
+      "user": "ajay"
+    },
+    {
+      "title": "Business Intelligence Analyst",
+      "company": "Amazon",
+      "location": "Mumbai",
+      "source": "Job Board",
+      "user": "ajay"
+    },
+    {
+      "title": "Data Scientist",
+      "company": "Google",
+      "location": "Hyderabad",
+      "source": "Job Board",
+      "user": "ajay"
+    },
+    {
+      "title": "Python Developer",
+      "company": "Infosys",
+      "location": "Chennai",
+      "source": "Job Board",
+      "user": "ajay"
+    },
+    {
+      "title": "Data Engineer",
+      "company": "TCS",
+      "location": "Pune",
+      "source": "Job Board",
+      "user": "ajay"
+    },
+    {
+      "title": "Business Analyst",
+      "company": "Wipro",
+      "location": "Delhi",
+      "source": "Job Board",
+      "user": "ajay"
+    },
+    {
+      "title": "Technical Support Engineer",
+      "company": "Accenture",
+      "location": "Bangalore",
+      "source": "Job Board",
+      "user": "ajay"
+    },
+    {
+      "title": "Systems Analyst",
+      "company": "Capgemini",
+      "location": "Mumbai",
+      "source": "Job Board",
+      "user": "ajay"
+    },
+    {
+      "title": "BI Developer",
+      "company": "IBM",
+      "location": "Hyderabad",
+      "source": "Job Board",
+      "user": "ajay"
+    },
+    {
+      "title": "Analytics Engineer",
+      "company": "Oracle",
+      "location": "Chennai",
+      "source": "Job Board",
+      "user": "ajay"
+    },
+    {
+      "title": "Senior Data Analyst",
+      "company": "Microsoft",
+      "location": "Bangalore",
+      "source": "Job Board",
+      "user": "shweta"
+    },
+    {
+      "title": "Business Intelligence Analyst",
+      "company": "Amazon",
+      "location": "Mumbai",
+      "source": "Job Board",
+      "user": "shweta"
+    },
+    {
+      "title": "Data Scientist",
+      "company": "Google",
+      "location": "Hyderabad",
+      "source": "Job Board",
+      "user": "shweta"
+    },
+    {
+      "title": "Python Developer",
+      "company": "Infosys",
+      "location": "Chennai",
+      "source": "Job Board",
+      "user": "shweta"
+    },
+    {
+      "title": "Data Engineer",
+      "company": "TCS",
+      "location": "Pune",
+      "source": "Job Board",
+      "user": "shweta"
+    },
+    {
+      "title": "Business Analyst",
+      "company": "Wipro",
+      "location": "Delhi",
+      "source": "Job Board",
+      "user": "shweta"
+    },
+    {
+      "title": "Technical Support Engineer",
+      "company": "Accenture",
+      "location": "Bangalore",
+      "source": "Job Board",
+      "user": "shweta"
+    },
+    {
+      "title": "Systems Analyst",
+      "company": "Capgemini",
+      "location": "Mumbai",
+      "source": "Job Board",
+      "user": "shweta"
+    },
+    {
+      "title": "BI Developer",
+      "company": "IBM",
+      "location": "Hyderabad",
+      "source": "Job Board",
+      "user": "shweta"
+    },
+    {
+      "title": "Analytics Engineer",
+      "company": "Oracle",
+      "location": "Chennai",
+      "source": "Job Board",
+      "user": "shweta"
+    }
+  ],
+  "recentEmails": [
+    {
+      "recipient": "Unknown",
+      "company": "",
+      "date": "Unknown",
+      "opened": false,
+      "user": "ajay"
+    },
+    {
+      "recipient": "Unknown",
+      "company": "",
+      "date": "Unknown",
+      "opened": false,
+      "user": "ajay"
+    },
+    {
+      "recipient": "Unknown",
+      "company": "",
+      "date": "Unknown",
+      "opened": false,
+      "user": "ajay"
+    },
+    {
+      "recipient": "Unknown",
+      "company": "",
+      "date": "Unknown",
+      "opened": false,
+      "user": "ajay"
+    },
+    {
+      "recipient": "Unknown",
+      "company": "",
+      "date": "Unknown",
+      "opened": false,
+      "user": "ajay"
+    },
+    {
+      "recipient": "Unknown",
+      "company": "",
+      "date": "Unknown",
+      "opened": false,
+      "user": "ajay"
+    },
+    {
+      "recipient": "Unknown",
+      "company": "",
+      "date": "Unknown",
+      "opened": false,
+      "user": "ajay"
+    },
+    {
+      "recipient": "Unknown",
+      "company": "",
+      "date": "Unknown",
+      "opened": false,
+      "user": "ajay"
+    },
+    {
+      "recipient": "Unknown",
+      "company": "",
+      "date": "Unknown",
+      "opened": false,
+      "user": "ajay"
+    },
+    {
+      "recipient": "Unknown",
+      "company": "",
+      "date": "Unknown",
+      "opened": false,
+      "user": "ajay"
+    },
+    {
+      "recipient": "Unknown",
+      "company": "",
+      "date": "Unknown",
+      "opened": false,
+      "user": "shweta"
+    },
+    {
+      "recipient": "Unknown",
+      "company": "",
+      "date": "Unknown",
+      "opened": false,
+      "user": "shweta"
+    },
+    {
+      "recipient": "Unknown",
+      "company": "",
+      "date": "Unknown",
+      "opened": false,
+      "user": "shweta"
+    },
+    {
+      "recipient": "Unknown",
+      "company": "",
+      "date": "Unknown",
+      "opened": false,
+      "user": "shweta"
+    },
+    {
+      "recipient": "Unknown",
+      "company": "",
+      "date": "Unknown",
+      "opened": false,
+      "user": "shweta"
+    },
+    {
+      "recipient": "Unknown",
+      "company": "",
+      "date": "Unknown",
+      "opened": false,
+      "user": "shweta"
+    },
+    {
+      "recipient": "Unknown",
+      "company": "",
+      "date": "Unknown",
+      "opened": false,
+      "user": "shweta"
+    },
+    {
+      "recipient": "Unknown",
+      "company": "",
+      "date": "Unknown",
+      "opened": false,
+      "user": "shweta"
+    },
+    {
+      "recipient": "Unknown",
+      "company": "",
+      "date": "Unknown",
+      "opened": false,
+      "user": "shweta"
+    },
+    {
+      "recipient": "Unknown",
+      "company": "",
+      "date": "Unknown",
+      "opened": false,
+      "user": "shweta"
+    }
+  ],
+  "companies": [
+    {
+      "name": "Xpansiv",
+      "hrContact": "-",
+      "email": "-",
+      "status": "Discovered",
+      "user": "ajay"
+    },
+    {
+      "name": "INFUSE",
+      "hrContact": "-",
+      "email": "-",
+      "status": "Discovered",
+      "user": "ajay"
+    },
+    {
+      "name": "Chainguard",
+      "hrContact": "-",
+      "email": "-",
+      "status": "Discovered",
+      "user": "ajay"
+    },
+    {
+      "name": "Unlimit",
+      "hrContact": "-",
+      "email": "-",
+      "status": "Discovered",
+      "user": "ajay"
+    },
+    {
+      "name": "Alpaca",
+      "hrContact": "-",
+      "email": "-",
+      "status": "Discovered",
+      "user": "ajay"
+    },
+    {
+      "name": "Xpansiv",
+      "hrContact": "-",
+      "email": "-",
+      "status": "Discovered",
+      "user": "shweta"
+    },
+    {
+      "name": "INFUSE",
+      "hrContact": "-",
+      "email": "-",
+      "status": "Discovered",
+      "user": "shweta"
+    },
+    {
+      "name": "Chainguard",
+      "hrContact": "-",
+      "email": "-",
+      "status": "Discovered",
+      "user": "shweta"
+    },
+    {
+      "name": "Unlimit",
+      "hrContact": "-",
+      "email": "-",
+      "status": "Discovered",
+      "user": "shweta"
+    },
+    {
+      "name": "Alpaca",
+      "hrContact": "-",
+      "email": "-",
+      "status": "Discovered",
+      "user": "shweta"
+    },
+    {
+      "name": "Xpansiv",
+      "hrContact": "-",
+      "email": "-",
+      "status": "Discovered",
+      "user": "yogeshwari"
+    },
+    {
+      "name": "INFUSE",
+      "hrContact": "-",
+      "email": "-",
+      "status": "Discovered",
+      "user": "yogeshwari"
+    },
+    {
+      "name": "Chainguard",
+      "hrContact": "-",
+      "email": "-",
+      "status": "Discovered",
+      "user": "yogeshwari"
+    },
+    {
+      "name": "Unlimit",
+      "hrContact": "-",
+      "email": "-",
+      "status": "Discovered",
+      "user": "yogeshwari"
+    },
+    {
+      "name": "Alpaca",
+      "hrContact": "-",
+      "email": "-",
+      "status": "Discovered",
+      "user": "yogeshwari"
+    }
+  ]
 }

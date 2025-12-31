@@ -65,13 +65,19 @@ class MultiUserDashboardGenerator:
         
         hr_contacts = hr_emails + employees
         
+        # Count successful emails (sent status)
+        sent_emails = [e for e in emails if e.get('status', '').lower() == 'sent']
+        
         # Calculate response rate
         replied_count = sum(1 for e in emails if e.get('replied', '').lower() == 'true')
         response_rate = round((replied_count / len(emails) * 100) if emails else 0, 1)
         
+        # Use sent emails as applications if applied_log is empty
+        total_applications = len(applications) if applications else len(sent_emails)
+        
         return {
             "jobsToday": len(jobs),
-            "totalApplications": len(applications),
+            "totalApplications": total_applications,
             "emailsSent": len(emails),
             "companiesFound": len(companies),
             "hrContacts": len(hr_contacts),

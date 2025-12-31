@@ -2,7 +2,11 @@
 const CONFIG = {
     dataPath: 'data/dashboard_data.json',
     refreshInterval: 300000, // 5 minutes
-    scheduleTimesIST: ['09:30', '14:30', '19:30'],
+    schedules: {
+        shweta: ['10:00', '15:00', '20:00'],      // Shweta's times
+        yogeshwari: ['10:30', '15:30', '20:30'],  // Yogeshwari's times
+        ajay: ['Disabled']                         // Ajay's cron is disabled
+    },
     users: ['ajay', 'shweta', 'yogeshwari']
 };
 
@@ -421,39 +425,42 @@ function updateNextRun() {
     const nowIST = new Date(now.getTime() + istOffset);
     
     const currentTime = nowIST.getHours() * 60 + nowIST.getMinutes();
-    const scheduleTimes = CONFIG.scheduleTimesIST.map(t => {
-        const [h, m] = t.split(':').map(Number);
-        return h * 60 + m;
+    
+    // Collect all active schedule times
+    let allTimes = [];
+    Object.entries(CONFIG.schedules).forEach(([user, times]) => {
+        times.forEach(t => {
+            if (t !== 'Disabled' && t.includes(':')) {
+                const [h, m] = t.split(':').map(Number);
+                allTimes.push({ user, time: t, minutes: h * 60 + m });
+            }
+        });
     });
     
-    let nextRunMinutes = null;
-    for (const time of scheduleTimes) {
-        if (time > currentTime) {
-            nextRunMinutes = time;
-            break;
-        }
-    }
+    // Sort by time
+    allTimes.sort((a, b) => a.minutes - b.minutes);
     
-    if (nextRunMinutes === null) {
-        nextRunMinutes = scheduleTimes[0];
-        const hours = Math.floor(nextRunMinutes / 60);
-        const mins = nextRunMinutes % 60;
+    // Find next run
+    let nextRun = allTimes.find(t => t.minutes > currentTime);
+    
+    if (!nextRun && allTimes.length > 0) {
+        nextRun = allTimes[0];
         document.getElementById('next-run').textContent = 
-            `Tomorrow at ${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')} IST`;
-    } else {
-        const hours = Math.floor(nextRunMinutes / 60);
-        const mins = nextRunMinutes % 60;
-        const diffMinutes = nextRunMinutes - currentTime;
+            `Tomorrow at ${nextRun.time} IST (${nextRun.user})`;
+    } else if (nextRun) {
+        const diffMinutes = nextRun.minutes - currentTime;
         
         if (diffMinutes < 60) {
             document.getElementById('next-run').textContent = 
-                `In ${diffMinutes} minutes (${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')} IST)`;
+                `In ${diffMinutes} min at ${nextRun.time} IST (${nextRun.user})`;
         } else {
             const diffHours = Math.floor(diffMinutes / 60);
             const remainingMins = diffMinutes % 60;
             document.getElementById('next-run').textContent = 
-                `In ${diffHours}h ${remainingMins}m (${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')} IST)`;
+                `In ${diffHours}h ${remainingMins}m at ${nextRun.time} IST (${nextRun.user})`;
         }
+    } else {
+        document.getElementById('next-run').textContent = 'No scheduled runs';
     }
 }
 

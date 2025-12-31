@@ -1,10 +1,10 @@
 {
-  "lastUpdated": "2025-12-31 10:14:59 IST",
+  "lastUpdated": "2025-12-31 10:38:27 IST",
   "users": {
     "ajay": {
       "stats": {
         "jobsToday": 12,
-        "totalApplications": 0,
+        "totalApplications": 10,
         "emailsSent": 11,
         "companiesFound": 5,
         "hrContacts": 0,
@@ -51,7 +51,7 @@
     "shweta": {
       "stats": {
         "jobsToday": 12,
-        "totalApplications": 0,
+        "totalApplications": 10,
         "emailsSent": 11,
         "companiesFound": 5,
         "hrContacts": 0,
@@ -98,7 +98,7 @@
     "yogeshwari": {
       "stats": {
         "jobsToday": 12,
-        "totalApplications": 0,
+        "totalApplications": 10,
         "emailsSent": 11,
         "companiesFound": 5,
         "hrContacts": 0,

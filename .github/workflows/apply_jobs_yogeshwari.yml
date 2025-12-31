@@ -222,7 +222,7 @@ jobs:
   apply-cached:
     name: "⚡ Instant Apply (Cached)"
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 45
     if: ${{ github.event.inputs.scrape_only != 'true' && github.event.inputs.max_emails != '0' }}
     
     steps:

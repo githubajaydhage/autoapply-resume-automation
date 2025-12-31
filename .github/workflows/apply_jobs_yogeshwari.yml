@@ -293,7 +293,7 @@ jobs:
   scrape-jobs:
     name: "🔍 Phase 1: Scrape Jobs"
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
     
     outputs:
@@ -524,7 +524,7 @@ jobs:
   send-referrals:
     name: "🤝 Phase 4: Referrals"
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
     needs: [apply-cached, send-emails]  # Wait for BOTH parallel jobs
     if: ${{ always() && github.event.inputs.scrape_only != 'true' }}
     

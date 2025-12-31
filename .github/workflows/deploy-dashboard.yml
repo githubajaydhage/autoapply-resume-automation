@@ -150,15 +150,28 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
       
-      - name: Download dashboard
+      - name: Prepare docs folder
+        run: |
+          # Navigate to correct location
+          if [ -d "job-automation/docs" ]; then
+            mkdir -p docs
+            cp -r job-automation/docs/* docs/
+          fi
+      
+      - name: Download dashboard data
         uses: actions/download-artifact@v4
         with:
           name: dashboard-complete
-          path: docs
+          path: dashboard-artifact
       
-      - name: Show deployment contents
+      - name: Merge dashboard data (keep committed JS/CSS, update data)
         run: |
-          echo "Contents of docs folder:"
+          # Only copy the data folder from artifact, keep committed HTML/JS/CSS
+          if [ -d "dashboard-artifact/data" ]; then
+            mkdir -p docs/data
+            cp -r dashboard-artifact/data/* docs/data/
+          fi
+          echo "Final docs contents:"
           ls -la docs/
           echo "Data folder:"
           ls -la docs/data/ || echo "No data folder"

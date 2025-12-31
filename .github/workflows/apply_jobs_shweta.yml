@@ -282,7 +282,7 @@ jobs:
   apply-cached:
     name: "⚡ Instant Apply (Cached)"
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 45
     if: ${{ github.event.inputs.scrape_only != 'true' && github.event.inputs.max_emails != '0' }}
     
     steps:
@@ -361,7 +361,7 @@ jobs:
   scrape-jobs:
     name: "🔍 Phase 1: Scrape Jobs"
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 45
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
     
     outputs:
@@ -472,7 +472,7 @@ jobs:
   discover-hr:
     name: "📧 Phase 2: Find HR Emails"
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 45
     needs: scrape-jobs
     
     steps:
@@ -606,7 +606,7 @@ jobs:
   send-referrals:
     name: "🤝 Phase 4: Referrals"
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
     needs: [apply-cached, discover-hr]  # Wait for BOTH parallel jobs
     if: ${{ always() && github.event.inputs.scrape_only != 'true' }}
     

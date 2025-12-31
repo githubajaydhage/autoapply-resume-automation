@@ -40,11 +40,11 @@ jobs:
         user: [ajay, shweta, yogeshwari]
         include:
           - user: ajay
-            branch: main
+            branch: v.1.3.0-ajay
           - user: shweta
-            branch: v.1.2.0-shweta
+            branch: main
           - user: yogeshwari
-            branch: v.1.2.0-yogeshwari
+            branch: v.1.2.0-geeta
     steps:
       - name: Checkout ${{ matrix.user }} branch
         uses: actions/checkout@v4

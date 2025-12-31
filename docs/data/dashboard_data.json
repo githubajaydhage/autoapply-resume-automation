@@ -1,0 +1,62 @@
+{
+  "lastUpdated": "2025-12-31 00:00:00 IST",
+  "users": {
+    "ajay": {
+      "stats": {
+        "jobsToday": 0,
+        "totalApplications": 0,
+        "emailsSent": 0,
+        "companiesFound": 0,
+        "hrContacts": 0,
+        "responseRate": 0
+      },
+      "applicationsOverTime": [],
+      "applicationStatus": {
+        "applied": 0,
+        "contacted": 0,
+        "interviewing": 0,
+        "rejected": 0,
+        "offered": 0
+      }
+    },
+    "shweta": {
+      "stats": {
+        "jobsToday": 0,
+        "totalApplications": 0,
+        "emailsSent": 0,
+        "companiesFound": 0,
+        "hrContacts": 0,
+        "responseRate": 0
+      },
+      "applicationsOverTime": [],
+      "applicationStatus": {
+        "applied": 0,
+        "contacted": 0,
+        "interviewing": 0,
+        "rejected": 0,
+        "offered": 0
+      }
+    },
+    "yogeshwari": {
+      "stats": {
+        "jobsToday": 0,
+        "totalApplications": 0,
+        "emailsSent": 0,
+        "companiesFound": 0,
+        "hrContacts": 0,
+        "responseRate": 0
+      },
+      "applicationsOverTime": [],
+      "applicationStatus": {
+        "applied": 0,
+        "contacted": 0,
+        "interviewing": 0,
+        "rejected": 0,
+        "offered": 0
+      }
+    }
+  },
+  "recentJobs": [],
+  "recentEmails": [],
+  "companies": []
+}

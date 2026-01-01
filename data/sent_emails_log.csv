@@ -1,12 +1,32 @@
 recipient_email,company,job_title,sent_at,status
-careers@hok.com,,Customer Care Specialist Inbound Phone Support,2025-12-30T15:50:48.234590,sent
-careers@wipro.com,,Autocad Designer,2025-12-30T15:55:27.158278,sent
-helpdesk.recruitment@wipro.com,,Autocad Designer,2025-12-30T15:56:16.620123,sent
-careers@hcl.com,,Autocad Designer,2025-12-30T15:57:33.928382,sent
-careers@kotak.com,,Autocad Designer,2025-12-30T15:58:54.307956,sent
-careers@techmahindra.com,,Autocad Designer,2025-12-30T16:00:13.456905,sent
-careers@razorpay.com,,Autocad Designer,2025-12-30T16:01:36.818062,sent
-careers@zerodha.com,,Autocad Designer,2025-12-30T16:03:40.255111,sent
-careers@swiggy.in,,Autocad Designer,2025-12-30T16:04:53.601544,sent
-careers@zomato.com,,Autocad Designer,2025-12-30T16:04:55.833315,sent
-careers@phonepe.com,,Autocad Designer,2025-12-30T16:04:57.123575,sent
+careers@livspace.com,Livspace,Data Analyst,2025-12-30T11:34:34.386766,sent
+careers@homelane.com,HomeLane,Data Analyst,2025-12-30T11:36:56.646419,sent
+hr@homelane.com,HomeLane,Data Analyst,2025-12-30T11:38:17.225020,sent
+careers@designcafe.com,Design Cafe,Data Analyst,2025-12-30T11:39:22.855206,sent
+careers@bonito.in,Bonito Designs,Data Analyst,2025-12-30T12:48:48.754764,auth_failed
+hr@bonito.in,Bonito Designs,Data Analyst,2025-12-30T12:50:08.800501,auth_failed
+careers@decorpot.com,Decorpot,Data Analyst,2025-12-30T12:51:14.384592,auth_failed
+hr@decorpot.com,Decorpot,Data Analyst,2025-12-30T12:52:04.516463,auth_failed
+careers@interiorcompany.com,Interior Company,Data Analyst,2025-12-30T12:53:18.503981,auth_failed
+careers@arrivae.com,Arrivae,Data Analyst,2025-12-30T12:54:48.871810,auth_failed
+careers@woodenstreet.com,Wooden Street,Data Analyst,2025-12-30T12:55:45.660953,auth_failed
+careers@pepperfry.com,Pepperfry,Data Analyst,2025-12-30T12:58:03.524993,auth_failed
+careers@nilkamal.com,Nilkamal,Data Analyst,2025-12-30T12:58:04.286501,auth_failed
+careers.india@kohler.com,Kohler India,Data Analyst,2025-12-30T15:42:49.894845,sent
+careers@hindware.com,Hindware,Data Analyst,2025-12-30T15:42:55.881794,sent
+careers@cera-india.com,Cera Sanitaryware,Data Analyst,2025-12-30T15:43:00.231047,sent
+careers@asianpaints.com,Asian Paints,Data Analyst,2025-12-30T15:43:03.733106,sent
+careers@acclimited.com,ACC Limited,Data Analyst,2025-12-31T05:45:48.400525,sent
+careers@wipro.com,Wipro,Data Analyst,2025-12-31T05:46:40.393892,sent
+helpdesk.recruitment@wipro.com,Wipro,Data Analyst,2025-12-31T05:47:46.458997,sent
+careers@hcl.com,HCL Technologies,Data Analyst,2025-12-31T05:49:15.885699,sent
+careers@techmahindra.com,Tech Mahindra,Data Analyst,2025-12-31T05:50:17.932829,sent
+careers@mphasis.com,Mphasis,Data Analyst,2025-12-31T05:51:22.990469,sent
+accomodationrequest@mphasis.com,Mphasis,Data Analyst,2025-12-31T05:52:53.541152,sent
+careers@cognizant.com,Cognizant,Data Analyst,2025-12-31T05:53:52.565586,sent
+indiatalent@deloitte.com,Deloitte,Data Analyst,2025-12-31T05:55:21.989097,sent
+careers@razorpay.com,Razorpay,Data Analyst,2025-12-31T05:56:14.179798,sent
+careers@zerodha.com,Zerodha,Data Analyst,2025-12-31T05:58:00.872817,sent
+careers@phonepe.com,PhonePe,Data Analyst,2025-12-31T05:59:10.405826,sent
+careers@swiggy.in,Swiggy,Data Analyst,2025-12-31T06:00:28.816238,sent
+careers@zomato.com,Zomato,Data Analyst,2025-12-31T06:01:30.934895,sent

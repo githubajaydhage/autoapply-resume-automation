@@ -301,6 +301,37 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
 
+    # 🔄 RESTORE DATA FROM PREVIOUS RUNS (Artifacts have 30 days retention)
+    - name: Download Previous Run Data (Artifacts)
+      uses: dawidd6/action-download-artifact@v3
+      with:
+        workflow: apply_jobs_shweta.yml
+        name: final-results-.*
+        name_is_regexp: true
+        path: data/previous_run/
+        if_no_artifact_found: warn
+        search_artifacts: true
+      continue-on-error: true
+
+    - name: Restore Previous HR Data
+      run: |
+        echo "🔄 Restoring HR data from previous runs..."
+        mkdir -p data
+        if [ -d "data/previous_run" ]; then
+          # Move previous data as 'existing_' prefix for merging
+          for f in data/previous_run/data/*.csv 2>/dev/null; do
+            if [ -f "$f" ]; then
+              filename=$(basename "$f")
+              cp "$f" "data/existing_$filename"
+              echo "   ✅ Restored: $filename"
+            fi
+          done
+          rm -rf data/previous_run
+        else
+          echo "   ⚠️ No previous artifacts found (first run or expired)"
+        fi
+      continue-on-error: true
+
     - name: Restore Cached HR Emails
       uses: actions/cache@v3
       with:
@@ -327,6 +358,14 @@ jobs:
         fi
       env:
         PYTHONPATH: ${{ github.workspace }}
+
+    - name: Merge Previous + Current Data
+      run: |
+        echo "🔄 Merging previous and current HR data..."
+        python scripts/merge_hr_data.py || echo "⚠️ Merge script not found, continuing..."
+      env:
+        PYTHONPATH: ${{ github.workspace }}
+      continue-on-error: true
 
     - name: Send Emails NOW (Using Cached Data)
       run: |
@@ -402,6 +441,37 @@ jobs:
           job-data-shweta-${{ runner.os }}-v10-
           job-data-shweta-${{ runner.os }}-v9-
           job-data-shweta-${{ runner.os }}-
+
+    # 🔄 RESTORE FROM ARTIFACTS (30 days retention - more reliable than cache)
+    - name: Download Previous Run Data
+      uses: dawidd6/action-download-artifact@v3
+      with:
+        workflow: apply_jobs_shweta.yml
+        name: final-results-.*
+        name_is_regexp: true
+        path: data/previous_run/
+        if_no_artifact_found: warn
+        search_artifacts: true
+      continue-on-error: true
+
+    - name: Merge Previous HR Data
+      run: |
+        echo "🔄 Merging previous HR data..."
+        mkdir -p data
+        if [ -d "data/previous_run" ]; then
+          for f in data/previous_run/data/*.csv 2>/dev/null; do
+            if [ -f "$f" ]; then
+              filename=$(basename "$f")
+              cp "$f" "data/existing_$filename"
+              echo "   ✅ Restored: $filename"
+            fi
+          done
+          rm -rf data/previous_run
+        fi
+        python scripts/merge_hr_data.py || true
+      env:
+        PYTHONPATH: ${{ github.workspace }}
+      continue-on-error: true
 
     # PHASE 1: Scrape Jobs (Bulletproof Engine)
     - name: 🛡️ Bulletproof Job Scraping (15+ sources)
@@ -682,6 +752,7 @@ jobs:
       with:
         name: referral-results
         path: data/
+      continue-on-error: true
 
     - name: Send Multi-Stage Follow-Ups
       run: |

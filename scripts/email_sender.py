@@ -552,6 +552,33 @@ ${name}
         
         df.to_csv(self.invalid_log_path, index=False)
     
+    def _load_bounced_emails(self) -> set:
+        """Load previously bounced emails to avoid re-sending."""
+        bounced = set()
+        if os.path.exists(self.bounced_emails_file):
+            try:
+                df = pd.read_csv(self.bounced_emails_file)
+                bounced = set(df['email'].str.lower()) if 'email' in df.columns else set()
+                logging.info(f"📄 Loaded {len(bounced)} bounced emails from database")
+            except Exception as e:
+                logging.warning(f"⚠️ Could not load bounced emails: {e}")
+        return bounced
+    
+    def _check_domain_deliverable(self, domain: str) -> bool:
+        """Check if domain has valid MX records and is deliverable."""
+        try:
+            import dns.resolver
+            # Check MX records
+            mx_records = dns.resolver.resolve(domain, 'MX')
+            return len(mx_records) > 0
+        except Exception:
+            # If no MX records, try A record as fallback
+            try:
+                dns.resolver.resolve(domain, 'A')
+                return True
+            except Exception:
+                return False
+    
     def send_email(self, recipient_email: str, company: str, job_title: str, job_url: str = None) -> bool:
         """Send a personalized email to a single recipient."""
         
@@ -569,14 +596,20 @@ ${name}
             self._log_invalid_email(recipient_email, company, f"Known bad: {reason}")
             return False
         
+        # ENHANCED VALIDATION - Check bounced emails database first
+        if hasattr(self, 'bounced_emails') and recipient_lower in self.bounced_emails:
+            logging.warning(f"🚫 Skipping {recipient_email} - Previously bounced")
+            self._log_invalid_email(recipient_email, company, "Previously bounced email")
+            return False
+        
         # Use enhanced verifier if available
         if self.verifier:
             result = self.verifier.calculate_deliverability_score(recipient_email)
-            if result['score'] < 50:
+            if result['score'] < 60:  # Increased threshold from 50 to 60
                 logging.warning(f"⚠️ Skipping {recipient_email} - Low deliverability score: {result['score']}/100 ({result['recommendation']})")
                 self._log_invalid_email(recipient_email, company, result['recommendation'])
                 return False
-            elif result['score'] < 70:
+            elif result['score'] < 75:  # Increased threshold from 70 to 75
                 logging.info(f"⚠️ Warning: {recipient_email} has medium deliverability score: {result['score']}/100")
         else:
             # Fallback to basic validation
@@ -585,6 +618,13 @@ ${name}
                 logging.warning(f"⚠️ Skipping {recipient_email} - {reason}")
                 self._log_invalid_email(recipient_email, company, reason)
                 return False
+                
+        # Additional domain validation - check if domain exists and has MX record
+        domain = recipient_email.split('@')[-1].lower()
+        if not self._check_domain_deliverable(domain):
+            logging.warning(f"⚠️ Skipping {recipient_email} - Domain not deliverable: {domain}")
+            self._log_invalid_email(recipient_email, company, f"Domain not deliverable: {domain}")
+            return False
         
         # Validate configuration
         if not self.sender_email or not self.sender_password:

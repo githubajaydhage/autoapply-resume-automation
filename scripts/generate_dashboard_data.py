@@ -201,6 +201,7 @@ class MultiUserDashboardGenerator:
     def get_application_status(self, data_dir: Path = None) -> dict:
         """Get application status breakdown."""
         applications = self.read_csv("applied_log.csv", data_dir)
+        emails = self.read_csv("sent_emails_log.csv", data_dir)
         
         status_counts = {
             "applied": 0,
@@ -210,12 +211,24 @@ class MultiUserDashboardGenerator:
             "offered": 0
         }
         
-        for app in applications:
-            status = app.get('status', 'applied').lower()
-            if status in status_counts:
-                status_counts[status] += 1
-            else:
-                status_counts['applied'] += 1
+        # Use applications if available
+        if applications:
+            for app in applications:
+                status = app.get('status', 'applied').lower()
+                if status in status_counts:
+                    status_counts[status] += 1
+                else:
+                    status_counts['applied'] += 1
+        # Otherwise, derive from emails
+        elif emails:
+            for email in emails:
+                email_status = email.get('status', '').lower()
+                if 'bounce' in email_status or 'fail' in email_status:
+                    continue  # Skip bounced/failed
+                elif email.get('replied', '').lower() == 'true':
+                    status_counts['contacted'] += 1
+                else:
+                    status_counts['applied'] += 1
         
         return status_counts
     

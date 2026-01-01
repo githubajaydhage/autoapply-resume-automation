@@ -449,12 +449,28 @@ function updateStatusChart(data) {
     
     if (statusChart) statusChart.destroy();
     
+    // Check if all values are zero
+    const values = [data.applied || 0, data.contacted || 0, data.interviewing || 0, data.rejected || 0, data.offered || 0];
+    const hasData = values.some(v => v > 0);
+    
+    if (!hasData) {
+        // Show "No Data" message
+        ctx.canvas.parentElement.innerHTML = `
+            <h3>🎯 Application Status</h3>
+            <div class="no-data-message">
+                <span class="no-data-icon">📋</span>
+                <p>No applications tracked yet</p>
+            </div>
+        `;
+        return;
+    }
+    
     statusChart = new Chart(ctx, {
         type: 'doughnut',
         data: {
             labels: ['Applied', 'Contacted', 'Interviewing', 'Rejected', 'Offered'],
             datasets: [{
-                data: [data.applied || 0, data.contacted || 0, data.interviewing || 0, data.rejected || 0, data.offered || 0],
+                data: values,
                 backgroundColor: ['#3b82f6', '#f59e0b', '#10b981', '#ef4444', '#8b5cf6'],
                 borderWidth: 0
             }]
@@ -475,12 +491,27 @@ function updateEmailStatusChart(data) {
     
     if (emailStatusChart) emailStatusChart.destroy();
     
+    // Check if all values are zero
+    const values = [data.sent || 0, data.bounced || 0, data.failed || 0];
+    const hasData = values.some(v => v > 0);
+    
+    if (!hasData) {
+        ctx.canvas.parentElement.innerHTML = `
+            <h3>📧 Email Delivery Status</h3>
+            <div class="no-data-message">
+                <span class="no-data-icon">📭</span>
+                <p>No emails sent yet</p>
+            </div>
+        `;
+        return;
+    }
+    
     emailStatusChart = new Chart(ctx, {
         type: 'pie',
         data: {
             labels: ['Sent', 'Bounced', 'Failed'],
             datasets: [{
-                data: [data.sent || 0, data.bounced || 0, data.failed || 0],
+                data: values,
                 backgroundColor: ['#10b981', '#ef4444', '#6b7280'],
                 borderWidth: 0
             }]

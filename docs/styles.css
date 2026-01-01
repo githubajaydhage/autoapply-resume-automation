@@ -808,6 +808,27 @@ tbody tr:hover {
     padding: 40px;
 }
 
+/* No Data Message */
+.no-data-message {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    color: var(--text-secondary);
+}
+
+.no-data-message .no-data-icon {
+    font-size: 3rem;
+    margin-bottom: 12px;
+    opacity: 0.6;
+}
+
+.no-data-message p {
+    font-size: 0.95rem;
+    margin: 0;
+}
+
 /* Scrollbar */
 ::-webkit-scrollbar {
     width: 8px;

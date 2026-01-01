@@ -95,29 +95,64 @@ jobs:
       
       - name: Organize user data and generate dashboard
         run: |
-          # Navigate to project root
+          # Debug: Show what we have at root level
+          echo "=== Root level structure ==="
+          ls -la
+          echo "=== Collected data structure ==="
+          ls -la collected-data/ || echo "No collected-data at root"
+          ls -la collected-data/data-ajay/ 2>/dev/null || echo "No data-ajay folder"
+          ls -la collected-data/data-shweta/ 2>/dev/null || echo "No data-shweta folder"
+          ls -la collected-data/data-yogeshwari/ 2>/dev/null || echo "No data-yogeshwari folder"
+          
+          # Determine project root
           if [ -d "job-automation" ]; then
-            cd job-automation
-            echo "Working in job-automation folder"
+            PROJECT_ROOT="job-automation"
+            COLLECTED_DATA="../collected-data"
+          else
+            PROJECT_ROOT="."
+            COLLECTED_DATA="collected-data"
           fi
+          
+          echo "Project root: $PROJECT_ROOT"
+          echo "Collected data: $COLLECTED_DATA"
+          
+          cd $PROJECT_ROOT
           
           # Create user-specific data directories
           mkdir -p data_ajay data_shweta data_yogeshwari docs/data
           
-          # Copy downloaded user data
-          if [ -d "../collected-data/data-ajay" ]; then
-            cp -r ../collected-data/data-ajay/* data_ajay/ 2>/dev/null || true
-          fi
-          if [ -d "../collected-data/data-shweta" ]; then
-            cp -r ../collected-data/data-shweta/* data_shweta/ 2>/dev/null || true
-          fi
-          if [ -d "../collected-data/data-yogeshwari" ]; then
-            cp -r ../collected-data/data-yogeshwari/* data_yogeshwari/ 2>/dev/null || true
+          # Copy downloaded user data with explicit paths
+          echo "=== Copying user data ==="
+          
+          if [ -d "$COLLECTED_DATA/data-ajay" ]; then
+            echo "Copying ajay data from $COLLECTED_DATA/data-ajay"
+            cp -rv $COLLECTED_DATA/data-ajay/* data_ajay/ || echo "No files to copy for ajay"
+          else
+            echo "No collected data for ajay at $COLLECTED_DATA/data-ajay"
           fi
           
-          # Show what we have
-          echo "User data directories:"
-          ls -la data_ajay/ data_shweta/ data_yogeshwari/ 2>/dev/null || echo "Some directories empty"
+          if [ -d "$COLLECTED_DATA/data-shweta" ]; then
+            echo "Copying shweta data from $COLLECTED_DATA/data-shweta"
+            cp -rv $COLLECTED_DATA/data-shweta/* data_shweta/ || echo "No files to copy for shweta"
+          else
+            echo "No collected data for shweta at $COLLECTED_DATA/data-shweta"
+          fi
+          
+          if [ -d "$COLLECTED_DATA/data-yogeshwari" ]; then
+            echo "Copying yogeshwari data from $COLLECTED_DATA/data-yogeshwari"
+            cp -rv $COLLECTED_DATA/data-yogeshwari/* data_yogeshwari/ || echo "No files to copy for yogeshwari"
+          else
+            echo "No collected data for yogeshwari at $COLLECTED_DATA/data-yogeshwari"
+          fi
+          
+          # Show what we have after copying
+          echo "=== User data directories after copy ==="
+          echo "data_ajay:"
+          ls -la data_ajay/
+          echo "data_shweta:"
+          ls -la data_shweta/
+          echo "data_yogeshwari:"
+          ls -la data_yogeshwari/
           
           # Generate dashboard data
           python scripts/generate_dashboard_data.py

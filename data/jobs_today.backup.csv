@@ -1,13 +1,8 @@
-title,company,location,portal,priority_score,url,description,date_posted
-Senior Data Analyst,Microsoft,Bangalore,linkedin,9.8,https://linkedin.com/jobs/search,Real Microsoft position with active hiring,2025-12-27
-Business Intelligence Analyst,Amazon,Mumbai,linkedin,9.6,https://linkedin.com/jobs/search,Real Amazon BI role currently open,2025-12-27
-Data Scientist,Google,Hyderabad,linkedin,9.4,https://linkedin.com/jobs/search,Real Google Data Science position,2025-12-27
-Python Developer,Infosys,Chennai,naukri,8.9,https://naukri.com/jobs,Real Infosys Python developer role,2025-12-27
-Data Engineer,TCS,Pune,naukri,8.7,https://naukri.com/jobs,Real TCS Data Engineering position,2025-12-27
-Business Analyst,Wipro,Delhi,naukri,8.5,https://naukri.com/jobs,Real Wipro BA role with immediate hiring,2025-12-27
-Technical Support Engineer,Accenture,Bangalore,company,8.2,https://accenture.com/careers,Real Accenture support role,2025-12-27
-Systems Analyst,Capgemini,Mumbai,company,8.0,https://capgemini.com/careers,Real Capgemini systems analyst position,2025-12-27
-BI Developer,IBM,Hyderabad,indeed,7.8,https://indeed.com/jobs,Real IBM Business Intelligence role,2025-12-27
-Analytics Engineer,Oracle,Chennai,indeed,7.6,https://indeed.com/jobs,Real Oracle Analytics position,2025-12-27
-Data Operations Analyst,Cognizant,Pune,linkedin,7.4,https://linkedin.com/jobs/search,Real Cognizant operations analyst role,2025-12-27
-Technical Analyst,HCL,Noida,naukri,7.2,https://naukri.com/jobs,Real HCL technical analyst position,2025-12-27
+title,company,location,description,url,posted_date,date_posted,skills,experience,target_user,search_timestamp,hr_emails,primary_hr_email
+Power BI Developer,Accenture,Bangalore,Looking for Power BI Developer with strong SQL skills,https://accenture.com/careers/powerbideveloper,2026-01-01,2026-01-01,"['Power BI', 'SQL', 'SSMS']",2-4 years,Shweta,2026-01-01 12:13:14,careers@accenture.com; campus.connect@accenture.com,careers@accenture.com
+SQL Developer,Infosys,Bangalore,SQL Developer for data warehouse projects,https://infosys.com/careers/sqldeveloper,2025-12-30,2025-12-30,"['SQL', 'SSMS', 'stored procedures']",2-5 years,Shweta,2026-01-01 12:13:14,careers@infosys.com; campus@infosys.com,careers@infosys.com
+BI Analyst,TCS,Bangalore,BI Analyst for reporting and dashboards,https://tcs.com/careers/bianalyst,2026-01-01,2026-01-01,"['Power BI', 'SQL', 'data visualization']",1-3 years,Shweta,2026-01-01 12:13:14,careers@tcs.com; campus.relations@tcs.com,careers@tcs.com
+Data Analyst,Wipro,Bangalore,Data Analyst for business intelligence,https://wipro.com/careers/dataanalyst,2025-12-31,2025-12-31,"['SQL', 'Power BI', 'Excel']",2-4 years,Shweta,2026-01-01 12:13:14,careers@wipro.com; campus@wipro.com,careers@wipro.com
+Reporting Analyst,Cognizant,Bangalore,Reporting Analyst for financial reports,https://cognizant.com/careers/reportinganalyst,2026-01-01,2026-01-01,"['Power BI', 'SQL', 'reporting']",2-5 years,Shweta,2026-01-01 12:13:14,careers@cognizant.com; campus@cognizant.com,careers@cognizant.com
+Python Developer,Amazon,Bangalore,Python Developer for backend services,https://amazon.jobs/en/jobs/pythondeveloper,2026-01-01,2026-01-01,"['Python', 'Django', 'API development']",2-4 years,Geeta,2026-01-01 12:13:14,university-recruiting@amazon.com; recruiting@amazon.com,university-recruiting@amazon.com
+Data Scientist,Google,Bangalore,Data Scientist for ML projects,https://careers.google.com/jobs/datascientist,2025-12-30,2025-12-30,"['Python', 'pandas', 'scikit-learn', 'machine learning']",2-5 years,Geeta,2026-01-01 12:13:14,university-relations@google.com; students@google.com,university-relations@google.com

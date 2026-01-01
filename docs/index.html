@@ -17,12 +17,24 @@
                     <span class="logo-icon">🚀</span>
                     <h1>AutoApply Dashboard</h1>
                 </div>
+                <div class="header-actions">
+                    <button class="action-btn" id="refresh-btn" title="Refresh Data">
+                        <span>🔄</span> Refresh
+                    </button>
+                    <button class="action-btn export-btn" id="export-btn" title="Export to CSV">
+                        <span>📥</span> Export CSV
+                    </button>
+                </div>
                 <div class="header-info">
                     <span class="status-badge" id="status-badge">● Live</span>
+                    <span class="auto-refresh-status" id="auto-refresh-status">Auto-refresh: 5min</span>
                     <span class="last-updated" id="last-updated">Last updated: --</span>
                 </div>
             </div>
         </header>
+
+        <!-- Alerts Container -->
+        <div class="alerts-container" id="alerts-container" style="display: none;"></div>
 
         <!-- User Tabs -->
         <section class="user-tabs-section">
@@ -66,6 +78,7 @@
                     <h3>Applications Sent</h3>
                     <p class="stat-number" id="applications-count">--</p>
                     <span class="stat-label">Total</span>
+                    <span class="trend-indicator" id="applications-trend"></span>
                 </div>
             </div>
             <div class="stat-card emails">
@@ -74,6 +87,22 @@
                     <h3>Emails Sent</h3>
                     <p class="stat-number" id="emails-count">--</p>
                     <span class="stat-label">Total</span>
+                </div>
+            </div>
+            <div class="stat-card success">
+                <div class="stat-icon">✅</div>
+                <div class="stat-content">
+                    <h3>Delivered</h3>
+                    <p class="stat-number" id="success-count">--</p>
+                    <span class="stat-label">Success</span>
+                </div>
+            </div>
+            <div class="stat-card bounced">
+                <div class="stat-icon">⚠️</div>
+                <div class="stat-content">
+                    <h3>Bounced</h3>
+                    <p class="stat-number" id="bounced-count">--</p>
+                    <span class="stat-label">Failed</span>
                 </div>
             </div>
             <div class="stat-card companies">
@@ -100,6 +129,22 @@
                     <span class="stat-label">Percentage</span>
                 </div>
             </div>
+            <div class="stat-card bounce-rate">
+                <div class="stat-icon">📉</div>
+                <div class="stat-content">
+                    <h3>Bounce Rate</h3>
+                    <p class="stat-number" id="bounce-rate">--</p>
+                    <span class="stat-label">Percentage</span>
+                </div>
+            </div>
+            <div class="stat-card success-rate">
+                <div class="stat-icon">🎯</div>
+                <div class="stat-content">
+                    <h3>Success Rate</h3>
+                    <p class="stat-number" id="success-rate">--</p>
+                    <span class="stat-label">Delivery</span>
+                </div>
+            </div>
         </section>
 
         <!-- Charts Section -->
@@ -111,6 +156,18 @@
             <div class="chart-container">
                 <h3>🎯 Application Status</h3>
                 <canvas id="statusChart"></canvas>
+            </div>
+            <div class="chart-container">
+                <h3>📧 Email Delivery Status</h3>
+                <canvas id="emailStatusChart"></canvas>
+            </div>
+        </section>
+
+        <!-- Top Companies Section -->
+        <section class="top-companies-section">
+            <h3>🏆 Top Companies Contacted</h3>
+            <div class="top-companies-grid" id="top-companies">
+                <div class="loading">Loading...</div>
             </div>
         </section>
 
@@ -154,18 +211,38 @@
         <!-- Schedule Info -->
         <section class="schedule-section">
             <h3>⏰ Automation Schedule</h3>
+            <div class="countdown-wrapper">
+                <div class="countdown-label">Next run in:</div>
+                <div class="countdown-timer" id="countdown-timer">--:--:--</div>
+            </div>
             <div class="schedule-grid">
-                <div class="schedule-item">
-                    <span class="time">9:30 AM IST</span>
-                    <span class="label">Morning Run</span>
+                <div class="schedule-card shweta">
+                    <div class="schedule-user">
+                        <span class="user-badge shweta">Shweta</span>
+                    </div>
+                    <div class="schedule-times">
+                        <span class="time">10:00 AM</span>
+                        <span class="time">3:00 PM</span>
+                        <span class="time">8:00 PM</span>
+                    </div>
                 </div>
-                <div class="schedule-item">
-                    <span class="time">2:30 PM IST</span>
-                    <span class="label">Afternoon Run</span>
+                <div class="schedule-card yogeshwari">
+                    <div class="schedule-user">
+                        <span class="user-badge yogeshwari">Yogeshwari</span>
+                    </div>
+                    <div class="schedule-times">
+                        <span class="time">10:30 AM</span>
+                        <span class="time">3:30 PM</span>
+                        <span class="time">8:30 PM</span>
+                    </div>
                 </div>
-                <div class="schedule-item">
-                    <span class="time">7:30 PM IST</span>
-                    <span class="label">Evening Run</span>
+                <div class="schedule-card ajay">
+                    <div class="schedule-user">
+                        <span class="user-badge ajay">Ajay</span>
+                    </div>
+                    <div class="schedule-times">
+                        <span class="time disabled">Disabled</span>
+                    </div>
                 </div>
             </div>
             <p class="schedule-note">Next run: <span id="next-run">Calculating...</span></p>
@@ -175,7 +252,7 @@
         <footer class="footer">
             <p>AutoApply Job Automation Dashboard | Built with ❤️ for job seekers</p>
             <p class="footer-links">
-                <a href="https://github.com" target="_blank">View on GitHub</a>
+                <a href="https://github.com/githubajaydhage/autoapply-resume-automation" target="_blank">View on GitHub</a>
             </p>
         </footer>
     </div>

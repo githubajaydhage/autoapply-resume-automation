@@ -1,157 +1,157 @@
 email,company,domain,source,search_query,email_type,discovered_at,verified,last_used
-Microsoft,mscollege@microsoft.com,smart_discovery,Senior Data Analyst,2026-01-01 11:02:41
-Microsoft,careers@microsoft.com,smart_discovery,Senior Data Analyst,2026-01-01 11:02:41
-Amazon,university-recruiting@amazon.com,smart_discovery,Business Intelligence Analyst,2026-01-01 11:02:42
-Amazon,recruiting@amazon.com,smart_discovery,Business Intelligence Analyst,2026-01-01 11:02:42
-Google,university-relations@google.com,smart_discovery,Data Scientist,2026-01-01 11:02:42
-Google,students@google.com,smart_discovery,Data Scientist,2026-01-01 11:02:42
-Infosys,careers@infosys.com,smart_discovery,Python Developer,2026-01-01 11:02:43
-Infosys,campus@infosys.com,smart_discovery,Python Developer,2026-01-01 11:02:43
-TCS,careers@tcs.com,smart_discovery,Data Engineer,2026-01-01 11:02:43
-TCS,campus.relations@tcs.com,smart_discovery,Data Engineer,2026-01-01 11:02:43
-Wipro,careers@wipro.com,smart_discovery,Business Analyst,2026-01-01 11:02:44
-Wipro,campus@wipro.com,smart_discovery,Business Analyst,2026-01-01 11:02:44
-Accenture,careers@accenture.com,smart_discovery,Technical Support Engineer,2026-01-01 11:02:44
-Accenture,campus.connect@accenture.com,smart_discovery,Technical Support Engineer,2026-01-01 11:02:44
-Capgemini,careers@capgemini.com,smart_discovery,Systems Analyst,2026-01-01 11:02:45
-Capgemini,campus@capgemini.com,smart_discovery,Systems Analyst,2026-01-01 11:02:45
-IBM,hr@ibm.com,smart_discovery,BI Developer,2026-01-01 11:02:45
-IBM,careers@ibm.com,smart_discovery,BI Developer,2026-01-01 11:02:45
-IBM,talent@ibm.com,smart_discovery,BI Developer,2026-01-01 11:02:45
-Oracle,hr@oracle.com,smart_discovery,Analytics Engineer,2026-01-01 11:02:46
-Oracle,careers@oracle.com,smart_discovery,Analytics Engineer,2026-01-01 11:02:46
-Oracle,talent@oracle.com,smart_discovery,Analytics Engineer,2026-01-01 11:02:46
-Cognizant,careers@cognizant.com,smart_discovery,Data Operations Analyst,2026-01-01 11:02:46
-Cognizant,campus@cognizant.com,smart_discovery,Data Operations Analyst,2026-01-01 11:02:46
-HCL,hr@hcl.com,smart_discovery,Technical Analyst,2026-01-01 11:02:47
-HCL,careers@hcl.com,smart_discovery,Technical Analyst,2026-01-01 11:02:47
-HCL,talent@hcl.com,smart_discovery,Technical Analyst,2026-01-01 11:02:47
-Amazon,university-recruiting@amazon.com,smart_discovery,Business Intelligence Analyst,2026-01-01 11:13:16
-Amazon,recruiting@amazon.com,smart_discovery,Business Intelligence Analyst,2026-01-01 11:13:16
-Google,university-relations@google.com,smart_discovery,Data Scientist,2026-01-01 11:13:17
-Google,students@google.com,smart_discovery,Data Scientist,2026-01-01 11:13:17
-Infosys,careers@infosys.com,smart_discovery,Python Developer,2026-01-01 11:13:17
-Infosys,campus@infosys.com,smart_discovery,Python Developer,2026-01-01 11:13:17
-Wipro,careers@wipro.com,smart_discovery,Business Analyst,2026-01-01 11:13:18
-Wipro,campus@wipro.com,smart_discovery,Business Analyst,2026-01-01 11:13:18
-Capgemini,careers@capgemini.com,smart_discovery,Systems Analyst,2026-01-01 11:13:18
-Capgemini,campus@capgemini.com,smart_discovery,Systems Analyst,2026-01-01 11:13:18
-Cognizant,careers@cognizant.com,smart_discovery,Data Operations Analyst,2026-01-01 11:13:19
-Cognizant,campus@cognizant.com,smart_discovery,Data Operations Analyst,2026-01-01 11:13:19
-HCL,hr@hcl.com,smart_discovery,Technical Analyst,2026-01-01 11:13:19
-HCL,careers@hcl.com,smart_discovery,Technical Analyst,2026-01-01 11:13:19
-HCL,talent@hcl.com,smart_discovery,Technical Analyst,2026-01-01 11:13:19
-Amazon,university-recruiting@amazon.com,smart_discovery,Business Intelligence Analyst,2026-01-01 11:19:55
-Amazon,recruiting@amazon.com,smart_discovery,Business Intelligence Analyst,2026-01-01 11:19:55
-Google,university-relations@google.com,smart_discovery,Data Scientist,2026-01-01 11:19:56
-Google,students@google.com,smart_discovery,Data Scientist,2026-01-01 11:19:56
-Infosys,careers@infosys.com,smart_discovery,Python Developer,2026-01-01 11:19:56
-Infosys,campus@infosys.com,smart_discovery,Python Developer,2026-01-01 11:19:56
-Wipro,careers@wipro.com,smart_discovery,Business Analyst,2026-01-01 11:19:57
-Wipro,campus@wipro.com,smart_discovery,Business Analyst,2026-01-01 11:19:57
-Capgemini,careers@capgemini.com,smart_discovery,Systems Analyst,2026-01-01 11:19:57
-Capgemini,campus@capgemini.com,smart_discovery,Systems Analyst,2026-01-01 11:19:57
-Cognizant,careers@cognizant.com,smart_discovery,Data Operations Analyst,2026-01-01 11:19:58
-Cognizant,campus@cognizant.com,smart_discovery,Data Operations Analyst,2026-01-01 11:19:58
-HCL,hr@hcl.com,smart_discovery,Technical Analyst,2026-01-01 11:19:58
-HCL,careers@hcl.com,smart_discovery,Technical Analyst,2026-01-01 11:19:58
-HCL,talent@hcl.com,smart_discovery,Technical Analyst,2026-01-01 11:19:58
-Amazon,university-recruiting@amazon.com,smart_discovery,Business Intelligence Analyst,2026-01-01 11:20:53
-Amazon,recruiting@amazon.com,smart_discovery,Business Intelligence Analyst,2026-01-01 11:20:53
-Google,university-relations@google.com,smart_discovery,Data Scientist,2026-01-01 11:20:53
-Google,students@google.com,smart_discovery,Data Scientist,2026-01-01 11:20:53
-Infosys,careers@infosys.com,smart_discovery,Python Developer,2026-01-01 11:20:54
-Infosys,campus@infosys.com,smart_discovery,Python Developer,2026-01-01 11:20:54
-Wipro,careers@wipro.com,smart_discovery,Business Analyst,2026-01-01 11:20:54
-Wipro,campus@wipro.com,smart_discovery,Business Analyst,2026-01-01 11:20:54
-Capgemini,careers@capgemini.com,smart_discovery,Systems Analyst,2026-01-01 11:20:55
-Capgemini,campus@capgemini.com,smart_discovery,Systems Analyst,2026-01-01 11:20:55
-Cognizant,careers@cognizant.com,smart_discovery,Data Operations Analyst,2026-01-01 11:20:55
-Cognizant,campus@cognizant.com,smart_discovery,Data Operations Analyst,2026-01-01 11:20:55
-HCL,hr@hcl.com,smart_discovery,Technical Analyst,2026-01-01 11:20:56
-HCL,careers@hcl.com,smart_discovery,Technical Analyst,2026-01-01 11:20:56
-HCL,talent@hcl.com,smart_discovery,Technical Analyst,2026-01-01 11:20:56
-Accenture,careers@accenture.com,smart_discovery,Power BI Developer,2026-01-01 12:14:03
-Accenture,campus.connect@accenture.com,smart_discovery,Power BI Developer,2026-01-01 12:14:03
-Infosys,careers@infosys.com,smart_discovery,SQL Developer,2026-01-01 12:14:03
-Infosys,campus@infosys.com,smart_discovery,SQL Developer,2026-01-01 12:14:03
-TCS,careers@tcs.com,smart_discovery,BI Analyst,2026-01-01 12:14:04
-TCS,campus.relations@tcs.com,smart_discovery,BI Analyst,2026-01-01 12:14:04
-Wipro,careers@wipro.com,smart_discovery,Data Analyst,2026-01-01 12:14:04
-Wipro,campus@wipro.com,smart_discovery,Data Analyst,2026-01-01 12:14:04
-Cognizant,careers@cognizant.com,smart_discovery,Reporting Analyst,2026-01-01 12:14:05
-Cognizant,campus@cognizant.com,smart_discovery,Reporting Analyst,2026-01-01 12:14:05
-Amazon,university-recruiting@amazon.com,smart_discovery,Python Developer,2026-01-01 12:14:05
-Amazon,recruiting@amazon.com,smart_discovery,Python Developer,2026-01-01 12:14:05
-Google,university-relations@google.com,smart_discovery,Data Scientist,2026-01-01 12:14:06
-Google,students@google.com,smart_discovery,Data Scientist,2026-01-01 12:14:06
-Accenture,careers@accenture.com,smart_discovery,Power BI Developer,2026-01-01 12:14:12
-Accenture,campus.connect@accenture.com,smart_discovery,Power BI Developer,2026-01-01 12:14:12
-Infosys,careers@infosys.com,smart_discovery,SQL Developer,2026-01-01 12:14:12
-Infosys,campus@infosys.com,smart_discovery,SQL Developer,2026-01-01 12:14:12
-TCS,careers@tcs.com,smart_discovery,BI Analyst,2026-01-01 12:14:13
-TCS,campus.relations@tcs.com,smart_discovery,BI Analyst,2026-01-01 12:14:13
-Wipro,careers@wipro.com,smart_discovery,Data Analyst,2026-01-01 12:14:13
-Wipro,campus@wipro.com,smart_discovery,Data Analyst,2026-01-01 12:14:13
-Cognizant,careers@cognizant.com,smart_discovery,Reporting Analyst,2026-01-01 12:14:14
-Cognizant,campus@cognizant.com,smart_discovery,Reporting Analyst,2026-01-01 12:14:14
-Amazon,university-recruiting@amazon.com,smart_discovery,Python Developer,2026-01-01 12:14:14
-Amazon,recruiting@amazon.com,smart_discovery,Python Developer,2026-01-01 12:14:14
-Google,university-relations@google.com,smart_discovery,Data Scientist,2026-01-01 12:14:15
-Google,students@google.com,smart_discovery,Data Scientist,2026-01-01 12:14:15
-Accenture,careers@accenture.com,smart_discovery,Power BI Developer,2026-01-01 12:19:20
-Accenture,campus.connect@accenture.com,smart_discovery,Power BI Developer,2026-01-01 12:19:20
-Infosys,careers@infosys.com,smart_discovery,SQL Developer,2026-01-01 12:19:20
-Infosys,campus@infosys.com,smart_discovery,SQL Developer,2026-01-01 12:19:20
-TCS,careers@tcs.com,smart_discovery,BI Analyst,2026-01-01 12:19:21
-TCS,campus.relations@tcs.com,smart_discovery,BI Analyst,2026-01-01 12:19:21
-Wipro,careers@wipro.com,smart_discovery,Data Analyst,2026-01-01 12:19:21
-Wipro,campus@wipro.com,smart_discovery,Data Analyst,2026-01-01 12:19:21
-Cognizant,careers@cognizant.com,smart_discovery,Reporting Analyst,2026-01-01 12:19:22
-Cognizant,campus@cognizant.com,smart_discovery,Reporting Analyst,2026-01-01 12:19:22
-Amazon,university-recruiting@amazon.com,smart_discovery,Python Developer,2026-01-01 12:19:22
-Amazon,recruiting@amazon.com,smart_discovery,Python Developer,2026-01-01 12:19:22
-Google,university-relations@google.com,smart_discovery,Data Scientist,2026-01-01 12:19:23
-Google,students@google.com,smart_discovery,Data Scientist,2026-01-01 12:19:23
-Accenture,careers@accenture.com,smart_discovery,Power BI Developer,2026-01-01 12:19:27
-Accenture,campus.connect@accenture.com,smart_discovery,Power BI Developer,2026-01-01 12:19:27
-Infosys,careers@infosys.com,smart_discovery,SQL Developer,2026-01-01 12:19:27
-Infosys,campus@infosys.com,smart_discovery,SQL Developer,2026-01-01 12:19:27
-TCS,careers@tcs.com,smart_discovery,BI Analyst,2026-01-01 12:19:28
-TCS,campus.relations@tcs.com,smart_discovery,BI Analyst,2026-01-01 12:19:28
-Wipro,careers@wipro.com,smart_discovery,Data Analyst,2026-01-01 12:19:28
-Wipro,campus@wipro.com,smart_discovery,Data Analyst,2026-01-01 12:19:28
-Cognizant,careers@cognizant.com,smart_discovery,Reporting Analyst,2026-01-01 12:19:29
-Cognizant,campus@cognizant.com,smart_discovery,Reporting Analyst,2026-01-01 12:19:29
-Amazon,university-recruiting@amazon.com,smart_discovery,Python Developer,2026-01-01 12:19:29
-Amazon,recruiting@amazon.com,smart_discovery,Python Developer,2026-01-01 12:19:29
-Google,university-relations@google.com,smart_discovery,Data Scientist,2026-01-01 12:19:30
-Google,students@google.com,smart_discovery,Data Scientist,2026-01-01 12:19:30
-Accenture,careers@accenture.com,smart_discovery,Power BI Developer,2026-01-01 12:25:27
-Accenture,campus.connect@accenture.com,smart_discovery,Power BI Developer,2026-01-01 12:25:27
-Infosys,careers@infosys.com,smart_discovery,SQL Developer,2026-01-01 12:25:28
-Infosys,campus@infosys.com,smart_discovery,SQL Developer,2026-01-01 12:25:28
-TCS,careers@tcs.com,smart_discovery,BI Analyst,2026-01-01 12:25:29
-TCS,campus.relations@tcs.com,smart_discovery,BI Analyst,2026-01-01 12:25:29
-Wipro,careers@wipro.com,smart_discovery,Data Analyst,2026-01-01 12:25:29
-Wipro,campus@wipro.com,smart_discovery,Data Analyst,2026-01-01 12:25:29
-Cognizant,careers@cognizant.com,smart_discovery,Reporting Analyst,2026-01-01 12:25:30
-Cognizant,campus@cognizant.com,smart_discovery,Reporting Analyst,2026-01-01 12:25:30
-Amazon,university-recruiting@amazon.com,smart_discovery,Python Developer,2026-01-01 12:25:30
-Amazon,recruiting@amazon.com,smart_discovery,Python Developer,2026-01-01 12:25:30
-Google,university-relations@google.com,smart_discovery,Data Scientist,2026-01-01 12:25:31
-Google,students@google.com,smart_discovery,Data Scientist,2026-01-01 12:25:31
-Accenture,careers@accenture.com,smart_discovery,Power BI Developer,2026-01-01 12:25:32
-Accenture,campus.connect@accenture.com,smart_discovery,Power BI Developer,2026-01-01 12:25:32
-Infosys,careers@infosys.com,smart_discovery,SQL Developer,2026-01-01 12:25:33
-Infosys,campus@infosys.com,smart_discovery,SQL Developer,2026-01-01 12:25:33
-TCS,careers@tcs.com,smart_discovery,BI Analyst,2026-01-01 12:25:33
-TCS,campus.relations@tcs.com,smart_discovery,BI Analyst,2026-01-01 12:25:33
-Wipro,careers@wipro.com,smart_discovery,Data Analyst,2026-01-01 12:25:34
-Wipro,campus@wipro.com,smart_discovery,Data Analyst,2026-01-01 12:25:34
-Cognizant,careers@cognizant.com,smart_discovery,Reporting Analyst,2026-01-01 12:25:34
-Cognizant,campus@cognizant.com,smart_discovery,Reporting Analyst,2026-01-01 12:25:34
-Amazon,university-recruiting@amazon.com,smart_discovery,Python Developer,2026-01-01 12:25:35
-Amazon,recruiting@amazon.com,smart_discovery,Python Developer,2026-01-01 12:25:35
-Google,university-relations@google.com,smart_discovery,Data Scientist,2026-01-01 12:25:35
-Google,students@google.com,smart_discovery,Data Scientist,2026-01-01 12:25:35
+Microsoft,mscollege@microsoft.com,smart_discovery,Senior Data Analyst,2026-01-01 11:02:41,,,,
+Microsoft,careers@microsoft.com,smart_discovery,Senior Data Analyst,2026-01-01 11:02:41,,,,
+Amazon,university-recruiting@amazon.com,smart_discovery,Business Intelligence Analyst,2026-01-01 11:02:42,,,,
+Amazon,recruiting@amazon.com,smart_discovery,Business Intelligence Analyst,2026-01-01 11:02:42,,,,
+Google,university-relations@google.com,smart_discovery,Data Scientist,2026-01-01 11:02:42,,,,
+Google,students@google.com,smart_discovery,Data Scientist,2026-01-01 11:02:42,,,,
+Infosys,careers@infosys.com,smart_discovery,Python Developer,2026-01-01 11:02:43,,,,
+Infosys,campus@infosys.com,smart_discovery,Python Developer,2026-01-01 11:02:43,,,,
+TCS,careers@tcs.com,smart_discovery,Data Engineer,2026-01-01 11:02:43,,,,
+TCS,campus.relations@tcs.com,smart_discovery,Data Engineer,2026-01-01 11:02:43,,,,
+Wipro,careers@wipro.com,smart_discovery,Business Analyst,2026-01-01 11:02:44,,,,
+Wipro,campus@wipro.com,smart_discovery,Business Analyst,2026-01-01 11:02:44,,,,
+Accenture,careers@accenture.com,smart_discovery,Technical Support Engineer,2026-01-01 11:02:44,,,,
+Accenture,campus.connect@accenture.com,smart_discovery,Technical Support Engineer,2026-01-01 11:02:44,,,,
+Capgemini,careers@capgemini.com,smart_discovery,Systems Analyst,2026-01-01 11:02:45,,,,
+Capgemini,campus@capgemini.com,smart_discovery,Systems Analyst,2026-01-01 11:02:45,,,,
+IBM,hr@ibm.com,smart_discovery,BI Developer,2026-01-01 11:02:45,,,,
+IBM,careers@ibm.com,smart_discovery,BI Developer,2026-01-01 11:02:45,,,,
+IBM,talent@ibm.com,smart_discovery,BI Developer,2026-01-01 11:02:45,,,,
+Oracle,hr@oracle.com,smart_discovery,Analytics Engineer,2026-01-01 11:02:46,,,,
+Oracle,careers@oracle.com,smart_discovery,Analytics Engineer,2026-01-01 11:02:46,,,,
+Oracle,talent@oracle.com,smart_discovery,Analytics Engineer,2026-01-01 11:02:46,,,,
+Cognizant,careers@cognizant.com,smart_discovery,Data Operations Analyst,2026-01-01 11:02:46,,,,
+Cognizant,campus@cognizant.com,smart_discovery,Data Operations Analyst,2026-01-01 11:02:46,,,,
+HCL,hr@hcl.com,smart_discovery,Technical Analyst,2026-01-01 11:02:47,,,,
+HCL,careers@hcl.com,smart_discovery,Technical Analyst,2026-01-01 11:02:47,,,,
+HCL,talent@hcl.com,smart_discovery,Technical Analyst,2026-01-01 11:02:47,,,,
+Amazon,university-recruiting@amazon.com,smart_discovery,Business Intelligence Analyst,2026-01-01 11:13:16,,,,
+Amazon,recruiting@amazon.com,smart_discovery,Business Intelligence Analyst,2026-01-01 11:13:16,,,,
+Google,university-relations@google.com,smart_discovery,Data Scientist,2026-01-01 11:13:17,,,,
+Google,students@google.com,smart_discovery,Data Scientist,2026-01-01 11:13:17,,,,
+Infosys,careers@infosys.com,smart_discovery,Python Developer,2026-01-01 11:13:17,,,,
+Infosys,campus@infosys.com,smart_discovery,Python Developer,2026-01-01 11:13:17,,,,
+Wipro,careers@wipro.com,smart_discovery,Business Analyst,2026-01-01 11:13:18,,,,
+Wipro,campus@wipro.com,smart_discovery,Business Analyst,2026-01-01 11:13:18,,,,
+Capgemini,careers@capgemini.com,smart_discovery,Systems Analyst,2026-01-01 11:13:18,,,,
+Capgemini,campus@capgemini.com,smart_discovery,Systems Analyst,2026-01-01 11:13:18,,,,
+Cognizant,careers@cognizant.com,smart_discovery,Data Operations Analyst,2026-01-01 11:13:19,,,,
+Cognizant,campus@cognizant.com,smart_discovery,Data Operations Analyst,2026-01-01 11:13:19,,,,
+HCL,hr@hcl.com,smart_discovery,Technical Analyst,2026-01-01 11:13:19,,,,
+HCL,careers@hcl.com,smart_discovery,Technical Analyst,2026-01-01 11:13:19,,,,
+HCL,talent@hcl.com,smart_discovery,Technical Analyst,2026-01-01 11:13:19,,,,
+Amazon,university-recruiting@amazon.com,smart_discovery,Business Intelligence Analyst,2026-01-01 11:19:55,,,,
+Amazon,recruiting@amazon.com,smart_discovery,Business Intelligence Analyst,2026-01-01 11:19:55,,,,
+Google,university-relations@google.com,smart_discovery,Data Scientist,2026-01-01 11:19:56,,,,
+Google,students@google.com,smart_discovery,Data Scientist,2026-01-01 11:19:56,,,,
+Infosys,careers@infosys.com,smart_discovery,Python Developer,2026-01-01 11:19:56,,,,
+Infosys,campus@infosys.com,smart_discovery,Python Developer,2026-01-01 11:19:56,,,,
+Wipro,careers@wipro.com,smart_discovery,Business Analyst,2026-01-01 11:19:57,,,,
+Wipro,campus@wipro.com,smart_discovery,Business Analyst,2026-01-01 11:19:57,,,,
+Capgemini,careers@capgemini.com,smart_discovery,Systems Analyst,2026-01-01 11:19:57,,,,
+Capgemini,campus@capgemini.com,smart_discovery,Systems Analyst,2026-01-01 11:19:57,,,,
+Cognizant,careers@cognizant.com,smart_discovery,Data Operations Analyst,2026-01-01 11:19:58,,,,
+Cognizant,campus@cognizant.com,smart_discovery,Data Operations Analyst,2026-01-01 11:19:58,,,,
+HCL,hr@hcl.com,smart_discovery,Technical Analyst,2026-01-01 11:19:58,,,,
+HCL,careers@hcl.com,smart_discovery,Technical Analyst,2026-01-01 11:19:58,,,,
+HCL,talent@hcl.com,smart_discovery,Technical Analyst,2026-01-01 11:19:58,,,,
+Amazon,university-recruiting@amazon.com,smart_discovery,Business Intelligence Analyst,2026-01-01 11:20:53,,,,
+Amazon,recruiting@amazon.com,smart_discovery,Business Intelligence Analyst,2026-01-01 11:20:53,,,,
+Google,university-relations@google.com,smart_discovery,Data Scientist,2026-01-01 11:20:53,,,,
+Google,students@google.com,smart_discovery,Data Scientist,2026-01-01 11:20:53,,,,
+Infosys,careers@infosys.com,smart_discovery,Python Developer,2026-01-01 11:20:54,,,,
+Infosys,campus@infosys.com,smart_discovery,Python Developer,2026-01-01 11:20:54,,,,
+Wipro,careers@wipro.com,smart_discovery,Business Analyst,2026-01-01 11:20:54,,,,
+Wipro,campus@wipro.com,smart_discovery,Business Analyst,2026-01-01 11:20:54,,,,
+Capgemini,careers@capgemini.com,smart_discovery,Systems Analyst,2026-01-01 11:20:55,,,,
+Capgemini,campus@capgemini.com,smart_discovery,Systems Analyst,2026-01-01 11:20:55,,,,
+Cognizant,careers@cognizant.com,smart_discovery,Data Operations Analyst,2026-01-01 11:20:55,,,,
+Cognizant,campus@cognizant.com,smart_discovery,Data Operations Analyst,2026-01-01 11:20:55,,,,
+HCL,hr@hcl.com,smart_discovery,Technical Analyst,2026-01-01 11:20:56,,,,
+HCL,careers@hcl.com,smart_discovery,Technical Analyst,2026-01-01 11:20:56,,,,
+HCL,talent@hcl.com,smart_discovery,Technical Analyst,2026-01-01 11:20:56,,,,
+Accenture,careers@accenture.com,smart_discovery,Power BI Developer,2026-01-01 12:14:03,,,,
+Accenture,campus.connect@accenture.com,smart_discovery,Power BI Developer,2026-01-01 12:14:03,,,,
+Infosys,careers@infosys.com,smart_discovery,SQL Developer,2026-01-01 12:14:03,,,,
+Infosys,campus@infosys.com,smart_discovery,SQL Developer,2026-01-01 12:14:03,,,,
+TCS,careers@tcs.com,smart_discovery,BI Analyst,2026-01-01 12:14:04,,,,
+TCS,campus.relations@tcs.com,smart_discovery,BI Analyst,2026-01-01 12:14:04,,,,
+Wipro,careers@wipro.com,smart_discovery,Data Analyst,2026-01-01 12:14:04,,,,
+Wipro,campus@wipro.com,smart_discovery,Data Analyst,2026-01-01 12:14:04,,,,
+Cognizant,careers@cognizant.com,smart_discovery,Reporting Analyst,2026-01-01 12:14:05,,,,
+Cognizant,campus@cognizant.com,smart_discovery,Reporting Analyst,2026-01-01 12:14:05,,,,
+Amazon,university-recruiting@amazon.com,smart_discovery,Python Developer,2026-01-01 12:14:05,,,,
+Amazon,recruiting@amazon.com,smart_discovery,Python Developer,2026-01-01 12:14:05,,,,
+Google,university-relations@google.com,smart_discovery,Data Scientist,2026-01-01 12:14:06,,,,
+Google,students@google.com,smart_discovery,Data Scientist,2026-01-01 12:14:06,,,,
+Accenture,careers@accenture.com,smart_discovery,Power BI Developer,2026-01-01 12:14:12,,,,
+Accenture,campus.connect@accenture.com,smart_discovery,Power BI Developer,2026-01-01 12:14:12,,,,
+Infosys,careers@infosys.com,smart_discovery,SQL Developer,2026-01-01 12:14:12,,,,
+Infosys,campus@infosys.com,smart_discovery,SQL Developer,2026-01-01 12:14:12,,,,
+TCS,careers@tcs.com,smart_discovery,BI Analyst,2026-01-01 12:14:13,,,,
+TCS,campus.relations@tcs.com,smart_discovery,BI Analyst,2026-01-01 12:14:13,,,,
+Wipro,careers@wipro.com,smart_discovery,Data Analyst,2026-01-01 12:14:13,,,,
+Wipro,campus@wipro.com,smart_discovery,Data Analyst,2026-01-01 12:14:13,,,,
+Cognizant,careers@cognizant.com,smart_discovery,Reporting Analyst,2026-01-01 12:14:14,,,,
+Cognizant,campus@cognizant.com,smart_discovery,Reporting Analyst,2026-01-01 12:14:14,,,,
+Amazon,university-recruiting@amazon.com,smart_discovery,Python Developer,2026-01-01 12:14:14,,,,
+Amazon,recruiting@amazon.com,smart_discovery,Python Developer,2026-01-01 12:14:14,,,,
+Google,university-relations@google.com,smart_discovery,Data Scientist,2026-01-01 12:14:15,,,,
+Google,students@google.com,smart_discovery,Data Scientist,2026-01-01 12:14:15,,,,
+Accenture,careers@accenture.com,smart_discovery,Power BI Developer,2026-01-01 12:19:20,,,,
+Accenture,campus.connect@accenture.com,smart_discovery,Power BI Developer,2026-01-01 12:19:20,,,,
+Infosys,careers@infosys.com,smart_discovery,SQL Developer,2026-01-01 12:19:20,,,,
+Infosys,campus@infosys.com,smart_discovery,SQL Developer,2026-01-01 12:19:20,,,,
+TCS,careers@tcs.com,smart_discovery,BI Analyst,2026-01-01 12:19:21,,,,
+TCS,campus.relations@tcs.com,smart_discovery,BI Analyst,2026-01-01 12:19:21,,,,
+Wipro,careers@wipro.com,smart_discovery,Data Analyst,2026-01-01 12:19:21,,,,
+Wipro,campus@wipro.com,smart_discovery,Data Analyst,2026-01-01 12:19:21,,,,
+Cognizant,careers@cognizant.com,smart_discovery,Reporting Analyst,2026-01-01 12:19:22,,,,
+Cognizant,campus@cognizant.com,smart_discovery,Reporting Analyst,2026-01-01 12:19:22,,,,
+Amazon,university-recruiting@amazon.com,smart_discovery,Python Developer,2026-01-01 12:19:22,,,,
+Amazon,recruiting@amazon.com,smart_discovery,Python Developer,2026-01-01 12:19:22,,,,
+Google,university-relations@google.com,smart_discovery,Data Scientist,2026-01-01 12:19:23,,,,
+Google,students@google.com,smart_discovery,Data Scientist,2026-01-01 12:19:23,,,,
+Accenture,careers@accenture.com,smart_discovery,Power BI Developer,2026-01-01 12:19:27,,,,
+Accenture,campus.connect@accenture.com,smart_discovery,Power BI Developer,2026-01-01 12:19:27,,,,
+Infosys,careers@infosys.com,smart_discovery,SQL Developer,2026-01-01 12:19:27,,,,
+Infosys,campus@infosys.com,smart_discovery,SQL Developer,2026-01-01 12:19:27,,,,
+TCS,careers@tcs.com,smart_discovery,BI Analyst,2026-01-01 12:19:28,,,,
+TCS,campus.relations@tcs.com,smart_discovery,BI Analyst,2026-01-01 12:19:28,,,,
+Wipro,careers@wipro.com,smart_discovery,Data Analyst,2026-01-01 12:19:28,,,,
+Wipro,campus@wipro.com,smart_discovery,Data Analyst,2026-01-01 12:19:28,,,,
+Cognizant,careers@cognizant.com,smart_discovery,Reporting Analyst,2026-01-01 12:19:29,,,,
+Cognizant,campus@cognizant.com,smart_discovery,Reporting Analyst,2026-01-01 12:19:29,,,,
+Amazon,university-recruiting@amazon.com,smart_discovery,Python Developer,2026-01-01 12:19:29,,,,
+Amazon,recruiting@amazon.com,smart_discovery,Python Developer,2026-01-01 12:19:29,,,,
+Google,university-relations@google.com,smart_discovery,Data Scientist,2026-01-01 12:19:30,,,,
+Google,students@google.com,smart_discovery,Data Scientist,2026-01-01 12:19:30,,,,
+Accenture,careers@accenture.com,smart_discovery,Power BI Developer,2026-01-01 12:25:27,,,,
+Accenture,campus.connect@accenture.com,smart_discovery,Power BI Developer,2026-01-01 12:25:27,,,,
+Infosys,careers@infosys.com,smart_discovery,SQL Developer,2026-01-01 12:25:28,,,,
+Infosys,campus@infosys.com,smart_discovery,SQL Developer,2026-01-01 12:25:28,,,,
+TCS,careers@tcs.com,smart_discovery,BI Analyst,2026-01-01 12:25:29,,,,
+TCS,campus.relations@tcs.com,smart_discovery,BI Analyst,2026-01-01 12:25:29,,,,
+Wipro,careers@wipro.com,smart_discovery,Data Analyst,2026-01-01 12:25:29,,,,
+Wipro,campus@wipro.com,smart_discovery,Data Analyst,2026-01-01 12:25:29,,,,
+Cognizant,careers@cognizant.com,smart_discovery,Reporting Analyst,2026-01-01 12:25:30,,,,
+Cognizant,campus@cognizant.com,smart_discovery,Reporting Analyst,2026-01-01 12:25:30,,,,
+Amazon,university-recruiting@amazon.com,smart_discovery,Python Developer,2026-01-01 12:25:30,,,,
+Amazon,recruiting@amazon.com,smart_discovery,Python Developer,2026-01-01 12:25:30,,,,
+Google,university-relations@google.com,smart_discovery,Data Scientist,2026-01-01 12:25:31,,,,
+Google,students@google.com,smart_discovery,Data Scientist,2026-01-01 12:25:31,,,,
+Accenture,careers@accenture.com,smart_discovery,Power BI Developer,2026-01-01 12:25:32,,,,
+Accenture,campus.connect@accenture.com,smart_discovery,Power BI Developer,2026-01-01 12:25:32,,,,
+Infosys,careers@infosys.com,smart_discovery,SQL Developer,2026-01-01 12:25:33,,,,
+Infosys,campus@infosys.com,smart_discovery,SQL Developer,2026-01-01 12:25:33,,,,
+TCS,careers@tcs.com,smart_discovery,BI Analyst,2026-01-01 12:25:33,,,,
+TCS,campus.relations@tcs.com,smart_discovery,BI Analyst,2026-01-01 12:25:33,,,,
+Wipro,careers@wipro.com,smart_discovery,Data Analyst,2026-01-01 12:25:34,,,,
+Wipro,campus@wipro.com,smart_discovery,Data Analyst,2026-01-01 12:25:34,,,,
+Cognizant,careers@cognizant.com,smart_discovery,Reporting Analyst,2026-01-01 12:25:34,,,,
+Cognizant,campus@cognizant.com,smart_discovery,Reporting Analyst,2026-01-01 12:25:34,,,,
+Amazon,university-recruiting@amazon.com,smart_discovery,Python Developer,2026-01-01 12:25:35,,,,
+Amazon,recruiting@amazon.com,smart_discovery,Python Developer,2026-01-01 12:25:35,,,,
+Google,university-relations@google.com,smart_discovery,Data Scientist,2026-01-01 12:25:35,,,,
+Google,students@google.com,smart_discovery,Data Scientist,2026-01-01 12:25:35,,,,

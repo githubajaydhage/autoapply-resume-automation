@@ -1063,6 +1063,27 @@ def main():
         logging.info("ℹ️ Recruiting agencies disabled (set SEND_TO_AGENCIES=true to enable)")
     
     if emails_df.empty:
+        # GUARANTEED FALLBACK: Load directly from curated_hr_database module
+        logging.warning("⚠️ No emails from smart matcher or CSV files!")
+        logging.info("🔄 Loading directly from curated HR database module...")
+        try:
+            from scripts.curated_hr_database import CuratedHRDatabase
+            db = CuratedHRDatabase()
+            curated_df = db.get_all_emails()
+            if not curated_df.empty:
+                # Rename 'email' to 'hr_email' for compatibility
+                if 'email' in curated_df.columns:
+                    curated_df = curated_df.rename(columns={'email': 'hr_email'})
+                # Use JOB_KEYWORDS for job title
+                job_keywords_str = os.environ.get('JOB_KEYWORDS', 'Open Position')
+                job_title_default = job_keywords_str.split(',')[0].strip().title() if job_keywords_str else 'Open Position'
+                curated_df['job_title'] = job_title_default
+                emails_df = curated_df
+                logging.info(f"✅ Loaded {len(emails_df)} emails from curated database module!")
+        except Exception as e:
+            logging.error(f"Failed to load curated database: {e}")
+    
+    if emails_df.empty:
         logging.error("❌ No HR emails found!")
         logging.info("Run curated_hr_database.py or email_scraper.py first.")
         return

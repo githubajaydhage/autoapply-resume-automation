@@ -40,13 +40,6 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from utils.config import USER_DETAILS, BASE_RESUME_PATH
 
-# AI integration for intelligent auto-application
-try:
-    from scripts.free_ai_providers import get_ai
-    AI_AVAILABLE = True
-except ImportError:
-    AI_AVAILABLE = False
-
 # Import email verifier for pre-send validation
 try:
     from scripts.email_verifier import EmailVerifier
@@ -249,6 +242,13 @@ class PersonalizedEmailSender:
         'recrops@ca.ibm.com',
     }
     
+    # KNOWN PROBLEMATIC DOMAINS - High bounce rate domains
+    PROBLEMATIC_DOMAINS = {
+        'urbancompany.com': 'High bounce rate - use careers portal',
+        'example.com': 'Fake domain',
+        'test.com': 'Test domain',
+    }
+    
     def __init__(self):
         # Email configuration - only password needed from secrets
         self.smtp_server = os.getenv('SMTP_SERVER', 'smtp.gmail.com')
@@ -302,6 +302,15 @@ class PersonalizedEmailSender:
             os.path.dirname(__file__), '..', 'data', 'problematic_emails.csv'
         )
         
+        # CRITICAL: Bounced emails database - emails that bounced previously
+        self.bounced_emails_file = os.path.join(
+            os.path.dirname(__file__), '..', 'data', 'bounced_emails.csv'
+        )
+        self.bounced_emails = self._load_bounced_emails()
+        
+        # Load problematic domains from sent log
+        self.problematic_domains = self._analyze_problematic_domains()
+
         # Initialize email verifier if available
         self.verifier = None
         if VERIFIER_AVAILABLE:
@@ -310,11 +319,6 @@ class PersonalizedEmailSender:
                 logging.info("   ✅ Email verifier loaded")
             except:
                 pass
-        
-        # Initialize AI for intelligent auto-application
-        self.ai = get_ai() if AI_AVAILABLE else None
-        if self.ai:
-            logging.info("   🤖 AI-powered auto-application enabled")
         
         # Initialize email optimizer if available
         self.optimizer = None
@@ -337,6 +341,114 @@ class PersonalizedEmailSender:
             timing = self.optimizer.timer.get_send_recommendation()
             logging.info(f"   ⏰ Timing: {timing['reason']}")
         
+        # Log bounced emails stats
+        if self.bounced_emails:
+            logging.info(f"   🚫 Bounced emails in database: {len(self.bounced_emails)}")
+        if self.problematic_domains:
+            logging.info(f"   ⚠️ Problematic domains identified: {len(self.problematic_domains)}")
+        
+    def _load_bounced_emails(self) -> set:
+        """Load previously bounced emails to avoid re-sending."""
+        bounced = set()
+        
+        # Load from bounced_emails.csv
+        if os.path.exists(self.bounced_emails_file):
+            try:
+                df = pd.read_csv(self.bounced_emails_file)
+                if 'email' in df.columns:
+                    bounced.update(df['email'].str.lower().dropna().tolist())
+                logging.info(f"📄 Loaded {len(bounced)} bounced emails from database")
+            except Exception as e:
+                logging.warning(f"⚠️ Could not load bounced emails: {e}")
+        
+        # Also check sent_emails_log.csv for bounced status
+        if os.path.exists(self.sent_log_path):
+            try:
+                df = pd.read_csv(self.sent_log_path)
+                if 'status' in df.columns and 'recipient_email' in df.columns:
+                    # Find emails with bounced or failed status
+                    bounce_mask = df['status'].str.lower().str.contains('bounced|undeliverable|failed|rejected', na=False, regex=True)
+                    bounced_from_log = df[bounce_mask]['recipient_email'].str.lower().dropna().tolist()
+                    bounced.update(bounced_from_log)
+                    if bounced_from_log:
+                        logging.info(f"📄 Found {len(bounced_from_log)} additional bounced emails from sent log")
+            except Exception as e:
+                logging.debug(f"Could not check sent log for bounces: {e}")
+        
+        # Also load from problematic_emails.csv
+        if os.path.exists(self.problematic_log_path):
+            try:
+                df = pd.read_csv(self.problematic_log_path)
+                if 'email' in df.columns:
+                    bounced.update(df['email'].str.lower().dropna().tolist())
+            except Exception as e:
+                logging.debug(f"Could not load problematic emails: {e}")
+        
+        return bounced
+    
+    def _analyze_problematic_domains(self) -> dict:
+        """Analyze sent log to find domains with high bounce rates."""
+        problematic = dict(self.PROBLEMATIC_DOMAINS)  # Start with known bad domains
+        
+        if not os.path.exists(self.sent_log_path):
+            return problematic
+        
+        try:
+            df = pd.read_csv(self.sent_log_path)
+            if df.empty or 'recipient_email' not in df.columns or 'status' not in df.columns:
+                return problematic
+            
+            # Extract domain from email
+            df['domain'] = df['recipient_email'].str.lower().str.split('@').str[-1]
+            
+            # Count success/failure by domain
+            domain_stats = df.groupby('domain').apply(
+                lambda x: pd.Series({
+                    'total': len(x),
+                    'bounced': x['status'].str.lower().str.contains('bounced|failed|undeliverable|rejected', na=False, regex=True).sum()
+                })
+            ).reset_index()
+            
+            # Domains with >50% bounce rate and at least 2 bounces are problematic
+            for _, row in domain_stats.iterrows():
+                if row['total'] >= 2 and row['bounced'] / row['total'] >= 0.5:
+                    domain = row['domain']
+                    if domain not in problematic:
+                        problematic[domain] = f"High bounce rate ({int(row['bounced'])}/{int(row['total'])} emails bounced)"
+                        logging.info(f"⚠️ Identified problematic domain: {domain}")
+        
+        except Exception as e:
+            logging.debug(f"Could not analyze domains: {e}")
+        
+        return problematic
+    
+    def _add_to_bounced_database(self, email: str, company: str, reason: str):
+        """Add an email to the bounced emails database."""
+        try:
+            log_entry = {
+                'email': email.lower(),
+                'company': company,
+                'reason': reason,
+                'bounce_date': datetime.now().strftime('%Y-%m-%d'),
+                'detected_at': datetime.now().isoformat(),
+                'source': 'email_sender'
+            }
+            
+            if os.path.exists(self.bounced_emails_file):
+                df = pd.read_csv(self.bounced_emails_file)
+                # Check if already exists
+                if email.lower() not in df['email'].str.lower().values:
+                    df = pd.concat([df, pd.DataFrame([log_entry])], ignore_index=True)
+            else:
+                df = pd.DataFrame([log_entry])
+            
+            df.to_csv(self.bounced_emails_file, index=False)
+            self.bounced_emails.add(email.lower())
+            logging.info(f"📝 Added {email} to bounced emails database")
+            
+        except Exception as e:
+            logging.warning(f"Could not add to bounced database: {e}")
+    
     def _load_sent_log(self) -> set:
         """Load previously sent emails to avoid duplicates.
         
@@ -381,15 +493,6 @@ class PersonalizedEmailSender:
     def generate_email_subject(self, job_title: str, company: str, recipient_email: str = None) -> str:
         """Generate a personalized email subject - optimized for high open rates."""
         
-        # Use AI for intelligent subject generation
-        if self.ai:
-            try:
-                subject = self.ai_generate_subject(job_title, company, recipient_email)
-                if subject:
-                    return subject
-            except Exception as e:
-                logging.debug(f"AI subject generation failed: {e}")
-        
         # Use optimizer if available for A/B tested subjects
         if self.optimizer:
             subject, template_id = self.optimizer.subject_optimizer.get_optimized_subject(
@@ -416,15 +519,6 @@ class PersonalizedEmailSender:
     
     def generate_email_body(self, job_title: str, company: str, job_url: str = None, recipient_email: str = None) -> str:
         """Generate a personalized email body with company-specific content."""
-        
-        # Use AI for intelligent, personalized email generation
-        if self.ai:
-            try:
-                body = self.ai_generate_personalized_email(job_title, company, job_url, recipient_email)
-                if body:
-                    return body
-            except Exception as e:
-                logging.debug(f"AI email generation failed: {e}")
         
         # Use optimizer for personalized content if available
         if self.optimizer and recipient_email:
@@ -582,256 +676,69 @@ ${name}
         
         df.to_csv(self.invalid_log_path, index=False)
     
-    def ai_generate_subject(self, job_title: str, company: str, recipient_email: str = None) -> str:
-        """
-        🤖 AI generates optimized email subject lines for maximum open rates.
-        """
-        if not self.ai:
-            return None
-        
+    def _check_domain_deliverable(self, domain: str) -> bool:
+        """Check if domain has valid MX records and is deliverable."""
         try:
-            prompt = f"""Generate a compelling email subject line for a job application:
-
-Job Title: {job_title}
-Company: {company}
-Recipient: {recipient_email or 'HR Manager'}
-Applicant: {self.applicant_name}
-Experience: {self.applicant_experience}+ years
-Location: Bangalore, India
-
-Requirements:
-- Under 60 characters for mobile optimization
-- Professional but attention-grabbing
-- Include key differentiators
-- Avoid spam trigger words
-- Personalized for this specific role
-
-Generate 1 optimized subject line that maximizes open rates.
-Respond with ONLY the subject line, no quotes or explanations."""
-            
-            subject = self.ai.generate(prompt, max_tokens=50)
-            if subject:
-                subject = subject.strip().strip('"').strip("'")
-                if len(subject) > 10 and len(subject) < 80:
-                    logging.info(f"🤖 AI generated subject: {subject[:50]}...")
-                    return subject
-            
-        except Exception as e:
-            logging.debug(f"AI subject generation error: {e}")
-        
-        return None
-    
-    def ai_generate_personalized_email(self, job_title: str, company: str, job_url: str = None, recipient_email: str = None) -> str:
-        """
-        🤖 AI generates personalized job application email content.
-        """
-        if not self.ai:
-            return None
-        
-        try:
-            prompt = f"""Write a professional job application email:
-
-POSITION: {job_title}
-COMPANY: {company}
-RECIPIENT: {recipient_email or 'Hiring Manager'}
-
-APPLICANT PROFILE:
-Name: {self.applicant_name}
-Phone: {self.applicant_phone}
-LinkedIn: {self.applicant_linkedin}
-Experience: {self.applicant_experience}+ years
-Skills: {self.applicant_skills}
-Location: Bangalore, India (open to remote/hybrid/on-site)
-
-REQUIREMENTS:
-- Professional, confident tone
-- Highlight relevant experience and skills
-- Show genuine interest in the company
-- Include call-to-action
-- Keep concise (under 200 words)
-- Include phone number and LinkedIn
-- Mention resume attachment
-
-Write a compelling email that gets responses. Use specific details about the role and company when possible.
-Respond with the complete email body only."""
-            
-            body = self.ai.generate(prompt, max_tokens=800)
-            if body and len(body) > 100:
-                logging.info(f"🤖 AI generated personalized email ({len(body)} chars)")
-                return body.strip()
-            
-        except Exception as e:
-            logging.debug(f"AI email generation error: {e}")
-        
-        return None
-    
-    def ai_should_apply_to_job(self, job_title: str, company: str, job_description: str = None) -> dict:
-        """
-        🤖 AI determines if we should apply to this job and provides application strategy.
-        """
-        if not self.ai:
-            return {'should_apply': True, 'confidence': 'medium', 'strategy': 'standard'}
-        
-        try:
-            prompt = f"""Job Application Decision Analysis:
-
-JOB: {job_title}
-COMPANY: {company}
-DESCRIPTION: {job_description[:1000] if job_description else 'Not provided'}
-
-CANDIDATE PROFILE:
-Experience: {self.applicant_experience}+ years
-Skills: {self.applicant_skills}
-Location: Bangalore (flexible)
-
-Analyze and provide recommendation:
-1. Should we apply? (yes/no with confidence level)
-2. Match quality (0-100 score)
-3. Application strategy
-4. Key points to emphasize
-5. Success probability
-
-Respond in JSON:
-{{
-  "should_apply": true,
-  "match_score": 85,
-  "confidence": "high|medium|low",
-  "success_probability": 65,
-  "strategy": "direct|technical|referral",
-  "key_points": ["point1", "point2"],
-  "timing": "immediate|wait|skip",
-  "reasoning": "why this decision"
-}}"""
-            
-            ai_response = self.ai.generate(prompt, max_tokens=400)
-            if ai_response:
-                try:
-                    import json
-                    json_match = re.search(r'\\{.*\\}', ai_response, re.DOTALL)
-                    if json_match:
-                        analysis = json.loads(json_match.group())
-                        logging.info(f"🤖 AI job analysis: {analysis.get('match_score', 'unknown')}% match, {analysis.get('confidence', 'unknown')} confidence")
-                        return analysis
-                except:
-                    pass
-            
-            return {'should_apply': True, 'match_score': 70, 'confidence': 'medium', 'strategy': 'direct'}
-            
-        except Exception as e:
-            logging.debug(f"AI job analysis error: {e}")
-            return {'should_apply': True, 'confidence': 'low', 'strategy': 'standard', 'error': str(e)}
-    
-    def ai_optimize_application_timing(self, company: str, recipient_email: str = None) -> dict:
-        """
-        🤖 AI determines optimal timing for job application.
-        """
-        if not self.ai:
-            return {'send_now': True, 'timing': 'immediate'}
-        
-        try:
-            current_time = datetime.now()
-            day_of_week = current_time.strftime('%A')
-            hour = current_time.hour
-            
-            prompt = f"""Application Timing Optimization:
-
-COMPANY: {company}
-RECIPIENT: {recipient_email or 'HR'}
-CURRENT TIME: {day_of_week} {hour:02d}:00
-TIMEZONE: Indian Standard Time
-
-Analyze optimal timing:
-1. Should we send now or wait?
-2. Best day/time for this company
-3. Industry-specific timing patterns
-4. Response probability factors
-
-Consider:
-- HR work patterns
-- Company culture
-- Industry norms
-- Time zone preferences
-
-Respond in JSON:
-{{
-  "send_now": true,
-  "optimal_day": "Tuesday", 
-  "optimal_hour": 10,
-  "current_score": 85,
-  "wait_reason": "reason if should wait",
-  "timing_strategy": "immediate|morning|afternoon|next_week"
-}}"""
-            
-            ai_response = self.ai.generate(prompt, max_tokens=300)
-            if ai_response:
-                try:
-                    import json
-                    json_match = re.search(r'\\{.*\\}', ai_response, re.DOTALL)
-                    if json_match:
-                        timing = json.loads(json_match.group())
-                        return timing
-                except:
-                    pass
-            
-            # Fallback timing logic
-            if 9 <= hour <= 17 and current_time.weekday() < 5:  # Business hours, weekdays
-                return {'send_now': True, 'timing': 'business_hours', 'current_score': 80}
-            else:
-                return {'send_now': False, 'timing': 'wait_for_business_hours', 'current_score': 40}
-            
-        except Exception as e:
-            logging.debug(f"AI timing optimization error: {e}")
-            return {'send_now': True, 'timing': 'standard', 'error': str(e)}
+            import dns.resolver
+            # Check MX records
+            mx_records = dns.resolver.resolve(domain, 'MX')
+            return len(mx_records) > 0
+        except Exception:
+            # If no MX records, try A record as fallback
+            try:
+                dns.resolver.resolve(domain, 'A')
+                return True
+            except Exception:
+                return False
     
     def send_email(self, recipient_email: str, company: str, job_title: str, job_url: str = None) -> bool:
-        """Send a personalized email to a single recipient with AI optimization."""
+        """Send a personalized email to a single recipient with comprehensive bounce protection."""
         
-        recipient_lower = recipient_email.lower()
+        recipient_lower = recipient_email.lower().strip()
         
-        # Skip if already sent  
-        if recipient_lower in self.sent_emails:
-            logging.info(f"⏭️ Skipping {recipient_email} - already contacted")
+        # Skip if already sent for this job
+        job_key = f"{recipient_lower}|{job_title.lower().strip()}"
+        if job_key in self.sent_emails:
+            logging.info(f"⏭️ Skipping {recipient_email} - already applied for this job")
             return False
         
-        # 🤖 AI DECISION: Should we apply to this job?
-        if self.ai:
-            try:
-                ai_decision = self.ai_should_apply_to_job(job_title, company)
-                if not ai_decision.get('should_apply', True):
-                    logging.info(f"🤖 AI Skip: {recipient_email} - {ai_decision.get('reasoning', 'Not a good match')}")
-                    return False
-                elif ai_decision.get('match_score', 50) < 60:
-                    logging.info(f"🤖 AI Low Match: {ai_decision.get('match_score')}% - proceeding with caution")
-            except:
-                pass  # Continue with standard logic if AI fails
-        
-        # 🤖 AI TIMING: Check optimal application timing
-        if self.ai:
-            try:
-                timing_analysis = self.ai_optimize_application_timing(company, recipient_email)
-                if not timing_analysis.get('send_now', True):
-                    logging.info(f"🤖 AI Timing: Delaying {recipient_email} - {timing_analysis.get('wait_reason', 'Better timing later')}")
-                    # Could implement scheduling here for later
-                    # For now, we continue but log the recommendation
-            except:
-                pass
-        
-        # CHECK KNOWN BAD EMAILS FIRST - Save time and quota
+        # CHECK 1: Known bad emails - instant reject
         if recipient_lower in self.KNOWN_BAD_EMAILS:
             reason = self.KNOWN_BAD_EMAILS[recipient_lower]
             logging.warning(f"🚫 Skipping {recipient_email} - {reason}")
             self._log_invalid_email(recipient_email, company, f"Known bad: {reason}")
             return False
         
-        # Use enhanced verifier if available
+        # CHECK 2: Previously bounced emails - CRITICAL for reducing Mail Delivery Subsystem errors
+        if recipient_lower in self.bounced_emails:
+            logging.warning(f"🚫 Skipping {recipient_email} - Previously bounced (Mail Delivery Subsystem)")
+            self._log_invalid_email(recipient_email, company, "Previously bounced - in blocklist")
+            return False
+        
+        # CHECK 3: Problematic domains with high bounce rates
+        domain = recipient_email.split('@')[-1].lower()
+        if domain in self.problematic_domains:
+            reason = self.problematic_domains[domain]
+            logging.warning(f"🚫 Skipping {recipient_email} - Problematic domain: {reason}")
+            self._log_invalid_email(recipient_email, company, f"Problematic domain: {reason}")
+            return False
+        
+        # CHECK 4: Domain deliverability (MX record check)
+        if not self._check_domain_deliverable(domain):
+            logging.warning(f"⚠️ Skipping {recipient_email} - Domain has no MX records: {domain}")
+            self._log_invalid_email(recipient_email, company, f"Domain not deliverable: {domain}")
+            self._add_to_bounced_database(recipient_email, company, f"No MX records for domain {domain}")
+            return False
+        
+        # CHECK 5: Enhanced email verification if available
         if self.verifier:
             result = self.verifier.calculate_deliverability_score(recipient_email)
-            if result['score'] < 50:
-                logging.warning(f"⚠️ Skipping {recipient_email} - Low deliverability score: {result['score']}/100 ({result['recommendation']})")
+            if result['score'] < 60:
+                logging.warning(f"⚠️ Skipping {recipient_email} - Low deliverability score: {result['score']}/100")
                 self._log_invalid_email(recipient_email, company, result['recommendation'])
                 return False
-            elif result['score'] < 70:
-                logging.info(f"⚠️ Warning: {recipient_email} has medium deliverability score: {result['score']}/100")
+            elif result['score'] < 75:
+                logging.info(f"⚠️ Warning: {recipient_email} has medium score: {result['score']}/100 - proceeding anyway")
         else:
             # Fallback to basic validation
             is_valid, reason = self.validator.validate_email(recipient_email)
@@ -840,7 +747,7 @@ Respond in JSON:
                 self._log_invalid_email(recipient_email, company, reason)
                 return False
         
-        # Validate configuration
+        # Validate SMTP configuration
         if not self.sender_email or not self.sender_password:
             logging.error("❌ SENDER_EMAIL and SENDER_PASSWORD environment variables must be set!")
             logging.error("For Gmail, use an App Password: https://myaccount.google.com/apppasswords")
@@ -866,13 +773,32 @@ Respond in JSON:
             
         except smtplib.SMTPAuthenticationError:
             logging.error("❌ SMTP Authentication failed! Check your email and app password.")
-            logging.error("For Gmail, enable 2FA and create an App Password.")
             self._save_sent_log(recipient_email, company, job_title, 'auth_failed')
+            return False
+        
+        except smtplib.SMTPRecipientsRefused as e:
+            # This means the recipient email was explicitly rejected by the server
+            logging.warning(f"🚫 Recipient rejected: {recipient_email} - {e}")
+            self._save_sent_log(recipient_email, company, job_title, 'recipient_rejected')
+            self._add_to_bounced_database(recipient_email, company, f"Recipient rejected by server: {str(e)[:100]}")
+            return False
+        
+        except smtplib.SMTPDataError as e:
+            # Message was rejected (possibly blocked/spam)
+            logging.warning(f"🚫 Message rejected for {recipient_email}: {e}")
+            self._save_sent_log(recipient_email, company, job_title, f'message_rejected: {str(e)[:50]}')
             return False
             
         except Exception as e:
-            logging.error(f"❌ Failed to send email to {recipient_email}: {e}")
-            self._save_sent_log(recipient_email, company, job_title, f'failed: {str(e)}')
+            error_str = str(e).lower()
+            # Check if error indicates a bounce
+            if 'undeliverable' in error_str or 'bounce' in error_str or 'rejected' in error_str:
+                logging.warning(f"🚫 Email bounced for {recipient_email}: {e}")
+                self._save_sent_log(recipient_email, company, job_title, f'bounced: {str(e)[:50]}')
+                self._add_to_bounced_database(recipient_email, company, str(e)[:100])
+            else:
+                logging.error(f"❌ Failed to send email to {recipient_email}: {e}")
+                self._save_sent_log(recipient_email, company, job_title, f'failed: {str(e)[:50]}')
             return False
     
     def send_bulk_emails(self, emails_df: pd.DataFrame, max_emails: int = 50, delay_range: tuple = (30, 60)) -> dict:

@@ -64,6 +64,11 @@ except ImportError:
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] %(message)s')
 
+# CI Mode detection - reduce delays in GitHub Actions to prevent timeout
+CI_MODE = os.getenv('CI', 'false').lower() == 'true' or os.getenv('GITHUB_ACTIONS', 'false').lower() == 'true'
+if CI_MODE:
+    logging.info("🚀 CI Mode detected - using optimized delays for GitHub Actions")
+
 
 class EmailValidator:
     """Validates email addresses before sending."""
@@ -1085,11 +1090,17 @@ def main():
     # Get max emails from environment variable
     max_emails = int(os.getenv('MAX_EMAILS', '20'))
     
+    # CI Mode: Use reduced delays to prevent GitHub Actions timeout
+    if CI_MODE:
+        delay_range = (5, 15)  # 5-15 seconds in CI
+    else:
+        delay_range = (45, 90)  # 45-90 seconds locally
+    
     # Send emails
     stats = sender.send_bulk_emails(
         emails_df,
         max_emails=max_emails,
-        delay_range=(45, 90)  # 45-90 seconds between emails
+        delay_range=delay_range
     )
     
     logging.info("="*60)

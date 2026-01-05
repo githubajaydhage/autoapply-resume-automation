@@ -204,6 +204,82 @@ CURATED_HR_EMAILS = [
     {"company": "Tiger Analytics", "email": "careers@tigeranalytics.com", "type": "general"},
     {"company": "LatentView", "email": "careers@latentview.com", "type": "general"},
     
+    # =================================================================
+    # DATA ANALYTICS, BI & SQL COMPANIES (Priority for Data Analyst roles!)
+    # =================================================================
+    
+    # Top Analytics Companies (India)
+    {"company": "Absolutdata", "email": "careers@absolutdata.com", "type": "general"},
+    {"company": "AbsolutData Analytics", "email": "hr@absolutdata.com", "type": "hr"},
+    {"company": "Affine Analytics", "email": "careers@affine.ai", "type": "general"},
+    {"company": "Analytics Quotient", "email": "careers@aqai.io", "type": "general"},
+    {"company": "Annik Technology", "email": "careers@annik.com", "type": "general"},
+    {"company": "Bridgei2i", "email": "careers@bridgei2i.com", "type": "general"},
+    {"company": "Course5 Intelligence", "email": "careers@course5i.com", "type": "general"},
+    {"company": "Crayon Data", "email": "careers@crayondata.com", "type": "general"},
+    {"company": "Cartesian Consulting", "email": "careers@cartesian.in", "type": "general"},
+    {"company": "Decision Point", "email": "careers@decisionpointanalytics.com", "type": "general"},
+    {"company": "Gramener", "email": "careers@gramener.com", "type": "general"},
+    {"company": "Indium Software", "email": "careers@indiumsoftware.com", "type": "general"},
+    {"company": "Manthan Software", "email": "careers@manthan.com", "type": "general"},
+    {"company": "MarketsandMarkets", "email": "careers@marketsandmarkets.com", "type": "general"},
+    {"company": "MiQ Digital", "email": "careers@wearemiq.com", "type": "general"},
+    {"company": "Polestar Solutions", "email": "careers@polestarllp.com", "type": "general"},
+    {"company": "Sigmoid", "email": "careers@sigmoid.com", "type": "general"},
+    {"company": "Tredence Analytics", "email": "careers@tredence.com", "type": "general"},
+    {"company": "UST Global", "email": "careers@ust.com", "type": "general"},
+    {"company": "Xceedance", "email": "careers@xceedance.com", "type": "general"},
+    
+    # BI & Data Consulting Firms
+    {"company": "Capillary Technologies", "email": "careers@capillarytech.com", "type": "general"},
+    {"company": "CleverTap", "email": "careers@clevertap.com", "type": "general"},
+    {"company": "Hevo Data", "email": "careers@hevodata.com", "type": "general"},
+    {"company": "InMobi", "email": "careers@inmobi.com", "type": "general"},
+    {"company": "Netcore Cloud", "email": "careers@netcorecloud.com", "type": "general"},
+    {"company": "SolutionsHub", "email": "careers@solutionshub.co.in", "type": "general"},
+    {"company": "Suyati Technologies", "email": "careers@suyati.com", "type": "general"},
+    {"company": "WebEngage", "email": "careers@webengage.com", "type": "general"},
+    
+    # Global Data/Analytics Companies with India offices
+    {"company": "Accenture Analytics", "email": "india.recruiting@accenture.com", "type": "general"},
+    {"company": "Deloitte Analytics", "email": "indiatalent@deloitte.com", "type": "general"},
+    {"company": "EXL Service", "email": "careers@exlservice.com", "type": "general"},
+    {"company": "Genpact Analytics", "email": "careers@genpact.com", "type": "general"},
+    {"company": "KPMG Analytics", "email": "in-careers@kpmg.com", "type": "general"},
+    {"company": "McKinsey Analytics", "email": "india_recruiting@mckinsey.com", "type": "general"},
+    {"company": "PwC Analytics", "email": "in_careers@pwc.com", "type": "general"},
+    {"company": "ZS Associates", "email": "careers@zs.com", "type": "general"},
+    {"company": "Bain & Company", "email": "india.recruiting@bain.com", "type": "general"},
+    {"company": "BCG", "email": "india.recruiting@bcg.com", "type": "general"},
+    {"company": "Oliver Wyman", "email": "india.careers@oliverwyman.com", "type": "general"},
+    
+    # SQL/Database focused companies
+    {"company": "Oracle India", "email": "india_careers@oracle.com", "type": "general"},
+    {"company": "Microsoft India", "email": "careers.india@microsoft.com", "type": "general"},
+    {"company": "Snowflake", "email": "careers@snowflake.com", "type": "general"},
+    {"company": "Databricks", "email": "careers@databricks.com", "type": "general"},
+    {"company": "Cloudera", "email": "careers@cloudera.com", "type": "general"},
+    {"company": "MongoDB", "email": "careers@mongodb.com", "type": "general"},
+    {"company": "Teradata India", "email": "careers.india@teradata.com", "type": "general"},
+    {"company": "Informatica India", "email": "careers.india@informatica.com", "type": "general"},
+    {"company": "Tableau India", "email": "careers.india@salesforce.com", "type": "general"},
+    {"company": "Qlik India", "email": "careers@qlik.com", "type": "general"},
+    {"company": "MicroStrategy", "email": "careers@microstrategy.com", "type": "general"},
+    {"company": "SAS India", "email": "careers.india@sas.com", "type": "general"},
+    {"company": "TIBCO", "email": "careers@tibco.com", "type": "general"},
+    {"company": "Alteryx", "email": "careers@alteryx.com", "type": "general"},
+    
+    # BPO/KPO with Analytics Wings
+    {"company": "WNS Global Services", "email": "careers@wns.com", "type": "general"},
+    {"company": "WNS Analytics", "email": "hr@wns.com", "type": "hr"},
+    {"company": "iGate", "email": "careers@igate.com", "type": "general"},
+    {"company": "NIIT Technologies", "email": "careers@niit-tech.com", "type": "general"},
+    {"company": "Hinduja Global Solutions", "email": "careers@hgs.com", "type": "general"},
+    {"company": "Firstsource Solutions", "email": "careers@firstsource.com", "type": "general"},
+    {"company": "Concentrix", "email": "careers.india@concentrix.com", "type": "general"},
+    {"company": "Teleperformance", "email": "careers.india@teleperformance.com", "type": "general"},
+    {"company": "Sutherland Global", "email": "careers@sutherlandglobal.com", "type": "general"},
+    
     # E-commerce & Retail
     {"company": "Myntra", "email": "careers@myntra.com", "type": "general"},
     {"company": "FirstCry", "email": "careers@firstcry.com", "type": "general"},

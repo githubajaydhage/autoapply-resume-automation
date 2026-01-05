@@ -181,7 +181,7 @@ class SmartJobMatcher:
         """Load all HR emails from various sources."""
         hr_emails = []
         
-        # Source 1: Curated HR database
+        # Source 1: Curated HR database (from CSV)
         curated_path = os.path.join(self.data_path, 'curated_hr_emails.csv')
         if os.path.exists(curated_path):
             curated_df = pd.read_csv(curated_path)
@@ -189,6 +189,20 @@ class SmartJobMatcher:
                 curated_df = curated_df.rename(columns={'email': 'hr_email'})
             hr_emails.append(curated_df)
             logging.info(f"📋 Loaded {len(curated_df)} curated HR emails")
+        else:
+            # FALLBACK: Load directly from curated_hr_database module
+            logging.info("📋 CSV not found, loading from curated_hr_database module...")
+            try:
+                from scripts.curated_hr_database import CuratedHRDatabase
+                db = CuratedHRDatabase()
+                curated_df = db.get_all_emails()
+                if not curated_df.empty:
+                    if 'email' in curated_df.columns:
+                        curated_df = curated_df.rename(columns={'email': 'hr_email'})
+                    hr_emails.append(curated_df)
+                    logging.info(f"📋 Loaded {len(curated_df)} curated HR emails from module")
+            except Exception as e:
+                logging.warning(f"Could not load curated database module: {e}")
         
         # Source 2: Verified HR emails (highest quality)
         verified_path = os.path.join(self.data_path, 'verified_hr_emails.csv')
@@ -207,7 +221,19 @@ class SmartJobMatcher:
             logging.info(f"🔍 Loaded scraped HR emails")
         
         if not hr_emails:
-            logging.warning("No HR emails found!")
+            # LAST RESORT: Load from curated_hr_database module
+            logging.warning("No HR emails found from any source, trying module fallback...")
+            try:
+                from scripts.curated_hr_database import CuratedHRDatabase
+                db = CuratedHRDatabase()
+                curated_df = db.get_all_emails()
+                if not curated_df.empty:
+                    if 'email' in curated_df.columns:
+                        curated_df = curated_df.rename(columns={'email': 'hr_email'})
+                    logging.info(f"✅ Loaded {len(curated_df)} emails from curated database (fallback)")
+                    return curated_df
+            except Exception as e:
+                logging.error(f"Failed to load curated database: {e}")
             return pd.DataFrame()
         
         # Combine and dedupe

@@ -185,8 +185,19 @@ class EmailValidator:
     
     def is_hr_related_email(self, email: str) -> bool:
         """Check if the email is HR/recruitment related."""
-        email_lower = email.lower()
-        local_part = email_lower.split('@')[0]
+        # Handle None, NaN, or invalid email formats
+        if not email or not isinstance(email, str) or '@' not in email:
+            return False
+        
+        try:
+            email_lower = email.lower().strip()
+            parts = email_lower.split('@')
+            if len(parts) != 2:
+                return False
+            local_part = parts[0]
+            domain = parts[1]
+        except:
+            return False
         
         # HR/recruitment keywords that should be in the email
         hr_keywords = [
@@ -218,7 +229,7 @@ class EmailValidator:
         
         # Block personal email domains (gmail, yahoo, etc.) - only company emails allowed
         personal_domains = ['gmail.com', 'yahoo.com', 'outlook.com', 'hotmail.com', 'rediffmail.com']
-        domain = email.split('@')[1].lower()
+        # Note: 'domain' was already extracted at the start of this method
         
         if domain in personal_domains:
             # Don't send to personal email addresses - not genuine HR
@@ -432,12 +443,13 @@ class PersonalizedEmailSender:
             df['domain'] = df['recipient_email'].str.lower().str.split('@').str[-1]
             
             # Count success/failure by domain
-            domain_stats = df.groupby('domain').apply(
+            domain_stats = df.groupby('domain', as_index=False).apply(
                 lambda x: pd.Series({
+                    'domain': x['domain'].iloc[0],
                     'total': len(x),
                     'bounced': x['status'].str.lower().str.contains('bounced|failed|undeliverable|rejected', na=False, regex=True).sum()
-                })
-            ).reset_index()
+                }), include_groups=False
+            ).reset_index(drop=True)
             
             # Domains with >50% bounce rate and at least 2 bounces are problematic
             for _, row in domain_stats.iterrows():

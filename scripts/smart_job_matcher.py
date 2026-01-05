@@ -370,12 +370,13 @@ class SmartJobMatcher:
         Create a prioritized list of applications to send.
         
         Priority order:
-        1. High match score jobs (70%+) with matched HR emails
-        2. Medium match score jobs (50-70%) with matched HR emails
-        3. General outreach to unmatched HR emails
+        1. FRESH/HOT jobs (posted today/yesterday) with HR matches - HIGHEST PRIORITY
+        2. High match score jobs (70%+) with matched HR emails
+        3. Medium match score jobs (50-70%) with matched HR emails
+        4. General outreach to unmatched HR emails
         """
         logging.info("="*60)
-        logging.info("🎯 SMART JOB MATCHER")
+        logging.info("🎯 SMART JOB MATCHER (with Fresh Job Priority)")
         logging.info("="*60)
         
         # Load data
@@ -383,8 +384,51 @@ class SmartJobMatcher:
         hr_df = self.load_hr_emails()
         bad_emails = self.load_known_bad_emails()
         
-        if jobs_df.empty or hr_df.empty:
-            logging.error("Missing jobs or HR emails data!")
+        # Also try to load fresh jobs (highest priority)
+        fresh_jobs_path = os.path.join(self.data_path, 'fresh_jobs.csv')
+        hot_jobs_path = os.path.join(self.data_path, 'hot_jobs_urgent.csv')
+        
+        fresh_df = pd.DataFrame()
+        if os.path.exists(hot_jobs_path):
+            try:
+                fresh_df = pd.read_csv(hot_jobs_path)
+                logging.info(f"🔥 Loaded {len(fresh_df)} HOT jobs (posted today) - HIGHEST PRIORITY!")
+            except:
+                pass
+        elif os.path.exists(fresh_jobs_path):
+            try:
+                fresh_df = pd.read_csv(fresh_jobs_path)
+                fresh_df = fresh_df[fresh_df.get('freshness_tier', '') == 'hot'] if 'freshness_tier' in fresh_df.columns else fresh_df.head(10)
+                logging.info(f"🔥 Loaded {len(fresh_df)} fresh jobs")
+            except:
+                pass
+        
+        if jobs_df.empty and fresh_df.empty:
+            logging.warning("No jobs found!")
+            if hr_df.empty:
+                logging.error("No HR emails either!")
+                return pd.DataFrame()
+        
+        # Combine fresh jobs with regular jobs (fresh first)
+        if not fresh_df.empty:
+            # Standardize column names
+            if 'title' in fresh_df.columns and 'job_title' not in fresh_df.columns:
+                fresh_df['job_title'] = fresh_df['title']
+            if 'company' in fresh_df.columns and 'job_company' not in fresh_df.columns:
+                fresh_df['job_company'] = fresh_df['company']
+            fresh_df['is_fresh'] = True
+            fresh_df['match_score'] = 85  # Fresh jobs get high default score
+            
+            if not jobs_df.empty:
+                jobs_df['is_fresh'] = False
+                jobs_df = pd.concat([fresh_df, jobs_df], ignore_index=True)
+            else:
+                jobs_df = fresh_df
+        else:
+            jobs_df['is_fresh'] = False
+        
+        if hr_df.empty:
+            logging.error("Missing HR emails data!")
             return pd.DataFrame()
         
         # Filter out bad emails
@@ -394,7 +438,13 @@ class SmartJobMatcher:
         # Match jobs to HR emails
         matched_df = self.match_jobs_to_hr(jobs_df, hr_df)
         
-        # Categorize matches
+        # Categorize matches with FRESH priority
+        fresh_priority = pd.DataFrame()
+        if 'is_fresh' in matched_df.columns:
+            fresh_priority = matched_df[matched_df['is_fresh'] == True].copy()
+            fresh_priority['priority'] = 0  # Highest priority
+            matched_df = matched_df[matched_df['is_fresh'] == False]
+        
         high_priority = matched_df[matched_df['job_match_score'] >= 70].copy()
         high_priority['priority'] = 1
         
@@ -404,11 +454,14 @@ class SmartJobMatcher:
         
         # Get unmatched HR for general outreach
         matched_emails = set(matched_df['hr_email'].unique()) if not matched_df.empty else set()
+        if not fresh_priority.empty:
+            matched_emails.update(fresh_priority['hr_email'].unique())
         unmatched_hr = self.get_unmatched_hr_for_general_outreach(hr_df, matched_emails)
         unmatched_hr['priority'] = 3
         
-        # Combine all
+        # Combine all (fresh first, then by priority)
         all_applications = pd.concat([
+            fresh_priority,
             high_priority,
             medium_priority,
             unmatched_hr
@@ -423,6 +476,7 @@ class SmartJobMatcher:
         
         # Log summary
         logging.info(f"\n📊 APPLICATION PRIORITY BREAKDOWN:")
+        logging.info(f"   🔥 FRESH/HOT (posted today): {len(fresh_priority)} - APPLY FIRST!")
         logging.info(f"   🟢 High Priority (70%+ match): {len(high_priority)}")
         logging.info(f"   🟡 Medium Priority (50-70%): {len(medium_priority)}")
         logging.info(f"   🔵 General Outreach: {len(unmatched_hr)}")

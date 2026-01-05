@@ -35,6 +35,47 @@ class RecruitingAgencyFinder:
             {'name': 'Monster India', 'email': 'employers@monsterindia.com', 'specialization': 'Job Portal'},
         ],
         
+        # Data Analytics / Business Intelligence Specialists
+        'data_analytics': [
+            {'name': 'Mu Sigma Careers', 'email': 'careers@mu-sigma.com', 'specialization': 'Analytics'},
+            {'name': 'Fractal Analytics', 'email': 'careers@fractal.ai', 'specialization': 'Analytics/AI'},
+            {'name': 'LatentView Analytics', 'email': 'careers@latentview.com', 'specialization': 'Analytics'},
+            {'name': 'Tiger Analytics', 'email': 'careers@tigeranalytics.com', 'specialization': 'Analytics'},
+            {'name': 'Absolutdata', 'email': 'careers@absolutdata.com', 'specialization': 'Analytics'},
+            {'name': 'Bridgei2i', 'email': 'careers@bridgei2i.com', 'specialization': 'Analytics'},
+            {'name': 'Gramener', 'email': 'careers@gramener.com', 'specialization': 'Data Visualization'},
+            {'name': 'TheMathCompany', 'email': 'careers@themathcompany.com', 'specialization': 'Analytics'},
+            {'name': 'Cartesian Consulting', 'email': 'careers@cartesian.com', 'specialization': 'Analytics'},
+            {'name': 'Manthan', 'email': 'careers@manthan.com', 'specialization': 'Analytics/BI'},
+            {'name': 'Course5 Intelligence', 'email': 'careers@course5i.com', 'specialization': 'Analytics'},
+            {'name': 'Tredence', 'email': 'careers@tredence.com', 'specialization': 'Analytics'},
+            {'name': 'Axtria', 'email': 'careers@axtria.com', 'specialization': 'Analytics'},
+        ],
+        
+        # Job Consultancies - Actively Hiring Candidates
+        'job_consultancies': [
+            {'name': 'Talent Corner HR', 'email': 'resume@talentcorner.in', 'specialization': 'Job Consultancy'},
+            {'name': 'Xpheno', 'email': 'careers@xpheno.com', 'specialization': 'Staffing'},
+            {'name': 'CIEL HR Services', 'email': 'resume@cielhr.com', 'specialization': 'Job Consultancy'},
+            {'name': 'Allegis Group India', 'email': 'india@allegisgroup.com', 'specialization': 'Staffing'},
+            {'name': 'Sapwood Ventures', 'email': 'hr@sapwoodventures.com', 'specialization': 'Job Consultancy'},
+            {'name': 'Crescendo Global', 'email': 'resume@crescendogroup.in', 'specialization': 'Executive Search'},
+            {'name': 'PeopleStrong', 'email': 'careers@peoplestrong.com', 'specialization': 'HR Tech/Staffing'},
+            {'name': 'Sutra HR', 'email': 'resume@sutrahr.com', 'specialization': 'Job Consultancy'},
+            {'name': 'Cutshort', 'email': 'careers@cutshort.io', 'specialization': 'Tech Hiring'},
+            {'name': 'Instahyre', 'email': 'careers@instahyre.com', 'specialization': 'AI Hiring'},
+            {'name': 'Hirist', 'email': 'careers@hirist.com', 'specialization': 'Tech Jobs'},
+            {'name': 'iimjobs', 'email': 'careers@iimjobs.com', 'specialization': 'Premium Jobs'},
+            {'name': 'Shine.com', 'email': 'careers@shine.com', 'specialization': 'Job Portal'},
+            {'name': 'TimesJobs', 'email': 'careers@timesjobs.com', 'specialization': 'Job Portal'},
+            {'name': 'Foundit', 'email': 'careers@foundit.in', 'specialization': 'Job Portal'},
+            {'name': 'Freshersworld', 'email': 'careers@freshersworld.com', 'specialization': 'Fresher Jobs'},
+            {'name': 'PlacementIndia', 'email': 'contact@placementindia.com', 'specialization': 'Job Consultancy'},
+            {'name': 'Wisdomjobs', 'email': 'careers@wisdomjobs.com', 'specialization': 'Job Portal'},
+            {'name': 'HireRight India', 'email': 'india@hireright.com', 'specialization': 'Staffing'},
+            {'name': 'Spectrum Talent', 'email': 'resume@spectrumtalent.com', 'specialization': 'Job Consultancy'},
+        ],
+        
         # Interior Design / Architecture Specialists
         'interior_design': [
             {'name': 'Designerrs Academy Placements', 'email': 'placements@designerrs.com', 'specialization': 'Design'},
@@ -99,9 +140,18 @@ class RecruitingAgencyFinder:
         
     def _determine_category(self) -> List[str]:
         """Determine which agency categories to use based on job keywords."""
-        categories = ['general', 'bangalore']  # Always include these
+        categories = ['general', 'bangalore', 'job_consultancies']  # Always include these
         
         keywords_str = ' '.join(self.job_keywords_lower)
+        
+        # Data Analytics / BI keywords
+        data_keywords = ['data analyst', 'business analyst', 'sql', 'tableau', 'power bi',
+                        'analytics', 'data science', 'machine learning', 'business intelligence',
+                        'bi developer', 'reporting', 'data engineer', 'etl', 'data warehouse',
+                        'python', 'excel', 'visualization', 'insights', 'dashboard']
+        is_data = any(kw in keywords_str for kw in data_keywords)
+        if is_data:
+            categories.append('data_analytics')
         
         # Interior design keywords
         interior_keywords = ['interior', 'design', 'architect', 'autocad', '3ds max', 
@@ -115,8 +165,8 @@ class RecruitingAgencyFinder:
         # IT/DevOps keywords - only if NOT interior design
         # The keyword 'engineer' alone should NOT trigger IT for estimation/billing engineers
         it_keywords = ['devops', 'cloud', 'aws', 'azure', 'kubernetes', 'docker',
-                      'python', 'java', 'developer', 'sre', 'platform', 'software',
-                      'backend', 'frontend', 'fullstack', 'data engineer', 'ml engineer']
+                      'java', 'developer', 'sre', 'platform', 'software',
+                      'backend', 'frontend', 'fullstack', 'ml engineer']
         is_it = any(kw in keywords_str for kw in it_keywords)
         if is_it and not is_interior:
             categories.append('it_devops')

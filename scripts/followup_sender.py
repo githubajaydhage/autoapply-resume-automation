@@ -29,6 +29,11 @@ from utils.config import USER_DETAILS, BASE_RESUME_PATH
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] %(message)s')
 
+# CI Mode detection - reduce delays in GitHub Actions
+CI_MODE = os.getenv('CI', 'false').lower() == 'true' or os.getenv('GITHUB_ACTIONS', 'false').lower() == 'true'
+if CI_MODE:
+    logging.info("🚀 CI Mode detected - using optimized delays for GitHub Actions")
+
 
 class SmartFollowUpSender:
     """
@@ -346,9 +351,12 @@ ${phone}"""
             else:
                 stats['failed'] += 1
             
-            # Delay between emails
+            # Delay between emails - reduced in CI mode to prevent timeout
             if idx < len(contacts) - 1:
-                delay = random.uniform(45, 90)
+                if CI_MODE:
+                    delay = random.uniform(5, 15)  # 5-15 seconds in CI
+                else:
+                    delay = random.uniform(45, 90)  # 45-90 seconds locally
                 logging.info(f"⏳ Waiting {delay:.0f}s before next follow-up...")
                 time.sleep(delay)
         

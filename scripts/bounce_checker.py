@@ -28,6 +28,7 @@ class BounceChecker:
     BOUNCE_SUBJECT_PATTERNS = [
         r'delivery.*fail',
         r'undeliverable',
+        r'undelivered',
         r'mail.*delivery.*failed',
         r'returned.*mail',
         r'delivery.*status.*notification',
@@ -43,6 +44,22 @@ class BounceChecker:
         r'bounce',
         r'mailer-daemon',
         r'postmaster',
+        r'mail delivery subsystem',
+        r'failure notice',
+        r'returned to sender',
+        r'permanent.*failure',
+        r'temporary.*failure',
+    ]
+    
+    # Additional bounce sender patterns
+    BOUNCE_SENDER_PATTERNS = [
+        'mailer-daemon',
+        'postmaster',
+        'mail-daemon',
+        'mail delivery subsystem',
+        'mailerdaemon',
+        'noreply',
+        'no-reply',
     ]
     
     # Patterns to extract the bounced email address
@@ -67,6 +84,10 @@ class BounceChecker:
         'spam': 'Email marked as spam',
         'quota exceeded': 'Mailbox quota exceeded',
         'temporarily rejected': 'Temporary delivery failure',
+        'undeliverable': 'Address undeliverable',
+        'permanent failure': 'Permanent delivery failure',
+        'recipient not found': 'Recipient not found in system',
+        'invalid address': 'Invalid email address format',
     }
     
     def __init__(self):
@@ -97,9 +118,10 @@ class BounceChecker:
         subject_lower = subject.lower()
         from_lower = from_addr.lower()
         
-        # Check from address
-        if any(x in from_lower for x in ['mailer-daemon', 'postmaster', 'mail-daemon']):
-            return True
+        # Check from address against all bounce sender patterns
+        for pattern in self.BOUNCE_SENDER_PATTERNS:
+            if pattern in from_lower:
+                return True
         
         # Check subject patterns
         for pattern in self.BOUNCE_SUBJECT_PATTERNS:
@@ -241,12 +263,23 @@ class BounceChecker:
         return bounces
     
     def save_bounces(self, bounces: list):
-        """Save bounced emails to CSV."""
+        """Save bounced emails to CSV in the correct format."""
         if not bounces:
             return
         
-        df_new = pd.DataFrame(bounces)
-        df_new['detected_at'] = datetime.now().isoformat()
+        # Transform to match expected format: email, company, reason, bounce_date, detected_at, source
+        records = []
+        for b in bounces:
+            records.append({
+                'email': b.get('bounced_email', '').lower(),
+                'company': b.get('company', 'Unknown'),
+                'reason': b.get('reason', 'Unknown delivery failure'),
+                'bounce_date': b.get('bounce_date', datetime.now().strftime('%Y-%m-%d')),
+                'detected_at': datetime.now().isoformat(),
+                'source': 'bounce_checker_inbox'
+            })
+        
+        df_new = pd.DataFrame(records)
         
         if os.path.exists(self.bounce_log_path):
             df_existing = pd.read_csv(self.bounce_log_path)
@@ -254,12 +287,70 @@ class BounceChecker:
                 df_combined = df_new
             else:
                 df_combined = pd.concat([df_existing, df_new], ignore_index=True)
-            df_combined = df_combined.drop_duplicates(subset=['bounced_email'], keep='last')
+            df_combined = df_combined.drop_duplicates(subset=['email'], keep='last')
         else:
             df_combined = df_new
         
         df_combined.to_csv(self.bounce_log_path, index=False)
         logging.info(f"💾 Saved {len(bounces)} bounces to {self.bounce_log_path}")
+    
+    def sync_bounced_from_sent_log(self):
+        """Sync bounced emails from sent_emails_log.csv to bounced_emails.csv.
+        
+        This ensures all emails marked as bounced/failed in the sent log
+        are added to the bounced emails database for future filtering.
+        """
+        if not os.path.exists(self.sent_log_path):
+            logging.info("No sent emails log found to sync")
+            return 0
+        
+        try:
+            df = pd.read_csv(self.sent_log_path)
+            if df.empty or 'status' not in df.columns:
+                return 0
+            
+            # Find all bounced/failed emails
+            bounce_keywords = ['bounced', 'failed', 'undeliverable', 'rejected', 'not found']
+            bounce_mask = df['status'].str.lower().str.contains('|'.join(bounce_keywords), na=False, regex=True)
+            bounced_df = df[bounce_mask].copy()
+            
+            if bounced_df.empty:
+                logging.info("No bounced emails found in sent log")
+                return 0
+            
+            # Prepare records for bounced_emails.csv
+            records = []
+            for _, row in bounced_df.iterrows():
+                records.append({
+                    'email': row['recipient_email'].lower(),
+                    'company': row.get('company', 'Unknown'),
+                    'reason': row.get('status', 'Unknown delivery failure'),
+                    'bounce_date': row.get('sent_at', datetime.now().isoformat())[:10],
+                    'detected_at': datetime.now().isoformat(),
+                    'source': 'sent_log_sync'
+                })
+            
+            df_new = pd.DataFrame(records)
+            
+            # Merge with existing bounced emails
+            if os.path.exists(self.bounce_log_path):
+                df_existing = pd.read_csv(self.bounce_log_path)
+                if not df_existing.empty:
+                    df_combined = pd.concat([df_existing, df_new], ignore_index=True)
+                    df_combined = df_combined.drop_duplicates(subset=['email'], keep='last')
+                else:
+                    df_combined = df_new
+            else:
+                df_combined = df_new
+            
+            df_combined.to_csv(self.bounce_log_path, index=False)
+            
+            logging.info(f"✅ Synced {len(records)} bounced emails from sent log to database")
+            return len(records)
+            
+        except Exception as e:
+            logging.error(f"Error syncing bounced emails: {e}")
+            return 0
     
     def update_sent_log_with_bounces(self, bounces: list):
         """Update sent_emails_log.csv with bounce status."""
@@ -351,8 +442,24 @@ def main():
         checker.save_bounces(bounces)
         checker.update_sent_log_with_bounces(bounces)
     
+    # ALWAYS sync bounced emails from sent log (even if no new inbox bounces)
+    synced = checker.sync_bounced_from_sent_log()
+    if synced > 0:
+        logging.info(f"📝 Synced {synced} bounced emails from sent log to database")
+    
     # Generate quality report
     checker.generate_email_quality_report()
+    
+    # Show summary of bounced emails database
+    if os.path.exists(checker.bounce_log_path):
+        try:
+            df = pd.read_csv(checker.bounce_log_path)
+            logging.info(f"\n📊 BOUNCED EMAILS DATABASE:")
+            logging.info(f"   Total blocked emails: {len(df)}")
+            if not df.empty:
+                logging.info(f"   These emails will be SKIPPED in future campaigns")
+        except:
+            pass
     
     logging.info("="*60)
     logging.info("✅ Bounce check completed!")

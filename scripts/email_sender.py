@@ -18,8 +18,22 @@ import logging
 import time
 import random
 import re
+import signal
 from datetime import datetime
 from string import Template
+
+# Global flag for graceful shutdown on SIGTERM (GitHub Actions cancel)
+SHUTDOWN_REQUESTED = False
+
+def signal_handler(signum, frame):
+    """Handle SIGTERM/SIGINT for graceful shutdown"""
+    global SHUTDOWN_REQUESTED
+    SHUTDOWN_REQUESTED = True
+    logging.info("🛑 Shutdown signal received - finishing current operation and exiting...")
+
+# Register signal handlers for graceful cancellation
+signal.signal(signal.SIGTERM, signal_handler)
+signal.signal(signal.SIGINT, signal_handler)
 
 # Add parent directory to path for imports
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -228,19 +242,27 @@ class PersonalizedEmailSender:
         'recrops@ca.ibm.com',
     }
     
+    # KNOWN PROBLEMATIC DOMAINS - High bounce rate domains
+    PROBLEMATIC_DOMAINS = {
+        'urbancompany.com': 'High bounce rate - use careers portal',
+        'example.com': 'Fake domain',
+        'test.com': 'Test domain',
+    }
+    
     def __init__(self):
         # Email configuration - only password needed from secrets
         self.smtp_server = os.getenv('SMTP_SERVER', 'smtp.gmail.com')
         self.smtp_port = int(os.getenv('SMTP_PORT', '587'))
         
-        # Use email from config, password from secrets
-        self.sender_email = USER_DETAILS.get('email', 'biradarshweta48@gmail.com')
-        self.sender_password = os.getenv('SENDER_PASSWORD', '')  # App password from GitHub Secrets
-        self.sender_name = USER_DETAILS.get('full_name', 'Shweta Biradar')
+        # Use email from config (set via SENDER_EMAIL env var), password from secrets
+        # Support multiple env var names for compatibility
+        self.sender_email = os.getenv('SENDER_EMAIL') or os.getenv('GMAIL_USER') or USER_DETAILS.get('email', '')
+        self.sender_password = os.getenv('SENDER_PASSWORD') or os.getenv('GMAIL_APP_PASSWORD') or os.getenv('SENDER_PASSWORD_YOGESHWARI', '')
+        self.sender_name = os.getenv('APPLICANT_NAME', USER_DETAILS.get('full_name', ''))
         
-        # Applicant details from config.py - no secrets needed!
-        self.applicant_name = USER_DETAILS.get('full_name', 'Shweta Biradar')
-        self.applicant_phone = USER_DETAILS.get('phone', '+91-7676294009')
+        # Applicant details from env vars or config.py
+        self.applicant_name = os.getenv('APPLICANT_NAME', USER_DETAILS.get('full_name', ''))
+        self.applicant_phone = os.getenv('APPLICANT_PHONE', USER_DETAILS.get('phone', ''))
         self.applicant_linkedin = USER_DETAILS.get('linkedin_url', '')
         self.applicant_experience = USER_DETAILS.get('years_experience', '3')
         self.applicant_skills = USER_DETAILS.get('key_skills', 'Data Analysis, Python, SQL, Excel, Tableau, Power BI')
@@ -280,6 +302,15 @@ class PersonalizedEmailSender:
             os.path.dirname(__file__), '..', 'data', 'problematic_emails.csv'
         )
         
+        # CRITICAL: Bounced emails database - emails that bounced previously
+        self.bounced_emails_file = os.path.join(
+            os.path.dirname(__file__), '..', 'data', 'bounced_emails.csv'
+        )
+        self.bounced_emails = self._load_bounced_emails()
+        
+        # Load problematic domains from sent log
+        self.problematic_domains = self._analyze_problematic_domains()
+
         # Initialize email verifier if available
         self.verifier = None
         if VERIFIER_AVAILABLE:
@@ -310,11 +341,129 @@ class PersonalizedEmailSender:
             timing = self.optimizer.timer.get_send_recommendation()
             logging.info(f"   ⏰ Timing: {timing['reason']}")
         
+        # Log bounced emails stats
+        if self.bounced_emails:
+            logging.info(f"   🚫 Bounced emails in database: {len(self.bounced_emails)}")
+        if self.problematic_domains:
+            logging.info(f"   ⚠️ Problematic domains identified: {len(self.problematic_domains)}")
+        
+    def _load_bounced_emails(self) -> set:
+        """Load previously bounced emails to avoid re-sending."""
+        bounced = set()
+        
+        # Load from bounced_emails.csv
+        if os.path.exists(self.bounced_emails_file):
+            try:
+                df = pd.read_csv(self.bounced_emails_file)
+                if 'email' in df.columns:
+                    bounced.update(df['email'].str.lower().dropna().tolist())
+                logging.info(f"📄 Loaded {len(bounced)} bounced emails from database")
+            except Exception as e:
+                logging.warning(f"⚠️ Could not load bounced emails: {e}")
+        
+        # Also check sent_emails_log.csv for bounced status
+        if os.path.exists(self.sent_log_path):
+            try:
+                df = pd.read_csv(self.sent_log_path)
+                if 'status' in df.columns and 'recipient_email' in df.columns:
+                    # Find emails with bounced or failed status
+                    bounce_mask = df['status'].str.lower().str.contains('bounced|undeliverable|failed|rejected', na=False, regex=True)
+                    bounced_from_log = df[bounce_mask]['recipient_email'].str.lower().dropna().tolist()
+                    bounced.update(bounced_from_log)
+                    if bounced_from_log:
+                        logging.info(f"📄 Found {len(bounced_from_log)} additional bounced emails from sent log")
+            except Exception as e:
+                logging.debug(f"Could not check sent log for bounces: {e}")
+        
+        # Also load from problematic_emails.csv
+        if os.path.exists(self.problematic_log_path):
+            try:
+                df = pd.read_csv(self.problematic_log_path)
+                if 'email' in df.columns:
+                    bounced.update(df['email'].str.lower().dropna().tolist())
+            except Exception as e:
+                logging.debug(f"Could not load problematic emails: {e}")
+        
+        return bounced
+    
+    def _analyze_problematic_domains(self) -> dict:
+        """Analyze sent log to find domains with high bounce rates."""
+        problematic = dict(self.PROBLEMATIC_DOMAINS)  # Start with known bad domains
+        
+        if not os.path.exists(self.sent_log_path):
+            return problematic
+        
+        try:
+            df = pd.read_csv(self.sent_log_path)
+            if df.empty or 'recipient_email' not in df.columns or 'status' not in df.columns:
+                return problematic
+            
+            # Extract domain from email
+            df['domain'] = df['recipient_email'].str.lower().str.split('@').str[-1]
+            
+            # Count success/failure by domain
+            domain_stats = df.groupby('domain').apply(
+                lambda x: pd.Series({
+                    'total': len(x),
+                    'bounced': x['status'].str.lower().str.contains('bounced|failed|undeliverable|rejected', na=False, regex=True).sum()
+                })
+            ).reset_index()
+            
+            # Domains with >50% bounce rate and at least 2 bounces are problematic
+            for _, row in domain_stats.iterrows():
+                if row['total'] >= 2 and row['bounced'] / row['total'] >= 0.5:
+                    domain = row['domain']
+                    if domain not in problematic:
+                        problematic[domain] = f"High bounce rate ({int(row['bounced'])}/{int(row['total'])} emails bounced)"
+                        logging.info(f"⚠️ Identified problematic domain: {domain}")
+        
+        except Exception as e:
+            logging.debug(f"Could not analyze domains: {e}")
+        
+        return problematic
+    
+    def _add_to_bounced_database(self, email: str, company: str, reason: str):
+        """Add an email to the bounced emails database."""
+        try:
+            log_entry = {
+                'email': email.lower(),
+                'company': company,
+                'reason': reason,
+                'bounce_date': datetime.now().strftime('%Y-%m-%d'),
+                'detected_at': datetime.now().isoformat(),
+                'source': 'email_sender'
+            }
+            
+            if os.path.exists(self.bounced_emails_file):
+                df = pd.read_csv(self.bounced_emails_file)
+                # Check if already exists
+                if email.lower() not in df['email'].str.lower().values:
+                    df = pd.concat([df, pd.DataFrame([log_entry])], ignore_index=True)
+            else:
+                df = pd.DataFrame([log_entry])
+            
+            df.to_csv(self.bounced_emails_file, index=False)
+            self.bounced_emails.add(email.lower())
+            logging.info(f"📝 Added {email} to bounced emails database")
+            
+        except Exception as e:
+            logging.warning(f"Could not add to bounced database: {e}")
+    
     def _load_sent_log(self) -> set:
-        """Load previously sent emails to avoid duplicates."""
+        """Load previously sent emails to avoid duplicates.
+        
+        Now tracks by (email + job_title) combination so we can apply
+        to NEW job openings at the same company.
+        """
         if os.path.exists(self.sent_log_path):
             df = pd.read_csv(self.sent_log_path)
-            return set(df['recipient_email'].str.lower())
+            # Track by email + job_title combination (allows same company for different jobs)
+            sent_combinations = set()
+            for _, row in df.iterrows():
+                email = str(row.get('recipient_email', '')).lower().strip()
+                job = str(row.get('job_title', '')).lower().strip()
+                sent_combinations.add(f"{email}|{job}")
+            return sent_combinations
         return set()
     
     def _save_sent_log(self, recipient_email: str, company: str, job_title: str, status: str):
@@ -338,7 +487,8 @@ class PersonalizedEmailSender:
             df = pd.DataFrame([log_entry])
         
         df.to_csv(self.sent_log_path, index=False)
-        self.sent_emails.add(recipient_email.lower())
+        # Track by email + job_title combination
+        self.sent_emails.add(f"{recipient_email.lower()}|{job_title.lower().strip()}")
     
     def generate_email_subject(self, job_title: str, company: str, recipient_email: str = None) -> str:
         """Generate a personalized email subject - optimized for high open rates."""
@@ -526,32 +676,69 @@ ${name}
         
         df.to_csv(self.invalid_log_path, index=False)
     
+    def _check_domain_deliverable(self, domain: str) -> bool:
+        """Check if domain has valid MX records and is deliverable."""
+        try:
+            import dns.resolver
+            # Check MX records
+            mx_records = dns.resolver.resolve(domain, 'MX')
+            return len(mx_records) > 0
+        except Exception:
+            # If no MX records, try A record as fallback
+            try:
+                dns.resolver.resolve(domain, 'A')
+                return True
+            except Exception:
+                return False
+    
     def send_email(self, recipient_email: str, company: str, job_title: str, job_url: str = None) -> bool:
-        """Send a personalized email to a single recipient."""
+        """Send a personalized email to a single recipient with comprehensive bounce protection."""
         
-        recipient_lower = recipient_email.lower()
+        recipient_lower = recipient_email.lower().strip()
         
-        # Skip if already sent
-        if recipient_lower in self.sent_emails:
-            logging.info(f"⏭️ Skipping {recipient_email} - already contacted")
+        # Skip if already sent for this job
+        job_key = f"{recipient_lower}|{job_title.lower().strip()}"
+        if job_key in self.sent_emails:
+            logging.info(f"⏭️ Skipping {recipient_email} - already applied for this job")
             return False
         
-        # CHECK KNOWN BAD EMAILS FIRST - Save time and quota
+        # CHECK 1: Known bad emails - instant reject
         if recipient_lower in self.KNOWN_BAD_EMAILS:
             reason = self.KNOWN_BAD_EMAILS[recipient_lower]
             logging.warning(f"🚫 Skipping {recipient_email} - {reason}")
             self._log_invalid_email(recipient_email, company, f"Known bad: {reason}")
             return False
         
-        # Use enhanced verifier if available
+        # CHECK 2: Previously bounced emails - CRITICAL for reducing Mail Delivery Subsystem errors
+        if recipient_lower in self.bounced_emails:
+            logging.warning(f"🚫 Skipping {recipient_email} - Previously bounced (Mail Delivery Subsystem)")
+            self._log_invalid_email(recipient_email, company, "Previously bounced - in blocklist")
+            return False
+        
+        # CHECK 3: Problematic domains with high bounce rates
+        domain = recipient_email.split('@')[-1].lower()
+        if domain in self.problematic_domains:
+            reason = self.problematic_domains[domain]
+            logging.warning(f"🚫 Skipping {recipient_email} - Problematic domain: {reason}")
+            self._log_invalid_email(recipient_email, company, f"Problematic domain: {reason}")
+            return False
+        
+        # CHECK 4: Domain deliverability (MX record check)
+        if not self._check_domain_deliverable(domain):
+            logging.warning(f"⚠️ Skipping {recipient_email} - Domain has no MX records: {domain}")
+            self._log_invalid_email(recipient_email, company, f"Domain not deliverable: {domain}")
+            self._add_to_bounced_database(recipient_email, company, f"No MX records for domain {domain}")
+            return False
+        
+        # CHECK 5: Enhanced email verification if available
         if self.verifier:
             result = self.verifier.calculate_deliverability_score(recipient_email)
-            if result['score'] < 50:
-                logging.warning(f"⚠️ Skipping {recipient_email} - Low deliverability score: {result['score']}/100 ({result['recommendation']})")
+            if result['score'] < 60:
+                logging.warning(f"⚠️ Skipping {recipient_email} - Low deliverability score: {result['score']}/100")
                 self._log_invalid_email(recipient_email, company, result['recommendation'])
                 return False
-            elif result['score'] < 70:
-                logging.info(f"⚠️ Warning: {recipient_email} has medium deliverability score: {result['score']}/100")
+            elif result['score'] < 75:
+                logging.info(f"⚠️ Warning: {recipient_email} has medium score: {result['score']}/100 - proceeding anyway")
         else:
             # Fallback to basic validation
             is_valid, reason = self.validator.validate_email(recipient_email)
@@ -560,7 +747,7 @@ ${name}
                 self._log_invalid_email(recipient_email, company, reason)
                 return False
         
-        # Validate configuration
+        # Validate SMTP configuration
         if not self.sender_email or not self.sender_password:
             logging.error("❌ SENDER_EMAIL and SENDER_PASSWORD environment variables must be set!")
             logging.error("For Gmail, use an App Password: https://myaccount.google.com/apppasswords")
@@ -586,13 +773,32 @@ ${name}
             
         except smtplib.SMTPAuthenticationError:
             logging.error("❌ SMTP Authentication failed! Check your email and app password.")
-            logging.error("For Gmail, enable 2FA and create an App Password.")
             self._save_sent_log(recipient_email, company, job_title, 'auth_failed')
+            return False
+        
+        except smtplib.SMTPRecipientsRefused as e:
+            # This means the recipient email was explicitly rejected by the server
+            logging.warning(f"🚫 Recipient rejected: {recipient_email} - {e}")
+            self._save_sent_log(recipient_email, company, job_title, 'recipient_rejected')
+            self._add_to_bounced_database(recipient_email, company, f"Recipient rejected by server: {str(e)[:100]}")
+            return False
+        
+        except smtplib.SMTPDataError as e:
+            # Message was rejected (possibly blocked/spam)
+            logging.warning(f"🚫 Message rejected for {recipient_email}: {e}")
+            self._save_sent_log(recipient_email, company, job_title, f'message_rejected: {str(e)[:50]}')
             return False
             
         except Exception as e:
-            logging.error(f"❌ Failed to send email to {recipient_email}: {e}")
-            self._save_sent_log(recipient_email, company, job_title, f'failed: {str(e)}')
+            error_str = str(e).lower()
+            # Check if error indicates a bounce
+            if 'undeliverable' in error_str or 'bounce' in error_str or 'rejected' in error_str:
+                logging.warning(f"🚫 Email bounced for {recipient_email}: {e}")
+                self._save_sent_log(recipient_email, company, job_title, f'bounced: {str(e)[:50]}')
+                self._add_to_bounced_database(recipient_email, company, str(e)[:100])
+            else:
+                logging.error(f"❌ Failed to send email to {recipient_email}: {e}")
+                self._save_sent_log(recipient_email, company, job_title, f'failed: {str(e)[:50]}')
             return False
     
     def send_bulk_emails(self, emails_df: pd.DataFrame, max_emails: int = 50, delay_range: tuple = (30, 60)) -> dict:
@@ -602,8 +808,18 @@ ${name}
             logging.warning("No emails to send!")
             return {'sent': 0, 'failed': 0, 'skipped': 0}
         
-        # Filter out already sent
-        emails_df = emails_df[~emails_df['hr_email'].str.lower().isin(self.sent_emails)]
+        # Filter out already sent - now tracks by (email + job_title) combination
+        # This allows applying to NEW job openings at the same company
+        def is_already_sent(row):
+            email = str(row['hr_email']).lower().strip()
+            job = str(row.get('job_title', '')).lower().strip()
+            return f"{email}|{job}" in self.sent_emails
+        
+        already_sent_mask = emails_df.apply(is_already_sent, axis=1)
+        new_jobs_count = (~already_sent_mask).sum()
+        logging.info(f"📬 Found {new_jobs_count} NEW job applications (filtered {already_sent_mask.sum()} already-sent)")
+        
+        emails_df = emails_df[~already_sent_mask]
         emails_df = emails_df[emails_df['hr_email'].notna()]
         
         # CRITICAL: Filter to only HR-related emails (skip info@, support@, etc.)
@@ -625,6 +841,11 @@ ${name}
         stats = {'sent': 0, 'failed': 0, 'skipped': 0}
         
         for idx, row in emails_to_send.iterrows():
+            # Check for shutdown signal (GitHub Actions cancel)
+            if SHUTDOWN_REQUESTED:
+                logging.info("🛑 Shutdown requested - stopping email campaign gracefully")
+                break
+                
             recipient = row['hr_email']
             company = row.get('company', 'Your Company')
             job_title = row.get('job_title', 'Open Position')
@@ -646,7 +867,11 @@ ${name}
             if idx < len(emails_to_send) - 1:
                 delay = random.uniform(*delay_range)
                 logging.info(f"⏳ Waiting {delay:.0f} seconds before next email...")
-                time.sleep(delay)
+                # Interruptible sleep - check for shutdown every second
+                for _ in range(int(delay)):
+                    if SHUTDOWN_REQUESTED:
+                        break
+                    time.sleep(1)
         
         logging.info(f"\n📊 Email Campaign Summary:")
         logging.info(f"   ✅ Sent: {stats['sent']}")
@@ -675,6 +900,14 @@ def load_smart_matched_applications():
         logging.warning(f"Smart matcher error: {e}, falling back to legacy mode")
     
     return None
+
+
+# Import recruiting agencies finder
+try:
+    from scripts.recruiting_agencies import get_agency_emails_for_profile
+    AGENCIES_AVAILABLE = True
+except ImportError:
+    AGENCIES_AVAILABLE = False
 
 
 def main():
@@ -713,7 +946,10 @@ def main():
             # Rename 'email' to 'hr_email' for compatibility
             if 'email' in curated_df.columns:
                 curated_df = curated_df.rename(columns={'email': 'hr_email'})
-            curated_df['job_title'] = 'Data Analyst / Business Analyst'  # Default
+            # Use JOB_KEYWORDS for job title instead of hardcoded "Data Analyst"
+            job_keywords_str = os.environ.get('JOB_KEYWORDS', 'Open Position')
+            job_title_default = job_keywords_str.split(',')[0].strip().title() if job_keywords_str else 'Open Position'
+            curated_df['job_title'] = job_title_default
             emails_df = pd.concat([emails_df, curated_df], ignore_index=True)
             logging.info(f"📋 Loaded {len(curated_df)} curated HR emails")
         
@@ -724,6 +960,52 @@ def main():
             if 'hr_email' in scraped_df.columns:
                 emails_df = pd.concat([emails_df, scraped_df], ignore_index=True)
                 logging.info(f"🔍 Loaded {len(scraped_df)} scraped HR emails")
+        
+        # Source 3: Growing HR database from advanced discovery
+        discovered_path = os.path.join(os.path.dirname(__file__), '..', 'data', 'discovered_hr_emails.csv')
+        if os.path.exists(discovered_path):
+            discovered_df = pd.read_csv(discovered_path)
+            if 'email' in discovered_df.columns:
+                discovered_df = discovered_df.rename(columns={'email': 'hr_email'})
+            # Use JOB_KEYWORDS for job title
+            job_keywords_str = os.environ.get('JOB_KEYWORDS', 'Open Position')
+            job_title_default = job_keywords_str.split(',')[0].strip().title() if job_keywords_str else 'Open Position'
+            discovered_df['job_title'] = job_title_default
+            emails_df = pd.concat([emails_df, discovered_df], ignore_index=True)
+            logging.info(f"📈 Loaded {len(discovered_df)} discovered HR emails (growing database)")
+    
+    # ============================================
+    # NEW: Add Recruiting Agencies to email list
+    # ============================================
+    if AGENCIES_AVAILABLE and os.getenv('SEND_TO_AGENCIES', 'true').lower() == 'true':
+        logging.info("\n🏢 RECRUITING AGENCIES - Finding staffing firms for your profile...")
+        try:
+            job_keywords_str = os.environ.get('JOB_KEYWORDS', '')
+            job_keywords = [kw.strip() for kw in job_keywords_str.split(',') if kw.strip()]
+            
+            agencies = get_agency_emails_for_profile(job_keywords, max_agencies=20)
+            
+            if agencies:
+                agency_records = []
+                for agency in agencies:
+                    agency_records.append({
+                        'hr_email': agency['email'],
+                        'company': agency['name'],
+                        'job_title': f"Open Positions - {agency.get('specialization', 'General')}",
+                        'job_url': '',
+                        'source': 'recruiting_agency'
+                    })
+                
+                agency_df = pd.DataFrame(agency_records)
+                emails_df = pd.concat([emails_df, agency_df], ignore_index=True)
+                logging.info(f"🏢 Added {len(agencies)} recruiting agencies to send list")
+            else:
+                logging.info("⚠️ No recruiting agencies found for your profile")
+                
+        except Exception as e:
+            logging.warning(f"⚠️ Could not load recruiting agencies: {e}")
+    else:
+        logging.info("ℹ️ Recruiting agencies disabled (set SEND_TO_AGENCIES=true to enable)")
     
     if emails_df.empty:
         logging.error("❌ No HR emails found!")
@@ -742,6 +1024,13 @@ def main():
         logging.info(f"🎯 Application types:")
         for match_type, count in match_stats.items():
             logging.info(f"   • {match_type}: {count}")
+    
+    # Show source breakdown
+    if 'source' in emails_df.columns:
+        source_stats = emails_df['source'].value_counts()
+        logging.info(f"📋 Email sources:")
+        for source, count in source_stats.items():
+            logging.info(f"   • {source}: {count}")
     
     # Get max emails from environment variable
     max_emails = int(os.getenv('MAX_EMAILS', '20'))

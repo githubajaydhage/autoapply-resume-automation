@@ -482,6 +482,17 @@ jobs:
         PYTHONPATH: ${{ github.workspace }}
         JOB_LOCATION: ${{ github.event.inputs.job_location || 'Bangalore' }}
 
+    # PHASE 1.0.5: FRESH JOB HUNTER - Find jobs posted TODAY (HIGHEST PRIORITY!)
+    - name: 🔥 Fresh Job Hunter (Posted Today)
+      run: |
+        echo "🔥 HUNTING FRESH JOBS - Posted Today!"
+        echo "   Finding the LATEST openings for immediate application..."
+        echo "   Priority: Today > Yesterday > This Week"
+        python scripts/fresh_job_hunter.py || true
+      env:
+        PYTHONPATH: ${{ github.workspace }}
+        JOB_KEYWORDS: ${{ github.event.inputs.job_keywords || 'data analyst, sql developer, business analyst, data engineer' }}
+
     # PHASE 1.1: AI Job Research (NEW - FREE AI!)
     - name: 🤖 AI Job Research & Discovery
       run: |

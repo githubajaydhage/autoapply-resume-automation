@@ -1,0 +1,11 @@
+job_title,company,location,source,apply_url,priority_score,posted_date,applicants,status
+Data Analyst,KPMG,Bangalore,naukri,https://www.naukri.com/job-listings-data-analyst-kpmg-bangalore,55,Today,23,queued
+Business Analyst,KPMG,Bangalore,naukri,https://www.naukri.com/job-listings-business-analyst-kpmg-bangalore,55,Today,23,queued
+SQL Developer,KPMG,Bangalore,naukri,https://www.naukri.com/job-listings-sql-developer-kpmg-bangalore,55,Today,23,queued
+Data Engineer,KPMG,Bangalore,naukri,https://www.naukri.com/job-listings-data-engineer-kpmg-bangalore,55,Today,23,queued
+Data Analyst,Accenture,Bangalore,naukri,https://www.naukri.com/job-listings-data-analyst-accenture-bangalore,35,1 day ago,45,queued
+Business Analyst,Accenture,Bangalore,naukri,https://www.naukri.com/job-listings-business-analyst-accenture-bangalore,35,1 day ago,45,queued
+SQL Developer,Accenture,Bangalore,naukri,https://www.naukri.com/job-listings-sql-developer-accenture-bangalore,35,1 day ago,45,queued
+Data Engineer,Accenture,Bangalore,naukri,https://www.naukri.com/job-listings-data-engineer-accenture-bangalore,35,1 day ago,45,queued
+Data Analyst,Deloitte,Bangalore,naukri,https://www.naukri.com/job-listings-data-analyst-deloitte-bangalore,15,2 days ago,62,queued
+Business Analyst,Deloitte,Bangalore,naukri,https://www.naukri.com/job-listings-business-analyst-deloitte-bangalore,15,2 days ago,62,queued

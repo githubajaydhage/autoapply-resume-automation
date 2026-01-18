@@ -1118,6 +1118,39 @@ def main():
     else:
         delay_range = (45, 90)  # 45-90 seconds locally
     
+    # --- DYNAMIC JOB FILTERING LOGIC ---
+    # Only apply for jobs matching workflow-defined target role, applicant skills, and job keywords
+    target_role = os.getenv('APPLICANT_TARGET_ROLE', '').strip().lower()
+    job_keywords = [kw.strip().lower() for kw in os.getenv('JOB_KEYWORDS', '').split(',') if kw.strip()]
+    applicant_skills = [sk.strip().lower() for sk in os.getenv('APPLICANT_SKILLS', '').split(',') if sk.strip()]
+
+    def job_matches(row):
+        # Check job title against target role and keywords
+        job_title = str(row.get('job_title', '') or row.get('title', '')).strip().lower()
+        # Check for any keyword match in job title
+        keyword_match = any(kw in job_title for kw in job_keywords) if job_keywords else True
+        # Check for target role match
+        role_match = target_role in job_title if target_role else True
+        # Check for skills match (if skills column exists)
+        skills_col = row.get('skills', '')
+        if isinstance(skills_col, str):
+            job_skills = skills_col.lower()
+        elif isinstance(skills_col, list):
+            job_skills = ','.join(skills_col).lower()
+        else:
+            job_skills = ''
+        skills_match = any(sk in job_skills for sk in applicant_skills) if applicant_skills and job_skills else True
+        return keyword_match and role_match and skills_match
+
+    # Apply filtering if any criteria are set
+    if target_role or job_keywords or applicant_skills:
+        before_count = len(emails_df)
+        emails_df = emails_df[emails_df.apply(job_matches, axis=1)]
+        after_count = len(emails_df)
+        logging.info(f"🔒 Filtered jobs by workflow criteria: {after_count} of {before_count} remain after filtering.")
+        if emails_df.empty:
+            logging.error("❌ No jobs matched the workflow criteria! Check your workflow variables.")
+            return
     # Send emails
     stats = sender.send_bulk_emails(
         emails_df,

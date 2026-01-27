@@ -867,24 +867,33 @@ ${name}
         # Filter out already sent - now tracks by (email + job_title) combination
         # This allows applying to NEW job openings at the same company
         def is_already_sent(row):
-            email = str(row.get('hr_email', '')).lower().strip() if pd.notna(row.get('hr_email', '')) else ''
+            email = row['hr_email']
+            # Robustly handle NaN/float/non-string values
+            if pd.isna(email) or not isinstance(email, str):
+                return True
+            email = email.lower().strip()
             job = str(row.get('job_title', '')).lower().strip()
             return f"{email}|{job}" in self.sent_emails
-        
+
         already_sent_mask = emails_df.apply(is_already_sent, axis=1)
         new_jobs_count = (~already_sent_mask).sum()
         logging.info(f"📬 Found {new_jobs_count} NEW job applications (filtered {already_sent_mask.sum()} already-sent)")
-        # Remove rows with missing or non-string hr_email
+
         emails_df = emails_df[~already_sent_mask]
-        emails_df = emails_df[emails_df['hr_email'].apply(lambda x: isinstance(x, str) and pd.notna(x) and x.strip() != '')]
-        
+        emails_df = emails_df[emails_df['hr_email'].notna()]
+
         # CRITICAL: Filter to only HR-related emails (skip info@, support@, etc.)
-        hr_mask = emails_df['hr_email'].apply(self.validator.is_hr_related_email)
+        def safe_is_hr_related(email):
+            if pd.isna(email) or not isinstance(email, str):
+                return False
+            return self.validator.is_hr_related_email(email)
+
+        hr_mask = emails_df['hr_email'].apply(safe_is_hr_related)
         non_hr_count = len(emails_df) - hr_mask.sum()
         if non_hr_count > 0:
             logging.info(f"🚫 Filtered out {non_hr_count} non-HR emails (info@, support@, cc@, etc.)")
         emails_df = emails_df[hr_mask]
-        
+
         if emails_df.empty:
             logging.info("All emails have already been sent or filtered!")
             return {'sent': 0, 'failed': 0, 'skipped': 0}

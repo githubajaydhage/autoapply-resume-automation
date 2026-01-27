@@ -1145,12 +1145,17 @@ def main():
     # Apply filtering if any criteria are set
     if target_role or job_keywords or applicant_skills:
         before_count = len(emails_df)
-        emails_df = emails_df[emails_df.apply(job_matches, axis=1)]
-        after_count = len(emails_df)
+        filtered_df = emails_df[emails_df.apply(job_matches, axis=1)]
+        after_count = len(filtered_df)
         logging.info(f"🔒 Filtered jobs by workflow criteria: {after_count} of {before_count} remain after filtering.")
-        if emails_df.empty:
-            logging.error("❌ No jobs matched the workflow criteria! Check your workflow variables.")
-            return
+        if filtered_df.empty:
+            logging.warning("⚠️ No jobs matched the workflow criteria! Proceeding to send to all available HR contacts as fallback.")
+        else:
+            emails_df = filtered_df
+
+    if emails_df.empty:
+        logging.error("❌ No HR emails found after fallback! Aborting.")
+        return
     # Send emails
     stats = sender.send_bulk_emails(
         emails_df,

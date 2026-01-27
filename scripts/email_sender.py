@@ -867,16 +867,16 @@ ${name}
         # Filter out already sent - now tracks by (email + job_title) combination
         # This allows applying to NEW job openings at the same company
         def is_already_sent(row):
-            email = str(row['hr_email']).lower().strip()
+            email = str(row.get('hr_email', '')).lower().strip() if pd.notna(row.get('hr_email', '')) else ''
             job = str(row.get('job_title', '')).lower().strip()
             return f"{email}|{job}" in self.sent_emails
         
         already_sent_mask = emails_df.apply(is_already_sent, axis=1)
         new_jobs_count = (~already_sent_mask).sum()
         logging.info(f"📬 Found {new_jobs_count} NEW job applications (filtered {already_sent_mask.sum()} already-sent)")
-        
+        # Remove rows with missing or non-string hr_email
         emails_df = emails_df[~already_sent_mask]
-        emails_df = emails_df[emails_df['hr_email'].notna()]
+        emails_df = emails_df[emails_df['hr_email'].apply(lambda x: isinstance(x, str) and pd.notna(x) and x.strip() != '')]
         
         # CRITICAL: Filter to only HR-related emails (skip info@, support@, etc.)
         hr_mask = emails_df['hr_email'].apply(self.validator.is_hr_related_email)

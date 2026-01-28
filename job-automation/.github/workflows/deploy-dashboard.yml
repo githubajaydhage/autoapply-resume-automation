@@ -1,0 +1,224 @@
+name: Deploy Dashboard to GitHub Pages
+
+on:
+  # Run after main automation workflow
+  workflow_run:
+    workflows: ["Job Application Automation", "Apply Jobs - Ajay", "Apply Jobs - Shweta", "Apply Jobs - Yogeshwari"]
+    types:
+      - completed
+  
+  # Allow manual trigger
+  workflow_dispatch:
+  
+  # Run on push to docs folder
+  push:
+    branches:
+      - main
+      - master
+    paths:
+      - 'docs/**'
+      - 'data/**'
+      - 'job-automation/docs/**'
+      - 'job-automation/data/**'
+
+# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Allow only one concurrent deployment
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  collect-user-data:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        user: [ajay, shweta, yogeshwari]
+        include:
+          - user: ajay
+            branch: v.1.3.0-ajay
+          - user: shweta
+            branch: main
+          - user: yogeshwari
+            branch: v.1.2.0-geeta
+    steps:
+      - name: Checkout ${{ matrix.user }} branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ matrix.branch }}
+          path: ${{ matrix.user }}-data
+        continue-on-error: true
+      
+      - name: Prepare user data
+        run: |
+          mkdir -p user-data/${{ matrix.user }}
+          
+          # Find data directory
+          if [ -d "${{ matrix.user }}-data/job-automation/data" ]; then
+            cp -r ${{ matrix.user }}-data/job-automation/data/* user-data/${{ matrix.user }}/ 2>/dev/null || true
+          elif [ -d "${{ matrix.user }}-data/data" ]; then
+            cp -r ${{ matrix.user }}-data/data/* user-data/${{ matrix.user }}/ 2>/dev/null || true
+          fi
+          
+          echo "Data files for ${{ matrix.user }}:"
+          ls -la user-data/${{ matrix.user }}/ || echo "No data found"
+      
+      - name: Upload user data
+        uses: actions/upload-artifact@v4
+        with:
+          name: data-${{ matrix.user }}
+          path: user-data/${{ matrix.user }}/
+          if-no-files-found: ignore
+
+  generate-data:
+    needs: collect-user-data
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Download all user data
+        uses: actions/download-artifact@v4
+        with:
+          path: collected-data
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: Organize user data and generate dashboard
+        run: |
+          # Debug: Show what we have at root level
+          echo "=== Root level structure ==="
+          ls -la
+          echo "=== Collected data structure ==="
+          ls -la collected-data/ || echo "No collected-data at root"
+          ls -la collected-data/data-ajay/ 2>/dev/null || echo "No data-ajay folder"
+          ls -la collected-data/data-shweta/ 2>/dev/null || echo "No data-shweta folder"
+          ls -la collected-data/data-yogeshwari/ 2>/dev/null || echo "No data-yogeshwari folder"
+          
+          # Determine project root
+          if [ -d "job-automation" ]; then
+            PROJECT_ROOT="job-automation"
+            COLLECTED_DATA="../collected-data"
+          else
+            PROJECT_ROOT="."
+            COLLECTED_DATA="collected-data"
+          fi
+          
+          echo "Project root: $PROJECT_ROOT"
+          echo "Collected data: $COLLECTED_DATA"
+          
+          cd $PROJECT_ROOT
+          
+          # Create user-specific data directories
+          mkdir -p data_ajay data_shweta data_yogeshwari docs/data
+          
+          # Copy downloaded user data with explicit paths
+          echo "=== Copying user data ==="
+          
+          if [ -d "$COLLECTED_DATA/data-ajay" ]; then
+            echo "Copying ajay data from $COLLECTED_DATA/data-ajay"
+            cp -rv $COLLECTED_DATA/data-ajay/* data_ajay/ || echo "No files to copy for ajay"
+          else
+            echo "No collected data for ajay at $COLLECTED_DATA/data-ajay"
+          fi
+          
+          if [ -d "$COLLECTED_DATA/data-shweta" ]; then
+            echo "Copying shweta data from $COLLECTED_DATA/data-shweta"
+            cp -rv $COLLECTED_DATA/data-shweta/* data_shweta/ || echo "No files to copy for shweta"
+          else
+            echo "No collected data for shweta at $COLLECTED_DATA/data-shweta"
+          fi
+          
+          if [ -d "$COLLECTED_DATA/data-yogeshwari" ]; then
+            echo "Copying yogeshwari data from $COLLECTED_DATA/data-yogeshwari"
+            cp -rv $COLLECTED_DATA/data-yogeshwari/* data_yogeshwari/ || echo "No files to copy for yogeshwari"
+          else
+            echo "No collected data for yogeshwari at $COLLECTED_DATA/data-yogeshwari"
+          fi
+          
+          # Show what we have after copying
+          echo "=== User data directories after copy ==="
+          echo "data_ajay:"
+          ls -la data_ajay/
+          echo "data_shweta:"
+          ls -la data_shweta/
+          echo "data_yogeshwari:"
+          ls -la data_yogeshwari/
+          
+          # Generate dashboard data
+          python scripts/generate_dashboard_data.py
+          
+          # Copy docs to root for GitHub Pages
+          cd ..
+          if [ -d "job-automation/docs" ]; then
+            mkdir -p docs
+            cp -r job-automation/docs/* docs/
+          fi
+      
+      - name: Show generated data
+        run: |
+          echo "Generated dashboard data:"
+          cat docs/data/dashboard_data.json 2>/dev/null || cat job-automation/docs/data/dashboard_data.json 2>/dev/null || echo "Data file not found"
+      
+      - name: Upload dashboard
+        uses: actions/upload-artifact@v4
+        with:
+          name: dashboard-complete
+          path: docs/
+
+  deploy:
+    needs: generate-data
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Prepare docs folder
+        run: |
+          # Navigate to correct location
+          if [ -d "job-automation/docs" ]; then
+            mkdir -p docs
+            cp -r job-automation/docs/* docs/
+          fi
+      
+      - name: Download dashboard data
+        uses: actions/download-artifact@v4
+        with:
+          name: dashboard-complete
+          path: dashboard-artifact
+      
+      - name: Merge dashboard data (keep committed JS/CSS, update data)
+        run: |
+          # Only copy the data folder from artifact, keep committed HTML/JS/CSS
+          if [ -d "dashboard-artifact/data" ]; then
+            mkdir -p docs/data
+            cp -r dashboard-artifact/data/* docs/data/
+          fi
+          echo "Final docs contents:"
+          ls -la docs/
+          echo "Data folder:"
+          ls -la docs/data/ || echo "No data folder"
+      
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+      
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: 'docs'
+      
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

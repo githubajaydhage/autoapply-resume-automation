@@ -1,0 +1,25 @@
+recipient_email,company,job_title,sent_at,status
+careers@hok.com,,Customer Care Specialist Inbound Phone Support,2025-12-30T15:50:48.234590,sent
+careers@wipro.com,,Autocad Designer,2025-12-30T15:55:27.158278,sent
+helpdesk.recruitment@wipro.com,,Autocad Designer,2025-12-30T15:56:16.620123,sent
+careers@hcl.com,,Autocad Designer,2025-12-30T15:57:33.928382,sent
+careers@kotak.com,,Autocad Designer,2025-12-30T15:58:54.307956,bounced: Email address rejected by server
+careers@techmahindra.com,,Autocad Designer,2025-12-30T16:00:13.456905,sent
+careers@razorpay.com,,Autocad Designer,2025-12-30T16:01:36.818062,sent
+careers@zerodha.com,,Autocad Designer,2025-12-30T16:03:40.255111,sent
+careers@swiggy.in,,Autocad Designer,2025-12-30T16:04:53.601544,sent
+careers@zomato.com,,Autocad Designer,2025-12-30T16:04:55.833315,sent
+careers@phonepe.com,,Autocad Designer,2025-12-30T16:04:57.123575,sent
+careers@acclimited.com,ACC Limited,Data Analyst,2026-01-05T04:49:55.379307,sent
+careers@wipro.com,Wipro,Data Analyst,2026-01-05T04:51:20.383901,sent
+helpdesk.recruitment@wipro.com,Wipro,Data Analyst,2026-01-05T04:52:41.297808,sent
+careers@hcl.com,HCL Technologies,Data Analyst,2026-01-05T04:53:32.471338,sent
+careers@techmahindra.com,Tech Mahindra,Data Analyst,2026-01-05T04:55:00.589733,sent
+careers@mphasis.com,Mphasis,Data Analyst,2026-01-05T04:56:31.894353,sent
+careers@cognizant.com,Cognizant,Data Analyst,2026-01-05T04:58:19.832325,sent
+indiatalent@deloitte.com,Deloitte,Data Analyst,2026-01-05T04:59:28.242304,sent
+careers@razorpay.com,Razorpay,Data Analyst,2026-01-05T05:00:56.478920,sent
+careers@zerodha.com,Zerodha,Data Analyst,2026-01-05T05:02:53.143684,sent
+careers@phonepe.com,PhonePe,Data Analyst,2026-01-05T05:03:55.290478,sent
+careers@swiggy.in,Swiggy,Data Analyst,2026-01-05T05:05:21.589246,sent
+careers@zomato.com,Zomato,Data Analyst,2026-01-05T05:06:36.866597,sent

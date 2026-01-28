@@ -1,0 +1,2 @@
+email,company,reason,bounce_date,detected_at,source
+careers@urbancompany.com,Urban Company,Unknown delivery failure,2026-01-01,2026-01-01T07:14:39,mail_delivery_subsystem

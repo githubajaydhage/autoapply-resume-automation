@@ -1,0 +1,87 @@
+# Logs
+*.log
+data/*.log
+data/credentials_test.log
+data/production_applications.log
+
+# Temporary job research files
+job_research_*.json
+intelligent_research_results.json
+
+# Browser data and cache
+browser_data/
+playwright_user_data*/
+data/playwright_user_data*/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# PyInstaller
+*.manifest
+*.spec
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+temp/
+tmp/
+
+# Screenshots from failed applications
+data/*_failure_*.png
+data/login_failure_*.png
+
+# Tailored resumes (user-specific)
+resumes/tailored/
+!resumes/tailored/.gitkeep
+
+# CSV files with personal job data
+data/jobs_today.csv
+data/applied_log.csv
+data/prioritized_jobs_today.csv
+
+# Test results
+data/optimized_jobs_test.json

@@ -1,0 +1,193 @@
+name: TEMPLATE - Job Application System (Dynamic Configuration)
+
+# =================================================================
+# TEMPLATE FOR NEW USERS - COMPLETELY DYNAMIC CONFIGURATION
+# =================================================================
+# This template has NO hardcoded user details. Everything comes from
+# workflow inputs when triggered. Copy this for new branches/users.
+# =================================================================
+
+on:
+  schedule:
+    - cron: '30 4 * * *'   # 10:00 AM IST
+    - cron: '30 9 * * *'   # 3:00 PM IST
+    - cron: '30 14 * * *'  # 8:00 PM IST
+  
+  workflow_dispatch:
+    inputs:
+      # =============================
+      # USER IDENTITY (REQUIRED)
+      # =============================
+      applicant_name:
+        description: 'Full Name (e.g. John Smith)'
+        required: true
+        type: string
+      applicant_email:
+        description: 'Email Address'
+        required: true
+        type: string
+      applicant_phone:
+        description: 'Phone Number (e.g. +91-9876543210)'
+        required: true
+        type: string
+      applicant_location:
+        description: 'Location (e.g. Bangalore, Karnataka, India)'
+        required: true
+        type: string
+      applicant_linkedin:
+        description: 'LinkedIn URL'
+        required: true
+        type: string
+      applicant_experience:
+        description: 'Years of Experience'
+        required: true
+        type: string
+      applicant_target_role:
+        description: 'Target Roles (e.g. Data Analyst, Business Analyst)'
+        required: true
+        type: string
+      applicant_skills:
+        description: 'Key Skills (comma-separated)'
+        required: true
+        type: string
+      resume_filename:
+        description: 'Resume Filename (must exist in resumes/ folder)'
+        required: true
+        type: string
+      job_keywords:
+        description: 'Job Search Keywords (comma-separated)'
+        required: true
+        type: string
+      
+      # =============================
+      # JOB SEARCH PARAMETERS
+      # =============================
+      job_location:
+        description: 'Job Location'
+        required: true
+        default: 'Bangalore'
+        type: choice
+        options:
+        - Bangalore
+        - Mumbai
+        - Delhi
+        - Hyderabad
+        - Pune
+        - Chennai
+        - Remote
+        - India
+      max_emails:
+        description: 'Max new emails to send'
+        required: true
+        default: '15'
+        type: choice
+        options:
+        - '5'
+        - '10'
+        - '15'
+        - '20'
+        - '30'
+        - '50'
+      send_followups:
+        description: 'Send follow-up emails?'
+        required: false
+        default: 'true'
+        type: choice
+        options:
+        - 'true'
+        - 'false'
+      scrape_only:
+        description: 'Only scrape (no emails)'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+        - 'false'
+        - 'true'
+
+# Cancel any in-progress workflow when a new one starts
+concurrency:
+  group: job-application-dynamic-${{ github.ref }}
+  cancel-in-progress: true
+
+# ============================================
+# 🎯 COMPLETELY DYNAMIC CONFIGURATION
+# NO hardcoded values - everything from inputs
+# ============================================
+env:
+  # User Identity (DYNAMIC - from workflow inputs)
+  APPLICANT_NAME: ${{ github.event.inputs.applicant_name }}
+  APPLICANT_FIRST_NAME: ${{ github.event.inputs.applicant_name }}
+  APPLICANT_LAST_NAME: ${{ github.event.inputs.applicant_name }}
+  APPLICANT_EMAIL: ${{ github.event.inputs.applicant_email }}
+  SENDER_EMAIL: ${{ github.event.inputs.applicant_email }}
+  APPLICANT_PHONE: ${{ github.event.inputs.applicant_phone }}
+  APPLICANT_LOCATION: ${{ github.event.inputs.applicant_location }}
+  APPLICANT_CITY: ${{ github.event.inputs.applicant_location }}
+  APPLICANT_COUNTRY: 'India'
+  APPLICANT_LINKEDIN: ${{ github.event.inputs.applicant_linkedin }}
+  APPLICANT_EXPERIENCE: ${{ github.event.inputs.applicant_experience }}
+  YEARS_EXPERIENCE: ${{ github.event.inputs.applicant_experience }}
+  APPLICANT_TARGET_ROLE: ${{ github.event.inputs.applicant_target_role }}
+  APPLICANT_SKILLS: ${{ github.event.inputs.applicant_skills }}
+  
+  # Resume Configuration (DYNAMIC)
+  RESUME_FILENAME: ${{ github.event.inputs.resume_filename }}
+  RESUME_PATH: resumes/${{ github.event.inputs.resume_filename }}
+  
+  # Job Keywords (DYNAMIC)
+  JOB_KEYWORDS: ${{ github.event.inputs.job_keywords }}
+  NAUKRI_KEYWORDS: ${{ github.event.inputs.job_keywords }}
+  
+  # Optional Settings
+  SEND_TO_AGENCIES: 'true'
+  MAX_REFERRAL_REQUESTS: '10'
+  MAX_REFERRALS_PER_COMPANY: '1'
+
+jobs:
+  # Validation Job - Ensures all required inputs are provided
+  validate-inputs:
+    name: "✅ Validate Configuration"
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    
+    steps:
+    - name: Validate Required Inputs
+      run: |
+        echo "🔍 Validating user configuration..."
+        
+        # Check required fields
+        REQUIRED_FIELDS=(
+          "APPLICANT_NAME:${{ github.event.inputs.applicant_name }}"
+          "APPLICANT_EMAIL:${{ github.event.inputs.applicant_email }}"
+          "APPLICANT_PHONE:${{ github.event.inputs.applicant_phone }}"
+          "APPLICANT_LOCATION:${{ github.event.inputs.applicant_location }}"
+          "APPLICANT_LINKEDIN:${{ github.event.inputs.applicant_linkedin }}"
+          "APPLICANT_EXPERIENCE:${{ github.event.inputs.applicant_experience }}"
+          "APPLICANT_TARGET_ROLE:${{ github.event.inputs.applicant_target_role }}"
+          "APPLICANT_SKILLS:${{ github.event.inputs.applicant_skills }}"
+          "RESUME_FILENAME:${{ github.event.inputs.resume_filename }}"
+          "JOB_KEYWORDS:${{ github.event.inputs.job_keywords }}"
+        )
+        
+        MISSING_FIELDS=""
+        for field in "${REQUIRED_FIELDS[@]}"; do
+          FIELD_NAME=$(echo $field | cut -d: -f1)
+          FIELD_VALUE=$(echo $field | cut -d: -f2-)
+          if [ -z "$FIELD_VALUE" ]; then
+            MISSING_FIELDS="$MISSING_FIELDS $FIELD_NAME"
+          else
+            echo "✅ $FIELD_NAME: $FIELD_VALUE"
+          fi
+        done
+        
+        if [ -n "$MISSING_FIELDS" ]; then
+          echo "❌ Missing required fields:$MISSING_FIELDS"
+          echo "Please provide all required workflow inputs."
+          exit 1
+        fi
+        
+        echo "✅ All required fields provided!"
+
+  # Rest of the workflow jobs would go here...
+  # (Copy from the main apply_jobs.yml but remove hardcoding)

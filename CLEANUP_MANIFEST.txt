@@ -1,0 +1,18 @@
+FILES TO REMOVE FROM REPOSITORY:
+
+Temporary helper scripts created during git troubleshooting:
+1. push_workflow.py - Python script to execute git commands
+2. push_workflow.sh - Bash script to push code to GitHub
+3. cleanup.py - Cleanup helper script
+
+These files are not part of the core application and should be removed.
+
+COMMAND TO REMOVE:
+rm -f /workspaces/autoapply-resume-automation/push_workflow.py \
+      /workspaces/autoapply-resume-automation/push_workflow.sh \
+      /workspaces/autoapply-resume-automation/cleanup.py
+
+Then commit:
+git add -A
+git commit -m "chore: Remove temporary helper scripts"
+git push origin main

@@ -218,16 +218,18 @@ class EmailValidator:
         
         # Block personal email domains (gmail, yahoo, etc.) - only company emails allowed
         personal_domains = ['gmail.com', 'yahoo.com', 'outlook.com', 'hotmail.com', 'rediffmail.com']
-        domain = email.split('@')[1].lower()
-        
+        if '@' not in email:
+            return False
+        try:
+            domain = email.split('@')[1].lower()
+        except Exception:
+            return False
         if domain in personal_domains:
             # Don't send to personal email addresses - not genuine HR
             return False
-        
         # If from known valid company domains, accept
-        if domain in self.KNOWN_VALID_DOMAINS:
+        if hasattr(self, 'KNOWN_VALID_DOMAINS') and domain in self.KNOWN_VALID_DOMAINS:
             return True
-        
         return False
 
 

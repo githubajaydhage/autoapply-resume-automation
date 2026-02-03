@@ -100,7 +100,7 @@ on:
       applicant_phone:
         description: 'Phone Number'
         required: false
-        default: '+91-9876543210'
+        default: '+91-7676294009'
         type: string
       applicant_location:
         description: 'Location'
@@ -120,7 +120,7 @@ on:
       applicant_linkedin:
         description: 'LinkedIn URL'
         required: false
-        default: 'https://www.linkedin.com/in/shweta-biradar'
+        default: 'https://www.linkedin.com/in/shweta-biradar-1b5001257/'
         type: string
       applicant_experience:
         description: 'Years of Experience'
@@ -247,13 +247,13 @@ env:
   APPLICANT_LAST_NAME: 'Biradar'
   APPLICANT_EMAIL: ${{ github.event.inputs.applicant_email || 'biradarshweta48@gmail.com' }}
   SENDER_EMAIL: ${{ github.event.inputs.applicant_email || 'biradarshweta48@gmail.com' }}
-  APPLICANT_PHONE: ${{ github.event.inputs.applicant_phone || '+91-9876543210' }}
+  APPLICANT_PHONE: ${{ github.event.inputs.applicant_phone || '+91-7676294009' }}
   APPLICANT_LOCATION: ${{ github.event.inputs.applicant_location || 'Bangalore, Karnataka, India' }}
   APPLICANT_CITY: ${{ github.event.inputs.applicant_city || 'Bangalore' }}
   APPLICANT_COUNTRY: ${{ github.event.inputs.applicant_country || 'India' }}
-  APPLICANT_LINKEDIN: ${{ github.event.inputs.applicant_linkedin || 'https://www.linkedin.com/in/shweta-biradar' }}
-  APPLICANT_EXPERIENCE: ${{ github.event.inputs.applicant_experience || '2' }}
-  YEARS_EXPERIENCE: ${{ github.event.inputs.applicant_experience || '2' }}
+  APPLICANT_LINKEDIN: ${{ github.event.inputs.applicant_linkedin || 'https://www.linkedin.com/in/shweta-biradar-1b5001257/' }}
+  APPLICANT_EXPERIENCE: ${{ github.event.inputs.applicant_experience || '3' }}
+  YEARS_EXPERIENCE: ${{ github.event.inputs.applicant_experience || '3' }}
   APPLICANT_TARGET_ROLE: ${{ github.event.inputs.applicant_target_role || 'Data Analyst, Business Analyst, SQL Developer, Data Engineer' }}
   APPLICANT_SKILLS: ${{ github.event.inputs.applicant_skills || 'SQL, Python, Tableau, Power BI, Data Analysis, Excel' }}
   
@@ -523,6 +523,24 @@ jobs:
         python scripts/enhanced_job_scraper.py || true
       env:
         PYTHONPATH: ${{ github.workspace }}
+
+    # NEW: Enhanced Job Application System (Priority scoring, Cover letters, LinkedIn outreach)
+    - name: 🚀 Enhanced Job Application System
+      run: |
+        echo "🚀 Running Enhanced Job Application System..."
+        echo "   - Personalized cover letters for each job"
+        echo "   - LinkedIn recruiter targeting"
+        echo "   - Priority scoring (recent jobs, low applicants)"
+        echo "   - Application volume management (25/day target)"
+        python scripts/enhanced_job_application_system.py shweta || true
+      env:
+        PYTHONPATH: ${{ github.workspace }}
+        USER_KEY: 'shweta'
+        APPLICANT_NAME: ${{ env.APPLICANT_NAME }}
+        APPLICANT_PHONE: ${{ env.APPLICANT_PHONE }}
+        APPLICANT_LINKEDIN: ${{ env.APPLICANT_LINKEDIN }}
+        APPLICANT_EXPERIENCE: ${{ env.APPLICANT_EXPERIENCE }}
+        APPLICANT_SKILLS: ${{ env.APPLICANT_SKILLS }}
 
     - name: Count Jobs
       id: count

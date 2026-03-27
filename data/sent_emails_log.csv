@@ -1,12 +1,24 @@
-recipient_email,company,job_title,sent_at,status
-careers@hok.com,,Customer Care Specialist Inbound Phone Support,2025-12-30T15:50:48.234590,sent
-careers@wipro.com,,Autocad Designer,2025-12-30T15:55:27.158278,sent
-helpdesk.recruitment@wipro.com,,Autocad Designer,2025-12-30T15:56:16.620123,sent
-careers@hcl.com,,Autocad Designer,2025-12-30T15:57:33.928382,sent
-careers@kotak.com,,Autocad Designer,2025-12-30T15:58:54.307956,sent
-careers@techmahindra.com,,Autocad Designer,2025-12-30T16:00:13.456905,sent
-careers@razorpay.com,,Autocad Designer,2025-12-30T16:01:36.818062,sent
-careers@zerodha.com,,Autocad Designer,2025-12-30T16:03:40.255111,sent
-careers@swiggy.in,,Autocad Designer,2025-12-30T16:04:53.601544,sent
-careers@zomato.com,,Autocad Designer,2025-12-30T16:04:55.833315,sent
-careers@phonepe.com,,Autocad Designer,2025-12-30T16:04:57.123575,sent
+recipient_email,company,job_title,sent_at,status,sender_email
+careers@hok.com,,Customer Care Specialist Inbound Phone Support,2025-12-30T15:50:48.234590,sent,
+careers@wipro.com,,Autocad Designer,2025-12-30T15:55:27.158278,sent,
+helpdesk.recruitment@wipro.com,,Autocad Designer,2025-12-30T15:56:16.620123,sent,
+careers@hcl.com,,Autocad Designer,2025-12-30T15:57:33.928382,sent,
+careers@kotak.com,,Autocad Designer,2025-12-30T15:58:54.307956,sent,
+careers@techmahindra.com,,Autocad Designer,2025-12-30T16:00:13.456905,sent,
+careers@razorpay.com,,Autocad Designer,2025-12-30T16:01:36.818062,sent,
+careers@zerodha.com,,Autocad Designer,2025-12-30T16:03:40.255111,sent,
+careers@swiggy.in,,Autocad Designer,2025-12-30T16:04:53.601544,sent,
+careers@zomato.com,,Autocad Designer,2025-12-30T16:04:55.833315,sent,
+careers@phonepe.com,,Autocad Designer,2025-12-30T16:04:57.123575,sent,
+careers@livspace.com,Livspace,Autocad Designer,2026-03-27T06:36:47.083673,sent,maneyogeshwari09606@gmail.com
+careers@homelane.com,HomeLane,Autocad Designer,2026-03-27T06:37:09.557924,sent,maneyogeshwari09606@gmail.com
+hr@homelane.com,HomeLane,Autocad Designer,2026-03-27T06:37:24.273280,sent,maneyogeshwari09606@gmail.com
+careers@designcafe.com,Design Cafe,Autocad Designer,2026-03-27T06:37:38.380969,sent,maneyogeshwari09606@gmail.com
+careers@bonito.in,Bonito Designs,Autocad Designer,2026-03-27T06:38:01.120130,sent,maneyogeshwari09606@gmail.com
+hr@bonito.in,Bonito Designs,Autocad Designer,2026-03-27T06:38:11.743888,sent,maneyogeshwari09606@gmail.com
+careers@decorpot.com,Decorpot,Autocad Designer,2026-03-27T06:38:32.662074,sent,maneyogeshwari09606@gmail.com
+hr@decorpot.com,Decorpot,Autocad Designer,2026-03-27T06:38:46.758211,sent,maneyogeshwari09606@gmail.com
+careers@interiorcompany.com,Interior Company,Autocad Designer,2026-03-27T06:39:03.682040,sent,maneyogeshwari09606@gmail.com
+careers@arrivae.com,Arrivae,Autocad Designer,2026-03-27T06:39:14.488666,sent,maneyogeshwari09606@gmail.com
+careers@woodenstreet.com,Wooden Street,Autocad Designer,2026-03-27T06:39:29.313524,sent,maneyogeshwari09606@gmail.com
+careers@pepperfry.com,Pepperfry,Autocad Designer,2026-03-27T06:39:58.128171,sent,maneyogeshwari09606@gmail.com

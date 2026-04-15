@@ -165,17 +165,16 @@ on:
       max_emails:
         description: 'Max new emails to send'
         required: false
-        default: '50'
+        default: '500'
         type: choice
         options:
-        - '5'
         - '10'
-        - '15'
-        - '20'
-        - '30'
+        - '25'
         - '50'
         - '100'
         - '200'
+        - '500'
+        - '1000'
       send_followups:
         description: 'Send follow-up emails?'
         required: false
@@ -384,7 +383,7 @@ jobs:
         SENDER_PASSWORD: ${{ secrets.SENDER_PASSWORD }}
         GMAIL_APP_PASSWORD: ${{ secrets.SENDER_PASSWORD }}
         SENDER_PASSWORD_YOGESHWARI: ${{ secrets.SENDER_PASSWORD }}
-        MAX_EMAILS: ${{ github.event.inputs.max_emails || '50' }}
+        MAX_EMAILS: ${{ github.event.inputs.max_emails || '500' }}
         INCLUDE_PORTFOLIO_LINKS: ${{ github.event.inputs.include_portfolio_links || 'false' }}
         USE_CACHED_ONLY: 'true'
       continue-on-error: true
@@ -684,12 +683,12 @@ jobs:
 
     - name: Send Application Emails
       run: |
-        echo "📤 Sending application emails (max: ${{ github.event.inputs.max_emails || '50' }})..."
+        echo "📤 Sending application emails (max: ${{ github.event.inputs.max_emails || '500' }})..."
         python scripts/email_sender.py
       env:
         PYTHONPATH: ${{ github.workspace }}
         SENDER_PASSWORD: ${{ secrets.SENDER_PASSWORD }}
-        MAX_EMAILS: ${{ github.event.inputs.max_emails || '50' }}
+        MAX_EMAILS: ${{ github.event.inputs.max_emails || '500' }}
         INCLUDE_PORTFOLIO_LINKS: ${{ github.event.inputs.include_portfolio_links || 'false' }}
 
     - name: Upload Email Results

@@ -980,27 +980,38 @@ ${name}
         emails_df = emails_df[~already_sent_mask]
         emails_df = emails_df[emails_df['hr_email'].apply(lambda x: isinstance(x, str) and pd.notna(x) and x.strip() != '')]
         
-        # CRITICAL: Filter to only HR-related emails (skip info@, support@, etc.)
-        hr_mask = emails_df['hr_email'].apply(self.validator.is_hr_related_email)
-        non_hr_count = len(emails_df) - hr_mask.sum()
-        if non_hr_count > 0:
-            logging.info(f"🚫 Filtered out {non_hr_count} non-HR emails (info@, support@, cc@, etc.)")
-        emails_df = emails_df[hr_mask]
+        # IMPORTANT: Excel emails (from_excel_list=True) bypass ALL filters
+        # Split into Excel and non-Excel emails
+        excel_emails_df = emails_df[emails_df.get('from_excel_list', False) == True].copy() if 'from_excel_list' in emails_df.columns else pd.DataFrame()
+        non_excel_emails_df = emails_df[emails_df.get('from_excel_list', False) != True].copy() if 'from_excel_list' in emails_df.columns else emails_df.copy()
         
-        # CRITICAL: Filter out blacklisted companies - never send to them
-        blacklist_mask = emails_df.apply(
-            lambda row: (
-                (str(row.get('company', '')).lower().strip(), str(row.get('hr_email', '')).lower().strip())
-                not in self.blacklisted_companies
-                if isinstance(row.get('hr_email', ''), str) and row.get('hr_email', '').strip() != ''
-                else False
-            ),
-            axis=1
-        )
-        blacklisted_count = len(emails_df) - blacklist_mask.sum()
-        if blacklisted_count > 0:
-            logging.info(f"🚫 Filtered out {blacklisted_count} blacklisted companies")
-        emails_df = emails_df[blacklist_mask]
+        # Filter non-Excel emails: only HR-related emails (skip info@, support@, etc.)
+        if not non_excel_emails_df.empty:
+            hr_mask = non_excel_emails_df['hr_email'].apply(self.validator.is_hr_related_email)
+            non_hr_count = len(non_excel_emails_df) - hr_mask.sum()
+            if non_hr_count > 0:
+                logging.info(f"🚫 Filtered out {non_hr_count} non-HR emails from curated list (info@, support@, cc@, etc.)")
+            non_excel_emails_df = non_excel_emails_df[hr_mask]
+        
+        # Filter non-Excel emails: blacklisted companies
+        if not non_excel_emails_df.empty:
+            blacklist_mask = non_excel_emails_df.apply(
+                lambda row: (
+                    (str(row.get('company', '')).lower().strip(), str(row.get('hr_email', '')).lower().strip())
+                    not in self.blacklisted_companies
+                    if isinstance(row.get('hr_email', ''), str) and row.get('hr_email', '').strip() != ''
+                    else False
+                ),
+                axis=1
+            )
+            blacklisted_count = len(non_excel_emails_df) - blacklist_mask.sum()
+            if blacklisted_count > 0:
+                logging.info(f"🚫 Filtered out {blacklisted_count} blacklisted companies from curated list")
+            non_excel_emails_df = non_excel_emails_df[blacklist_mask]
+        
+        # Combine: Excel emails FIRST (priority, no filtering), then filtered non-Excel
+        emails_df = pd.concat([excel_emails_df, non_excel_emails_df], ignore_index=True)
+        logging.info(f"📋 Final email list: {len(excel_emails_df)} from Excel (no filters), {len(non_excel_emails_df)} from other sources")
         
         if emails_df.empty:
             logging.info("All emails have already been sent or filtered!")
@@ -1326,8 +1337,8 @@ def main():
         for source, count in source_stats.items():
             logging.info(f"   • {source}: {count}")
     
-    # Get max emails from environment variable
-    max_emails = int(os.getenv('MAX_EMAILS', '20'))
+    # Get max emails from environment variable (default 500 to send ALL Excel emails)
+    max_emails = int(os.getenv('MAX_EMAILS', '500'))
     
     # CI Mode: Use reduced delays to prevent GitHub Actions timeout
     if CI_MODE:
@@ -1360,15 +1371,27 @@ def main():
         return keyword_match and role_match and skills_match
 
     # Apply filtering if any criteria are set
+    # BUT: Excel emails (from_excel_list=True) ALWAYS bypass filtering
     if target_role or job_keywords or applicant_skills:
         before_count = len(emails_df)
-        filtered_df = emails_df[emails_df.apply(job_matches, axis=1)]
-        after_count = len(filtered_df)
-        logging.info(f"🔒 Filtered jobs by workflow criteria: {after_count} of {before_count} remain after filtering.")
-        if filtered_df.empty:
-            logging.warning("⚠️ No jobs matched the workflow criteria! Proceeding to send to all available HR contacts as fallback.")
+        # Keep ALL Excel emails, only filter non-Excel emails
+        excel_emails = emails_df[emails_df.get('from_excel_list', False) == True].copy() if 'from_excel_list' in emails_df.columns else pd.DataFrame()
+        non_excel_emails = emails_df[emails_df.get('from_excel_list', False) != True].copy() if 'from_excel_list' in emails_df.columns else emails_df.copy()
+        
+        # Only filter non-Excel emails
+        if not non_excel_emails.empty:
+            filtered_non_excel = non_excel_emails[non_excel_emails.apply(job_matches, axis=1)]
         else:
-            emails_df = filtered_df
+            filtered_non_excel = pd.DataFrame()
+        
+        # Combine: Excel emails FIRST (priority), then filtered non-Excel
+        emails_df = pd.concat([excel_emails, filtered_non_excel], ignore_index=True)
+        after_count = len(emails_df)
+        logging.info(f"🔒 Filtered jobs by workflow criteria: {after_count} of {before_count} remain after filtering.")
+        logging.info(f"   📋 Excel emails (bypassed filter): {len(excel_emails)}")
+        logging.info(f"   📋 Other emails (filtered): {len(filtered_non_excel)}")
+        if emails_df.empty:
+            logging.warning("⚠️ No jobs matched the workflow criteria! Proceeding to send to all available HR contacts as fallback.")
 
     if emails_df.empty:
         logging.error("❌ No HR emails found after fallback! Aborting.")

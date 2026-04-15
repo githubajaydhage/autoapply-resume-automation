@@ -285,9 +285,9 @@ class RecruiterNameFinder:
             return random.choice(greetings)
         else:
             greetings = [
-                "Dear Hiring Manager,",
+                "Dear Hiring Team,",
                 "Dear Recruitment Team,",
-                f"Dear {company} HR Team,",
+                f"Dear {company} Hiring Team,",
                 "Dear Talent Acquisition Team,",
             ]
             return random.choice(greetings)
@@ -518,9 +518,26 @@ class EmailOptimizer:
         )
         
         # Use provided HR name if available, otherwise use extracted greeting
-        if hr_name and isinstance(hr_name, str) and hr_name.strip() and hr_name.strip().lower() not in ['nan', 'none', 'n/a', '']:
-            hr_name_clean = hr_name.strip().split()[0].title()
-            greeting = random.choice([f"Dear {hr_name_clean},", f"Hi {hr_name_clean},", f"Hello {hr_name_clean},"])
+        # Validate hr_name - skip numbers, too short, generic terms
+        valid_hr_name = None
+        if hr_name and isinstance(hr_name, str) and hr_name.strip():
+            name = hr_name.strip()
+            # Skip invalid values
+            if name.lower() not in ['nan', 'none', 'n/a', 'na', 'null', '-', '--', 'unknown', 'no name', 'hr', 'hiring', 'recruiter', 'team', 'manager', 'support', 'info', 'contact', 'admin', 'careers', 'career', 'jobs', 'job']:
+                # Check if it's mostly numbers (invalid)
+                digit_count = sum(1 for c in name if c.isdigit())
+                alpha_count = sum(1 for c in name if c.isalpha())
+                # Needs at least 2 letters and not mostly digits
+                if alpha_count >= 2 and (not digit_count or digit_count / len(name) < 0.3):
+                    # Not a pure number
+                    try:
+                        float(name)
+                    except ValueError:
+                        # Good - extract first name
+                        valid_hr_name = name.split()[0].title() if ' ' in name else name.title()
+        
+        if valid_hr_name:
+            greeting = random.choice([f"Dear {valid_hr_name},", f"Hi {valid_hr_name},", f"Hello {valid_hr_name},"])
         else:
             greeting = optimization['greeting']
         

@@ -588,15 +588,68 @@ class PersonalizedEmailSender:
         ]
         return random.choice(subjects)
     
+    def _validate_hr_name(self, hr_name: str) -> str:
+        """Validate and clean HR name. Returns cleaned name or None if invalid.
+        
+        Invalid names include:
+        - Numbers or mostly numbers (e.g., '95', '123abc')
+        - Too short (< 2 chars)
+        - Special characters only
+        - Generic terms like 'HR', 'Hiring', 'Recruiter'
+        - Empty, 'nan', 'none', 'n/a', etc.
+        """
+        if not hr_name or not isinstance(hr_name, str):
+            return None
+        
+        name = hr_name.strip()
+        
+        # Check for empty or placeholder values
+        if not name or name.lower() in ['nan', 'none', 'n/a', 'na', 'null', '-', '--', 'unknown', 'no name']:
+            return None
+        
+        # Check if it's mostly numbers (more than 50% digits)
+        digit_count = sum(1 for c in name if c.isdigit())
+        if digit_count > 0 and (digit_count / len(name)) > 0.3:  # More than 30% digits = invalid
+            return None
+        
+        # Check if it's purely a number
+        try:
+            float(name)
+            return None  # It's a number, not a name
+        except ValueError:
+            pass  # Good, it's not a number
+        
+        # Check minimum length (at least 2 characters)
+        if len(name) < 2:
+            return None
+        
+        # Check for generic terms that aren't real names
+        generic_terms = ['hr', 'hiring', 'recruiter', 'recruitment', 'talent', 'career', 'careers', 
+                        'jobs', 'job', 'team', 'manager', 'support', 'info', 'contact', 'admin',
+                        'hello', 'help', 'enquiry', 'inquiry', 'general']
+        if name.lower() in generic_terms:
+            return None
+        
+        # Check if it contains only special characters
+        alpha_count = sum(1 for c in name if c.isalpha())
+        if alpha_count < 2:  # Need at least 2 letters
+            return None
+        
+        # Extract first name (use first word if multiple words)
+        first_name = name.split()[0].strip() if ' ' in name else name
+        
+        # Final validation on first name
+        if len(first_name) < 2 or not any(c.isalpha() for c in first_name):
+            return None
+        
+        # Return properly capitalized first name
+        return first_name.title()
+    
     def generate_email_body(self, job_title: str, company: str, job_url: str = None, recipient_email: str = None, hr_name: str = None) -> str:
         """Generate a personalized email body with company-specific content."""
         
-        # Format HR name for greeting
-        greeting_name = None
-        if hr_name and isinstance(hr_name, str) and hr_name.strip() and hr_name.strip().lower() not in ['nan', 'none', 'n/a', '']:
-            # Clean and format the name (use first name or full name)
-            hr_name_clean = hr_name.strip()
-            greeting_name = hr_name_clean.split()[0].title() if ' ' in hr_name_clean else hr_name_clean.title()
+        # Validate and format HR name for greeting
+        greeting_name = self._validate_hr_name(hr_name)
         
         # Use optimizer for personalized content if available
         if self.optimizer and recipient_email:
@@ -635,7 +688,7 @@ class PersonalizedEmailSender:
         if greeting_name:
             greeting = f"Dear {greeting_name},"
         else:
-            greeting = "Dear Hiring Manager,"
+            greeting = "Dear Hiring Team,"
         
         # Fallback to standard templates
         templates = [

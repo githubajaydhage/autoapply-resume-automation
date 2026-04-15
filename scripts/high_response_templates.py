@@ -125,7 +125,7 @@ Warm regards,
 💼 LinkedIn: {linkedin}"""
 
     # TEMPLATE 3: Brief & Professional (For formal companies)
-    PROFESSIONAL_TEMPLATE = """Dear Hiring Manager,
+    PROFESSIONAL_TEMPLATE = """Dear Hiring Team,
 
 I am writing to apply for the {job_title} position at {company}.
 
@@ -141,7 +141,7 @@ Phone: {phone}
 LinkedIn: {linkedin}"""
 
     # TEMPLATE 4: Story-based (For startups/creative companies)
-    STORY_TEMPLATE = """Hi there,
+    STORY_TEMPLATE = """Dear Hiring Team,
 
 I came across the {job_title} role at {company} and got excited - this is exactly the kind of work I've been looking for!
 
@@ -231,14 +231,33 @@ Best,
             notice_period=notice_period
         )
         
-        # Personalize greeting if HR name is provided
+        # Personalize greeting if HR name is provided and valid
+        # Validate hr_name - skip numbers, too short, generic terms
+        valid_hr_name = None
         if hr_name and isinstance(hr_name, str) and hr_name.strip():
+            name = hr_name.strip()
+            # Skip invalid values
+            if name.lower() not in ['nan', 'none', 'n/a', 'na', 'null', '-', '--', 'unknown', 'no name', 'hr', 'hiring', 'recruiter', 'team', 'manager', 'support', 'info', 'contact', 'admin', 'careers', 'career', 'jobs', 'job']:
+                # Check if it's mostly numbers (invalid)
+                digit_count = sum(1 for c in name if c.isdigit())
+                alpha_count = sum(1 for c in name if c.isalpha())
+                # Needs at least 2 letters and not mostly digits
+                if alpha_count >= 2 and (not digit_count or digit_count / len(name) < 0.3):
+                    # Not a pure number
+                    try:
+                        float(name)
+                    except ValueError:
+                        # Good - extract first name
+                        valid_hr_name = name.split()[0].title() if ' ' in name else name.title()
+        
+        if valid_hr_name:
             # Replace generic greetings with personalized ones
             greetings_to_replace = [
-                ('Hi,\n', f'Hi {hr_name},\n'),
-                ('Dear Hiring Team,\n', f'Dear {hr_name},\n'),
-                ('Dear Hiring Manager,\n', f'Dear {hr_name},\n'),
-                ('Hello,\n', f'Hello {hr_name},\n'),
+                ('Hi,\n', f'Hi {valid_hr_name},\n'),
+                ('Dear Hiring Team,\n', f'Dear {valid_hr_name},\n'),
+                ('Dear Hiring Manager,\n', f'Dear {valid_hr_name},\n'),
+                ('Hello,\n', f'Hello {valid_hr_name},\n'),
+                ('Hi there,\n', f'Hi {valid_hr_name},\n'),
             ]
             for old, new in greetings_to_replace:
                 if old in body:

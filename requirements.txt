@@ -12,6 +12,9 @@ dnspython
 python-docx
 PyMuPDF
 
+# Excel file handling
+openpyxl
+
 # Date/time handling (already in stdlib, but useful)
 # datetime - built-in
 

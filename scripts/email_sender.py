@@ -575,16 +575,16 @@ class PersonalizedEmailSender:
         # Fallback to standard subjects
         subjects = [
             # Direct and specific (highest open rates)
-            f"Application: {job_title} - Bangalore - {self.applicant_experience}+ Years Experience",
-            f"{job_title} Application - Bangalore - {self.applicant_name}",
+            f"Application: {job_title} - Immediate Joiner - {self.applicant_experience}+ Years Experience",
+            f"{job_title} Application - Immediate Joiner - {self.applicant_name}",
             
             # Creates urgency/interest
-            f"Immediate Availability: {job_title} Role in Bangalore",
-            f"Bangalore-Based Candidate for {job_title} Opening",
+            f"Immediate Joiner: {job_title} Role - Bangalore - {self.applicant_experience} Years",
+            f"{job_title} - Immediate Joiner | {self.applicant_experience}+ Years | Bangalore",
             
             # Personal touch
-            f"Interested in {job_title} at {company} Bangalore",
-            f"Connecting for {job_title} Opportunity - Bangalore",
+            f"{job_title} at {company} - Immediate Joiner Available",
+            f"Immediate Joiner for {job_title} - {self.applicant_experience} Years Experience",
         ]
         return random.choice(subjects)
     

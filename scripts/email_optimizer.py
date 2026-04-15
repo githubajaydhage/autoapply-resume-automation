@@ -324,26 +324,26 @@ class SubjectLineOptimizer:
         # Interior Design / Architecture specific subject lines
         if any(kw in job_lower for kw in ['interior', 'autocad', 'designer', 'estimation', 'drafts', 'revit', 'sketchup', 'architect']):
             templates = {
-                'design_portfolio': f"Application: {job_title} - {experience}+ Years | AutoCAD & SketchUp Expert",
-                'project_exp': f"{job_title} with {experience}+ Years Project Experience - Bangalore",
-                'design_ready': f"Experienced {job_title} | Ready to Join Immediately",
-                'skills_focus': f"Application: {job_title} - AutoCAD, SketchUp, 3Ds Max, Revit",
-                'design_passion': f"Passionate {job_title} Seeking {company} Opportunity",
-                'interior_specific': f"{job_title} Application - Interior Design & Estimation Expert",
-                'residential_commercial': f"{job_title} - Residential & Commercial Projects - {experience}+ Yrs",
-                'design_bangalore': f"{job_title} Candidate - {company} Bangalore",
+                'design_portfolio': f"Immediate Joiner: {job_title} - {experience}+ Years | AutoCAD & SketchUp Expert",
+                'project_exp': f"{job_title} - Immediate Joiner - {experience}+ Years Project Experience",
+                'design_ready': f"Immediate Joiner | {job_title} | {experience}+ Years Experience",
+                'skills_focus': f"Immediate Joiner: {job_title} - AutoCAD, SketchUp, 3Ds Max, Revit",
+                'design_passion': f"{job_title} at {company} - Immediate Joiner Available",
+                'interior_specific': f"Immediate Joiner: {job_title} - Interior Design & Estimation Expert",
+                'residential_commercial': f"{job_title} - Immediate Joiner | {experience}+ Yrs | Residential & Commercial",
+                'design_bangalore': f"Immediate Joiner for {job_title} at {company}",
             }
         else:
-            # Generic templates for other roles
+            # Generic templates for other roles - ALL have Immediate Joiner
             templates = {
-                'specific_role': f"Application: {job_title} - {experience}+ Years Experience",
-                'location_focus': f"{job_title} Application - Bangalore - Immediate Availability",
-                'value_prop': f"Experienced {job_title} Seeking {company} Opportunity",
-                'direct_ask': f"Interested in {job_title} Role at {company}",
-                'achievement': f"{job_title} with Proven Track Record - Application",
-                'referral_style': f"Regarding {job_title} Opening at {company}",
-                'urgent': f"Immediate Availability: {job_title} Position",
-                'personalized': f"{job_title} Candidate - {company} Bangalore",
+                'specific_role': f"Immediate Joiner: {job_title} - {experience}+ Years Experience",
+                'location_focus': f"{job_title} - Immediate Joiner - Bangalore Based",
+                'value_prop': f"Immediate Joiner | {job_title} | {company} | {experience}+ Years",
+                'direct_ask': f"Immediate Joiner for {job_title} Role at {company}",
+                'achievement': f"{job_title} - Immediate Joiner with Proven Track Record",
+                'referral_style': f"Immediate Joiner: {job_title} Opening at {company}",
+                'urgent': f"Immediate Joiner | {job_title} - {experience}+ Years",
+                'personalized': f"{job_title} at {company} - Immediate Joiner",
             }
         
         # Select template - prioritize ones with higher reply rates

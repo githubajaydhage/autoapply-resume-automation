@@ -22,33 +22,33 @@ class HighResponseSubjects:
     
     # TIER 1: Highest performing subjects (40%+ open rate)
     HIGH_IMPACT_SUBJECTS = [
-        # Specificity + Urgency
+        # Specificity + Urgency - ALL have Immediate Joiner
         "{job_title} - {experience} Years | Immediate Joiner | {city}",
-        "Application: {job_title} at {company} - {experience}+ YOE | {skills_short}",
-        "{job_title} Opening - {experience} Years Exp | Notice: Immediate",
+        "Immediate Joiner: {job_title} at {company} - {experience}+ YOE | {skills_short}",
+        "{job_title} - Immediate Joiner | {experience} Years | {skills_short}",
         
-        # Results-focused
-        "Experienced {job_title} | {skills_short} | Ready to Join",
-        "{job_title} with {experience} Years in {skills_primary} - Available Now",
+        # Results-focused with Immediate Joiner
+        "Immediate Joiner | {job_title} | {skills_short} | Ready to Join",
+        "{job_title} - Immediate Joiner with {experience} Years in {skills_primary}",
         
-        # Company-specific (personalized)
-        "Excited about {job_title} role at {company}",
-        "Applying for {job_title} - Impressed by {company}'s work",
+        # Company-specific (personalized) with Immediate Joiner
+        "Immediate Joiner for {job_title} role at {company}",
+        "{job_title} at {company} - Immediate Joiner | {experience} Years",
     ]
     
     # TIER 2: Good performing subjects (25-35% open rate)
     STANDARD_SUBJECTS = [
-        "{job_title} Application - {name} | {experience} Years Experience",
-        "Application: {job_title} Position - {city} Based",
-        "{experience}+ Years {skills_primary} Professional - {job_title} Role",
-        "Interested in {job_title} at {company}",
+        "{job_title} - Immediate Joiner - {name} | {experience} Years",
+        "Immediate Joiner: {job_title} Position - {city} Based",
+        "{experience}+ Years {skills_primary} - Immediate Joiner - {job_title}",
+        "Immediate Joiner for {job_title} at {company}",
     ]
     
     # TIER 3: Safe subjects (15-25% open rate)
     SAFE_SUBJECTS = [
-        "Job Application: {job_title} - {name}",
-        "Application for {job_title} Position",
-        "{job_title} - Resume Attached",
+        "Immediate Joiner: {job_title} - {name}",
+        "Application: {job_title} - Immediate Joiner",
+        "{job_title} - Immediate Joiner - Resume Attached",
     ]
     
     @classmethod

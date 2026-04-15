@@ -1033,13 +1033,68 @@ def main():
     
     # Try smart matching first (job-specific applications)
     emails_df = load_smart_matched_applications()
-    
+
     # Fall back to legacy mode if smart matching fails
     if emails_df is None or emails_df.empty:
         logging.info("📋 Using legacy curated HR database mode...")
         emails_df = pd.DataFrame()
-        
-        # Source 1: Curated HR database (most reliable)
+
+        # Source 1: Excel file (emailslist.xlsx) - auto-detect email column, PRIORITY
+        excel_path = os.path.join(os.path.dirname(__file__), '..', 'data', 'emailslist.xlsx')
+        if os.path.exists(excel_path):
+            try:
+                # Try reading with skiprows=6 for NxtHiring format, fallback to default
+                try:
+                    excel_df = pd.read_excel(excel_path, skiprows=6)
+                except:
+                    excel_df = pd.read_excel(excel_path)
+                
+                # Try to auto-detect the email column (prioritize HR/recruiter emails)
+                email_col = None
+                priority_keywords = ['recruiter', 'talent', 'hr_email', 'hr email']
+                for col in excel_df.columns:
+                    col_lower = str(col).strip().lower()
+                    if any(kw in col_lower for kw in priority_keywords) and 'email' in col_lower:
+                        email_col = col
+                        break
+                if not email_col:
+                    for col in excel_df.columns:
+                        if str(col).strip().lower() in ['email', 'hr_email', 'mail', 'email_id', 'email address', 'e-mail']:
+                            email_col = col
+                            break
+                if not email_col:
+                    # Try to find a column containing 'email' in its name
+                    for col in excel_df.columns:
+                        if 'email' in str(col).strip().lower():
+                            email_col = col
+                            break
+                if email_col:
+                    excel_df = excel_df.rename(columns={email_col: 'hr_email'})
+                    # Also try to get company name column
+                    company_col = None
+                    for col in excel_df.columns:
+                        col_lower = str(col).strip().lower()
+                        if any(kw in col_lower for kw in ['company', 'startup', 'name', 'organisation']):
+                            company_col = col
+                            break
+                    if company_col and 'company' not in excel_df.columns:
+                        excel_df = excel_df.rename(columns={company_col: 'company'})
+                    # Add job_title column if missing
+                    if 'job_title' not in excel_df.columns:
+                        job_keywords_str = os.environ.get('JOB_KEYWORDS', 'Open Position')
+                        job_title_default = job_keywords_str.split(',')[0].strip().title() if job_keywords_str else 'Open Position'
+                        excel_df['job_title'] = job_title_default
+                    # Clean up: keep only rows with valid emails
+                    excel_df = excel_df[excel_df['hr_email'].notna()]
+                    excel_df = excel_df[excel_df['hr_email'].astype(str).str.contains('@', na=False)]
+                    emails_df = pd.concat([excel_df, emails_df], ignore_index=True)  # PRIORITY: emailslist.xlsx first
+                    logging.info(f"📥 Loaded {len(excel_df)} HR emails from emailslist.xlsx (auto-detected column: {email_col}) [PRIORITY]")
+                else:
+                    logging.warning("⚠️ Could not auto-detect email column in emailslist.xlsx. Please ensure it contains a recognizable email column.")
+            except Exception as e:
+                logging.warning(f"⚠️ Could not load emails from emailslist.xlsx: {e}")
+
+        # Source 2: Curated HR database (most reliable)
         curated_path = os.path.join(os.path.dirname(__file__), '..', 'data', 'curated_hr_emails.csv')
         if os.path.exists(curated_path):
             curated_df = pd.read_csv(curated_path)
@@ -1052,16 +1107,16 @@ def main():
             curated_df['job_title'] = job_title_default
             emails_df = pd.concat([emails_df, curated_df], ignore_index=True)
             logging.info(f"📋 Loaded {len(curated_df)} curated HR emails")
-        
-        # Source 2: Scraped emails
+
+        # Source 3: Scraped emails
         scraped_path = os.path.join(os.path.dirname(__file__), '..', 'data', 'all_hr_emails.csv')
         if os.path.exists(scraped_path):
             scraped_df = pd.read_csv(scraped_path)
             if 'hr_email' in scraped_df.columns:
                 emails_df = pd.concat([emails_df, scraped_df], ignore_index=True)
                 logging.info(f"🔍 Loaded {len(scraped_df)} scraped HR emails")
-        
-        # Source 3: Growing HR database from advanced discovery
+
+        # Source 4: Growing HR database from advanced discovery
         discovered_path = os.path.join(os.path.dirname(__file__), '..', 'data', 'discovered_hr_emails.csv')
         if os.path.exists(discovered_path):
             discovered_df = pd.read_csv(discovered_path)

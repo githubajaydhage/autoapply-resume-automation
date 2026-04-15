@@ -1130,9 +1130,29 @@ def main():
                         job_keywords_str = os.environ.get('JOB_KEYWORDS', 'Open Position')
                         job_title_default = job_keywords_str.split(',')[0].strip().title() if job_keywords_str else 'Open Position'
                         excel_df['job_title'] = job_title_default
+                    
+                    # CRITICAL: Handle multi-line emails (cells with multiple emails separated by \n or comma)
+                    # Expand each row with multiple emails into separate rows
+                    expanded_rows = []
+                    for _, row in excel_df.iterrows():
+                        email_cell = str(row.get('hr_email', ''))
+                        # Split by newlines, commas, or semicolons
+                        emails_in_cell = [e.strip() for e in email_cell.replace('\n', ',').replace(';', ',').split(',') if e.strip()]
+                        for email in emails_in_cell:
+                            # Skip if not a valid email format
+                            if '@' in email and ' ' not in email:
+                                new_row = row.copy()
+                                new_row['hr_email'] = email
+                                expanded_rows.append(new_row)
+                    
+                    if expanded_rows:
+                        excel_df = pd.DataFrame(expanded_rows)
+                    
                     # Clean up: keep only rows with valid emails
                     excel_df = excel_df[excel_df['hr_email'].notna()]
                     excel_df = excel_df[excel_df['hr_email'].astype(str).str.contains('@', na=False)]
+                    # Filter out non-email values (names, etc.)
+                    excel_df = excel_df[~excel_df['hr_email'].astype(str).str.contains(' ', na=False)]
                     # Mark as from Excel list to bypass deliverability check
                     excel_df['from_excel_list'] = True
                     emails_df = pd.concat([excel_df, emails_df], ignore_index=True)  # PRIORITY: emailslist.xlsx first

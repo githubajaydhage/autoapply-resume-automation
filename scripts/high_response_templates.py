@@ -192,8 +192,8 @@ Best,
     def get_body(cls, job_title: str, company: str, name: str,
                  experience: str, skills: str, phone: str, 
                  linkedin: str, city: str = "Bangalore",
-                 notice_period: str = "Immediate") -> str:
-        """Get a high-performing email body."""
+                 notice_period: str = "Immediate", hr_name: str = None) -> str:
+        """Get a high-performing email body with personalized greeting."""
         
         # Parse skills
         skills_list = [s.strip() for s in skills.split(',')]
@@ -216,7 +216,8 @@ Best,
         templates = cls.get_templates()
         template = random.choices(templates, weights=weights)[0]
         
-        return template.format(
+        # Format the body with all variables
+        body = template.format(
             job_title=job_title,
             company=company,
             name=name,
@@ -229,6 +230,22 @@ Best,
             city=city,
             notice_period=notice_period
         )
+        
+        # Personalize greeting if HR name is provided
+        if hr_name and isinstance(hr_name, str) and hr_name.strip():
+            # Replace generic greetings with personalized ones
+            greetings_to_replace = [
+                ('Hi,\n', f'Hi {hr_name},\n'),
+                ('Dear Hiring Team,\n', f'Dear {hr_name},\n'),
+                ('Dear Hiring Manager,\n', f'Dear {hr_name},\n'),
+                ('Hello,\n', f'Hello {hr_name},\n'),
+            ]
+            for old, new in greetings_to_replace:
+                if old in body:
+                    body = body.replace(old, new, 1)
+                    break
+        
+        return body
 
 
 class ResponseBooster:

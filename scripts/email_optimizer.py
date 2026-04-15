@@ -499,8 +499,9 @@ class EmailOptimizer:
                                applicant_github: str = '',
                                applicant_portfolio: str = '',
                                applicant_projects: str = '',
-                               include_portfolio: bool = False) -> str:
-        """Generate a fully optimized email body with optional portfolio links."""
+                               include_portfolio: bool = False,
+                               hr_name: str = None) -> str:
+        """Generate a fully optimized email body with optional portfolio links and personalized HR greeting."""
         
         # Handle NaN values for required fields
         # Default based on environment target role
@@ -516,6 +517,13 @@ class EmailOptimizer:
             recipient_email, company, job_title, applicant_experience
         )
         
+        # Use provided HR name if available, otherwise use extracted greeting
+        if hr_name and isinstance(hr_name, str) and hr_name.strip() and hr_name.strip().lower() not in ['nan', 'none', 'n/a', '']:
+            hr_name_clean = hr_name.strip().split()[0].title()
+            greeting = random.choice([f"Dear {hr_name_clean},", f"Hi {hr_name_clean},", f"Hello {hr_name_clean},"])
+        else:
+            greeting = optimization['greeting']
+        
         # Build portfolio section only if enabled and links available
         portfolio_section = ""
         if include_portfolio and (applicant_github or applicant_portfolio or applicant_projects):
@@ -527,7 +535,7 @@ class EmailOptimizer:
             if applicant_projects:
                 portfolio_section += f"   • Key Projects: {applicant_projects}\n"
         
-        body = f"""{optimization['greeting']}
+        body = f"""{greeting}
 
 {optimization['opener']}
 

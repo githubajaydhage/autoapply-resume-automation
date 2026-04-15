@@ -588,8 +588,15 @@ class PersonalizedEmailSender:
         ]
         return random.choice(subjects)
     
-    def generate_email_body(self, job_title: str, company: str, job_url: str = None, recipient_email: str = None) -> str:
+    def generate_email_body(self, job_title: str, company: str, job_url: str = None, recipient_email: str = None, hr_name: str = None) -> str:
         """Generate a personalized email body with company-specific content."""
+        
+        # Format HR name for greeting
+        greeting_name = None
+        if hr_name and isinstance(hr_name, str) and hr_name.strip() and hr_name.strip().lower() not in ['nan', 'none', 'n/a', '']:
+            # Clean and format the name (use first name or full name)
+            hr_name_clean = hr_name.strip()
+            greeting_name = hr_name_clean.split()[0].title() if ' ' in hr_name_clean else hr_name_clean.title()
         
         # Use optimizer for personalized content if available
         if self.optimizer and recipient_email:
@@ -605,7 +612,8 @@ class PersonalizedEmailSender:
                 applicant_github=self.applicant_github,
                 applicant_portfolio=self.applicant_portfolio,
                 applicant_projects=self.applicant_projects,
-                include_portfolio=self.include_portfolio_links
+                include_portfolio=self.include_portfolio_links,
+                hr_name=greeting_name
             )
         
         # Use HIGH RESPONSE templates (3x more callbacks)
@@ -619,13 +627,20 @@ class PersonalizedEmailSender:
                 phone=self.applicant_phone,
                 linkedin=self.applicant_linkedin,
                 city=os.getenv('APPLICANT_CITY', 'Bangalore'),
-                notice_period=os.getenv('NOTICE_PERIOD', 'Immediate')
+                notice_period=os.getenv('NOTICE_PERIOD', 'Immediate'),
+                hr_name=greeting_name
             )
+        
+        # Determine greeting based on HR name
+        if greeting_name:
+            greeting = f"Dear {greeting_name},"
+        else:
+            greeting = "Dear Hiring Manager,"
         
         # Fallback to standard templates
         templates = [
             # Template 1 - Professional and direct
-            """Dear Hiring Manager,
+            f"""{greeting}
 
 I am writing to express my strong interest in the ${job_title} position at ${company}. With ${experience}+ years of experience in ${skills_area}, I am confident in my ability to contribute effectively to your team.
 
@@ -776,11 +791,12 @@ ${name}
             except Exception:
                 return False
     
-    def send_email(self, recipient_email: str, company: str, job_title: str, job_url: str = None, from_excel_list: bool = False) -> bool:
+    def send_email(self, recipient_email: str, company: str, job_title: str, job_url: str = None, from_excel_list: bool = False, hr_name: str = None) -> bool:
         """Send a personalized email to a single recipient with comprehensive bounce protection.
         
         Args:
             from_excel_list: If True, skip deliverability score check (trusted Excel source)
+            hr_name: Name of HR person for personalized greeting
         """
         
         recipient_lower = recipient_email.lower().strip()
@@ -848,7 +864,7 @@ ${name}
         try:
             # Generate personalized content with optimizer
             subject = self.generate_email_subject(job_title, company, recipient_email)
-            body = self.generate_email_body(job_title, company, job_url, recipient_email)
+            body = self.generate_email_body(job_title, company, job_url, recipient_email, hr_name=hr_name)
             message = self.create_email_message(recipient_email, subject, body)
             
             # Connect and send
@@ -958,10 +974,13 @@ ${name}
             job_title = row.get('job_title', 'Open Position')
             job_url = row.get('job_url', '')
             from_excel_list = row.get('from_excel_list', False)
+            hr_name = row.get('hr_name', None)
             
-            logging.info(f"📤 Sending email {stats['sent'] + stats['failed'] + 1}/{len(emails_to_send)} to {recipient}")
+            # Log with HR name if available
+            name_info = f" ({hr_name})" if hr_name and str(hr_name).strip() and str(hr_name).lower() not in ['nan', 'none'] else ""
+            logging.info(f"📤 Sending email {stats['sent'] + stats['failed'] + 1}/{len(emails_to_send)} to {recipient}{name_info}")
             
-            success = self.send_email(recipient, company, job_title, job_url, from_excel_list=from_excel_list)
+            success = self.send_email(recipient, company, job_title, job_url, from_excel_list=from_excel_list, hr_name=hr_name)
             
             if success:
                 stats['sent'] += 1
@@ -1078,15 +1097,34 @@ def main():
                             break
                 if email_col:
                     excel_df = excel_df.rename(columns={email_col: 'hr_email'})
-                    # Also try to get company name column
+                    
+                    # Strip whitespace from all column names for reliable detection
+                    excel_df.columns = excel_df.columns.str.strip()
+                    
+                    # Auto-detect company name column (specific match first)
                     company_col = None
                     for col in excel_df.columns:
                         col_lower = str(col).strip().lower()
-                        if any(kw in col_lower for kw in ['company', 'startup', 'name', 'organisation']):
+                        # Match 'startup nme', 'company name', 'organisation', etc. but NOT just 'name'
+                        if any(kw in col_lower for kw in ['company', 'startup', 'organisation', 'firm']):
                             company_col = col
                             break
                     if company_col and 'company' not in excel_df.columns:
                         excel_df = excel_df.rename(columns={company_col: 'company'})
+                        logging.info(f"   📌 Detected company column: '{company_col}'")
+                    
+                    # Auto-detect HR/recruiter name column
+                    hr_name_col = None
+                    for col in excel_df.columns:
+                        col_lower = str(col).strip().lower()
+                        # Match 'name', 'hr name', 'recruiter name', 'contact name' but NOT 'company name'/'startup nme'
+                        if col_lower == 'name' or col_lower in ['hr name', 'recruiter name', 'contact name', 'person name', 'contact']:
+                            hr_name_col = col
+                            break
+                    if hr_name_col and 'hr_name' not in excel_df.columns:
+                        excel_df = excel_df.rename(columns={hr_name_col: 'hr_name'})
+                        logging.info(f"   📌 Detected HR name column: '{hr_name_col}'")
+                    
                     # Add job_title column if missing
                     if 'job_title' not in excel_df.columns:
                         job_keywords_str = os.environ.get('JOB_KEYWORDS', 'Open Position')

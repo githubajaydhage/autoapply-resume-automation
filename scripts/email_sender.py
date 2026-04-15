@@ -776,8 +776,12 @@ ${name}
             except Exception:
                 return False
     
-    def send_email(self, recipient_email: str, company: str, job_title: str, job_url: str = None) -> bool:
-        """Send a personalized email to a single recipient with comprehensive bounce protection."""
+    def send_email(self, recipient_email: str, company: str, job_title: str, job_url: str = None, from_excel_list: bool = False) -> bool:
+        """Send a personalized email to a single recipient with comprehensive bounce protection.
+        
+        Args:
+            from_excel_list: If True, skip deliverability score check (trusted Excel source)
+        """
         
         recipient_lower = recipient_email.lower().strip()
         
@@ -816,7 +820,10 @@ ${name}
             return False
         
         # CHECK 5: Enhanced email verification if available
-        if self.verifier:
+        # SKIP deliverability check for emails from emailslist.xlsx (trusted source)
+        if from_excel_list:
+            logging.info(f"✅ Bypassing deliverability check for {recipient_email} (from Excel list)")
+        elif self.verifier:
             result = self.verifier.calculate_deliverability_score(recipient_email)
             if result['score'] < 60:
                 logging.warning(f"⚠️ Skipping {recipient_email} - Low deliverability score: {result['score']}/100")
@@ -950,10 +957,11 @@ ${name}
             company = row.get('company', 'Your Company')
             job_title = row.get('job_title', 'Open Position')
             job_url = row.get('job_url', '')
+            from_excel_list = row.get('from_excel_list', False)
             
             logging.info(f"📤 Sending email {stats['sent'] + stats['failed'] + 1}/{len(emails_to_send)} to {recipient}")
             
-            success = self.send_email(recipient, company, job_title, job_url)
+            success = self.send_email(recipient, company, job_title, job_url, from_excel_list=from_excel_list)
             
             if success:
                 stats['sent'] += 1
@@ -1087,8 +1095,10 @@ def main():
                     # Clean up: keep only rows with valid emails
                     excel_df = excel_df[excel_df['hr_email'].notna()]
                     excel_df = excel_df[excel_df['hr_email'].astype(str).str.contains('@', na=False)]
+                    # Mark as from Excel list to bypass deliverability check
+                    excel_df['from_excel_list'] = True
                     emails_df = pd.concat([excel_df, emails_df], ignore_index=True)  # PRIORITY: emailslist.xlsx first
-                    logging.info(f"📥 Loaded {len(excel_df)} HR emails from emailslist.xlsx (auto-detected column: {email_col}) [PRIORITY]")
+                    logging.info(f"📥 Loaded {len(excel_df)} HR emails from emailslist.xlsx (auto-detected column: {email_col}) [PRIORITY - BYPASSING DELIVERABILITY CHECK]")
                 else:
                     logging.warning("⚠️ Could not auto-detect email column in emailslist.xlsx. Please ensure it contains a recognizable email column.")
             except Exception as e:

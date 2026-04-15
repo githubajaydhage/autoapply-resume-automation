@@ -382,7 +382,7 @@ jobs:
         SENDER_PASSWORD: ${{ secrets.SENDER_PASSWORD }}
         GMAIL_APP_PASSWORD: ${{ secrets.SENDER_PASSWORD }}
         SENDER_PASSWORD_YOGESHWARI: ${{ secrets.SENDER_PASSWORD }}
-        MAX_EMAILS: ${{ github.event.inputs.max_emails || '10' }}
+        MAX_EMAILS: ${{ github.event.inputs.max_emails || '30' }}
         INCLUDE_PORTFOLIO_LINKS: ${{ github.event.inputs.include_portfolio_links || 'false' }}
         USE_CACHED_ONLY: 'true'
       continue-on-error: true
@@ -682,12 +682,12 @@ jobs:
 
     - name: Send Application Emails
       run: |
-        echo "📤 Sending application emails (max: ${{ github.event.inputs.max_emails || '15' }})..."
+        echo "📤 Sending application emails (max: ${{ github.event.inputs.max_emails || '30' }})..."
         python scripts/email_sender.py
       env:
         PYTHONPATH: ${{ github.workspace }}
         SENDER_PASSWORD: ${{ secrets.SENDER_PASSWORD }}
-        MAX_EMAILS: ${{ github.event.inputs.max_emails || '15' }}
+        MAX_EMAILS: ${{ github.event.inputs.max_emails || '30' }}
         INCLUDE_PORTFOLIO_LINKS: ${{ github.event.inputs.include_portfolio_links || 'false' }}
 
     - name: Upload Email Results

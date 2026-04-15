@@ -648,8 +648,8 @@ class PersonalizedEmailSender:
     def generate_email_body(self, job_title: str, company: str, job_url: str = None, recipient_email: str = None, hr_name: str = None) -> str:
         """Generate a personalized email body with company-specific content."""
         
-        # Validate and format HR name for greeting
-        greeting_name = self._validate_hr_name(hr_name)
+        # ALWAYS use "Hiring Team" - no name personalization to avoid errors
+        greeting_name = None
         
         # Use optimizer for personalized content if available
         if self.optimizer and recipient_email:
@@ -666,7 +666,7 @@ class PersonalizedEmailSender:
                 applicant_portfolio=self.applicant_portfolio,
                 applicant_projects=self.applicant_projects,
                 include_portfolio=self.include_portfolio_links,
-                hr_name=greeting_name
+                hr_name=None  # Always None - use Hiring Team
             )
         
         # Use HIGH RESPONSE templates (3x more callbacks)
@@ -681,14 +681,11 @@ class PersonalizedEmailSender:
                 linkedin=self.applicant_linkedin,
                 city=os.getenv('APPLICANT_CITY', 'Bangalore'),
                 notice_period=os.getenv('NOTICE_PERIOD', 'Immediate'),
-                hr_name=greeting_name
+                hr_name=None  # Always None - use Hiring Team
             )
         
-        # Determine greeting based on HR name
-        if greeting_name:
-            greeting = f"Dear {greeting_name},"
-        else:
-            greeting = "Dear Hiring Team,"
+        # Always use Hiring Team greeting
+        greeting = "Dear Hiring Team,"
         
         # Fallback to standard templates
         templates = [

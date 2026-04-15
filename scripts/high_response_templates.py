@@ -231,38 +231,8 @@ Best,
             notice_period=notice_period
         )
         
-        # Personalize greeting if HR name is provided and valid
-        # Validate hr_name - skip numbers, too short, generic terms
-        valid_hr_name = None
-        if hr_name and isinstance(hr_name, str) and hr_name.strip():
-            name = hr_name.strip()
-            # Skip invalid values
-            if name.lower() not in ['nan', 'none', 'n/a', 'na', 'null', '-', '--', 'unknown', 'no name', 'hr', 'hiring', 'recruiter', 'team', 'manager', 'support', 'info', 'contact', 'admin', 'careers', 'career', 'jobs', 'job']:
-                # Check if it's mostly numbers (invalid)
-                digit_count = sum(1 for c in name if c.isdigit())
-                alpha_count = sum(1 for c in name if c.isalpha())
-                # Needs at least 2 letters and not mostly digits
-                if alpha_count >= 2 and (not digit_count or digit_count / len(name) < 0.3):
-                    # Not a pure number
-                    try:
-                        float(name)
-                    except ValueError:
-                        # Good - extract first name
-                        valid_hr_name = name.split()[0].title() if ' ' in name else name.title()
-        
-        if valid_hr_name:
-            # Replace generic greetings with personalized ones
-            greetings_to_replace = [
-                ('Hi,\n', f'Hi {valid_hr_name},\n'),
-                ('Dear Hiring Team,\n', f'Dear {valid_hr_name},\n'),
-                ('Dear Hiring Manager,\n', f'Dear {valid_hr_name},\n'),
-                ('Hello,\n', f'Hello {valid_hr_name},\n'),
-                ('Hi there,\n', f'Hi {valid_hr_name},\n'),
-            ]
-            for old, new in greetings_to_replace:
-                if old in body:
-                    body = body.replace(old, new, 1)
-                    break
+        # ALWAYS use standard greeting - no HR name personalization
+        # This ensures consistent, professional emails without name errors
         
         return body
 

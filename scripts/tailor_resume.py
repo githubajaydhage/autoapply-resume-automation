@@ -7,6 +7,8 @@ from pathlib import Path
 from utils.config import JOBS_CSV_PATH, BASE_RESUME_PATH, TAILORED_RESUMES_DIR, ERROR_LOG_PATH
 from utils.resume_naming import get_resume_naming_manager
 
+
+# Tailor Resume Script
 # --- Configuration ---
 KEYWORDS_PLACEHOLDER = "[KEYWORDS]"
 STOP_WORDS = set([

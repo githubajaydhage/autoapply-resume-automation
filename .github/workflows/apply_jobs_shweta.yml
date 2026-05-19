@@ -681,6 +681,13 @@ jobs:
         GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
 
+    - name: Sync Bounced Emails Before Sending
+      run: |
+        echo "🔄 Syncing bounced emails from sent log before sending new emails..."
+        python scripts/add_bounced_emails.py --sync
+      env:
+        PYTHONPATH: ${{ github.workspace }}
+
     - name: Send Application Emails
       run: |
         echo "📤 Sending application emails (max: ${{ github.event.inputs.max_emails || '500' }})..."

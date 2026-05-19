@@ -961,39 +961,33 @@ ${name}
     
     def send_bulk_emails(self, emails_df: pd.DataFrame, max_emails: int = 50, delay_range: tuple = (30, 60)) -> dict:
         """Send emails to multiple recipients from a DataFrame."""
-        
+
         if emails_df.empty:
             logging.warning("No emails to send!")
             return {'sent': 0, 'failed': 0, 'skipped': 0}
-        
+
         # Filter out already sent - now tracks by (email + job_title) combination
-        # This allows applying to NEW job openings at the same company
         def is_already_sent(row):
             email = str(row.get('hr_email', '')).lower().strip() if pd.notna(row.get('hr_email', '')) else ''
             job = str(row.get('job_title', '')).lower().strip()
             return f"{email}|{job}" in self.sent_emails
-        
+
         already_sent_mask = emails_df.apply(is_already_sent, axis=1)
         new_jobs_count = (~already_sent_mask).sum()
         logging.info(f"📬 Found {new_jobs_count} NEW job applications (filtered {already_sent_mask.sum()} already-sent)")
-        # Remove rows with missing or non-string hr_email
         emails_df = emails_df[~already_sent_mask]
         emails_df = emails_df[emails_df['hr_email'].apply(lambda x: isinstance(x, str) and pd.notna(x) and x.strip() != '')]
-        
-        # IMPORTANT: Excel emails (from_excel_list=True) bypass ALL filters
-        # Split into Excel and non-Excel emails
+
         excel_emails_df = emails_df[emails_df.get('from_excel_list', False) == True].copy() if 'from_excel_list' in emails_df.columns else pd.DataFrame()
         non_excel_emails_df = emails_df[emails_df.get('from_excel_list', False) != True].copy() if 'from_excel_list' in emails_df.columns else emails_df.copy()
-        
-        # Filter non-Excel emails: only HR-related emails (skip info@, support@, etc.)
+
         if not non_excel_emails_df.empty:
             hr_mask = non_excel_emails_df['hr_email'].apply(self.validator.is_hr_related_email)
             non_hr_count = len(non_excel_emails_df) - hr_mask.sum()
             if non_hr_count > 0:
                 logging.info(f"🚫 Filtered out {non_hr_count} non-HR emails from curated list (info@, support@, cc@, etc.)")
             non_excel_emails_df = non_excel_emails_df[hr_mask]
-        
-        # Filter non-Excel emails: blacklisted companies
+
         if not non_excel_emails_df.empty:
             blacklist_mask = non_excel_emails_df.apply(
                 lambda row: (
@@ -1008,41 +1002,39 @@ ${name}
             if blacklisted_count > 0:
                 logging.info(f"🚫 Filtered out {blacklisted_count} blacklisted companies from curated list")
             non_excel_emails_df = non_excel_emails_df[blacklist_mask]
-        
-        # Combine: Excel emails FIRST (priority, no filtering), then filtered non-Excel
+
         emails_df = pd.concat([excel_emails_df, non_excel_emails_df], ignore_index=True)
         logging.info(f"📋 Final email list: {len(excel_emails_df)} from Excel (no filters), {len(non_excel_emails_df)} from other sources")
-        
+
         if emails_df.empty:
             logging.info("All emails have already been sent or filtered!")
             return {'sent': 0, 'failed': 0, 'skipped': 0}
-        
-        # Limit to max_emails
+
         emails_to_send = emails_df.head(max_emails)
-        
         logging.info(f"📧 Preparing to send {len(emails_to_send)} emails...")
-        
+
         stats = {'sent': 0, 'failed': 0, 'skipped': 0}
-        
+
         for idx, row in emails_to_send.iterrows():
-            # Check for shutdown signal (GitHub Actions cancel)
+            # Reload bounced_emails before each send to ensure latest bounces are checked
+            self.bounced_emails = self._load_bounced_emails()
+
             if SHUTDOWN_REQUESTED:
                 logging.info("🛑 Shutdown requested - stopping email campaign gracefully")
                 break
-                
+
             recipient = row['hr_email']
             company = row.get('company', 'Your Company')
             job_title = row.get('job_title', 'Open Position')
             job_url = row.get('job_url', '')
             from_excel_list = row.get('from_excel_list', False)
             hr_name = row.get('hr_name', None)
-            
-            # Log with HR name if available
+
             name_info = f" ({hr_name})" if hr_name and str(hr_name).strip() and str(hr_name).lower() not in ['nan', 'none'] else ""
             logging.info(f"📤 Sending email {stats['sent'] + stats['failed'] + 1}/{len(emails_to_send)} to {recipient}{name_info}")
-            
+
             success = self.send_email(recipient, company, job_title, job_url, from_excel_list=from_excel_list, hr_name=hr_name)
-            
+
             if success:
                 stats['sent'] += 1
             else:
@@ -1050,22 +1042,20 @@ ${name}
                     stats['skipped'] += 1
                 else:
                     stats['failed'] += 1
-            
-            # Random delay between emails to avoid spam detection
+
             if idx < len(emails_to_send) - 1:
                 delay = random.uniform(*delay_range)
                 logging.info(f"⏳ Waiting {delay:.0f} seconds before next email...")
-                # Interruptible sleep - check for shutdown every second
                 for _ in range(int(delay)):
                     if SHUTDOWN_REQUESTED:
                         break
                     time.sleep(1)
-        
+
         logging.info(f"\n📊 Email Campaign Summary:")
         logging.info(f"   ✅ Sent: {stats['sent']}")
         logging.info(f"   ❌ Failed: {stats['failed']}")
         logging.info(f"   ⏭️ Skipped: {stats['skipped']}")
-        
+
         return stats
 
 

@@ -368,6 +368,14 @@ jobs:
         PYTHONPATH: ${{ github.workspace }}
       continue-on-error: true
 
+
+    - name: Sync Bounced Emails Before Sending (Cached)
+      run: |
+        echo "🔄 Syncing bounced emails from sent log before sending cached emails..."
+        python scripts/add_bounced_emails.py --sync
+      env:
+        PYTHONPATH: ${{ github.workspace }}
+
     - name: Send Emails NOW (Using Cached Data)
       run: |
         echo "⚡ INSTANT APPLY - Using cached HR emails!"

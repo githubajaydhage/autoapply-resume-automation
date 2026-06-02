@@ -1,30 +1,30 @@
-name: Job Application - Ajay Dhage
+﻿name: Job Application - Ajay Dhage
 
 # =================================================================
 # AJAY DHAGE - Job Application Automation
 # Branch: v.1.3.0-ajay
 # =================================================================
-# 📅 CRON SCHEDULE: Runs 3x daily (11:00 AM, 4:00 PM, 9:00 PM IST)
-# ⚠️  CRON ISSUE: Scheduled workflows ONLY run from DEFAULT branch
-#    ✅ Manual runs work from any branch (v.1.3.0-ajay ✓)
-#    ❌ Scheduled runs only work from main/master branch
+# ≡ƒôà CRON SCHEDULE: Runs 3x daily (11:00 AM, 4:00 PM, 9:00 PM IST)
+# ΓÜá∩╕Å  CRON ISSUE: Scheduled workflows ONLY run from DEFAULT branch
+#    Γ£à Manual runs work from any branch (v.1.3.0-ajay Γ£ô)
+#    Γ¥î Scheduled runs only work from main/master branch
 #    
-#    🔧 SOLUTION: Make v.1.3.0-ajay the default branch:
-#    1. Go to GitHub repo → Settings → Branches
+#    ≡ƒöº SOLUTION: Make v.1.3.0-ajay the default branch:
+#    1. Go to GitHub repo ΓåÆ Settings ΓåÆ Branches
 #    2. Change default branch from "main" to "v.1.3.0-ajay"
 #    3. Cron will start working automatically
 # =================================================================
-# SECRETS CONFIGURED ✅: SENDER_PASSWORD (Gmail App Password)
+# SECRETS CONFIGURED Γ£à: SENDER_PASSWORD_AJAY (Gmail App Password for dhageajay012@gmail.com)
 # =================================================================
 
 on:
-  # Daily schedule - runs 3x daily (11:00 AM, 4:00 PM, 9:00 PM IST) - ENABLED!
-  # schedule:
-  #   - cron: '30 5 * * *'   # 11:00 AM IST
-  #   - cron: '30 10 * * *'  # 4:00 PM IST
-  #   - cron: '30 15 * * *'  # 9:00 PM IST
+  # Daily schedule - DISABLED (commented out to prevent auto-runs)
+  schedule:
+    - cron: '30 5 * * *'   # 11:00 AM IST
+    - cron: '30 10 * * *'  # 4:00 PM IST
+    - cron: '30 15 * * *'  # 9:00 PM IST
   
-  # Manual trigger
+  # Manual trigger only
   workflow_dispatch:
     inputs:
       # User Identity (Now with defaults - no manual input required!)
@@ -41,7 +41,7 @@ on:
       applicant_phone:
         description: 'Phone Number'
         required: false
-        default: '+91-9876543210'
+        default: '+91-7847019704'
         type: string
       applicant_location:
         description: 'Location'
@@ -61,22 +61,22 @@ on:
       applicant_linkedin:
         description: 'LinkedIn URL'
         required: false
-        default: 'https://www.linkedin.com/in/ajay-dhage'
+        default: 'https://www.linkedin.com/in/ajay-dhage-88aab9164/'
         type: string
       applicant_experience:
         description: 'Years of Experience'
         required: false
-        default: '3'
+        default: '5'
         type: string
       applicant_target_role:
         description: 'Target Roles'
         required: false
-        default: 'Data Analyst, Business Analyst, Software Engineer'
+        default: 'DevOps Engineer, Cloud Engineer, Infrastructure Engineer, SRE'
         type: string
       applicant_skills:
         description: 'Key Skills (comma-separated)'
         required: false
-        default: 'Python, SQL, Data Analysis, Machine Learning, Excel, PowerBI'
+        default: 'Kubernetes, Docker, AWS, Azure, GCP, Terraform, Jenkins, CI/CD, Linux, Python'
         type: string
       resume_filename:
         description: 'Resume Filename'
@@ -86,7 +86,7 @@ on:
       job_keywords:
         description: 'Job Search Keywords (comma-separated)'
         required: false
-        default: 'data analyst, python developer, business analyst, software engineer'
+        default: 'devops engineer, cloud engineer, kubernetes, docker, aws, terraform'
         type: string
       # Job Search Parameters (Optional with defaults)
       job_location:
@@ -178,7 +178,7 @@ concurrency:
   cancel-in-progress: true
 
 # ============================================
-# 🎯 DYNAMIC USER CONFIGURATION
+# ≡ƒÄ» DYNAMIC USER CONFIGURATION
 # All values from workflow inputs - NO HARDCODING!
 # ============================================
 env:
@@ -188,23 +188,23 @@ env:
   APPLICANT_LAST_NAME: ${{ github.event.inputs.applicant_name && 'Dhage' || 'Dhage' }}
   APPLICANT_EMAIL: ${{ github.event.inputs.applicant_email || 'dhageajay012@gmail.com' }}
   SENDER_EMAIL: ${{ github.event.inputs.applicant_email || 'dhageajay012@gmail.com' }}
-  APPLICANT_PHONE: ${{ github.event.inputs.applicant_phone || '+91-9876543210' }}
+  APPLICANT_PHONE: ${{ github.event.inputs.applicant_phone || '+91-7847019704' }}
   APPLICANT_LOCATION: ${{ github.event.inputs.applicant_location || 'Bangalore, Karnataka, India' }}
   APPLICANT_CITY: ${{ github.event.inputs.applicant_city || 'Bangalore' }}
   APPLICANT_COUNTRY: ${{ github.event.inputs.applicant_country || 'India' }}
-  APPLICANT_LINKEDIN: ${{ github.event.inputs.applicant_linkedin || 'https://www.linkedin.com/in/ajay-dhage/' }}
+  APPLICANT_LINKEDIN: ${{ github.event.inputs.applicant_linkedin || 'https://www.linkedin.com/in/ajay-dhage-88aab9164/' }}
   APPLICANT_EXPERIENCE: ${{ github.event.inputs.applicant_experience || '5' }}
   YEARS_EXPERIENCE: ${{ github.event.inputs.applicant_experience || '5' }}
-  APPLICANT_TARGET_ROLE: ${{ github.event.inputs.applicant_target_role || 'Software Engineer, Full Stack Developer, Backend Developer' }}
-  APPLICANT_SKILLS: ${{ github.event.inputs.applicant_skills || 'JavaScript, Python, React, Node.js, SQL, MongoDB, AWS' }}
+  APPLICANT_TARGET_ROLE: ${{ github.event.inputs.applicant_target_role || 'DevOps Engineer, Cloud Engineer, Infrastructure Engineer, SRE' }}
+  APPLICANT_SKILLS: ${{ github.event.inputs.applicant_skills || 'Kubernetes, Docker, AWS, Azure, GCP, Terraform, Jenkins, CI/CD, Linux, Python' }}
   
   # Resume Configuration (from inputs)
   RESUME_FILENAME: ${{ github.event.inputs.resume_filename || 'Ajay_Dhage_Resume.pdf' }}
   RESUME_PATH: resumes/${{ github.event.inputs.resume_filename || 'Ajay_Dhage_Resume.pdf' }}
   
   # Job Search Keywords (from inputs)
-  JOB_KEYWORDS: ${{ github.event.inputs.job_keywords || 'software engineer, full stack developer, backend developer, javascript developer, python developer, react developer, node.js developer' }}
-  NAUKRI_KEYWORDS: ${{ github.event.inputs.job_keywords || 'software engineer, full stack developer, backend developer' }}
+  JOB_KEYWORDS: ${{ github.event.inputs.job_keywords || 'devops engineer, cloud engineer, kubernetes, docker, aws, terraform, ci/cd, infrastructure engineer' }}
+  NAUKRI_KEYWORDS: ${{ github.event.inputs.job_keywords || 'devops engineer, cloud engineer, infrastructure engineer, sre' }}
   
   # Optional Settings
   SEND_TO_AGENCIES: 'true'
@@ -217,7 +217,7 @@ jobs:
   # Runs at same time as research - NO dependencies!
   # ============================================
   apply-cached:
-    name: "⚡ Instant Apply (Cached)"
+    name: "ΓÜí Instant Apply (Cached)"
     runs-on: ubuntu-latest
     timeout-minutes: 45
     if: ${{ github.event.inputs.scrape_only != 'true' && github.event.inputs.max_emails != '0' }}
@@ -256,32 +256,32 @@ jobs:
 
     - name: Load Curated HR Database (100+ verified emails)
       run: |
-        echo "📚 Loading CURATED HR database..."
+        echo "≡ƒôÜ Loading CURATED HR database..."
         python scripts/curated_hr_database.py
         if [ -f data/curated_hr_emails.csv ]; then
           CURATED=$(($(wc -l < data/curated_hr_emails.csv) - 1))
-          echo "✅ Curated emails: $CURATED"
+          echo "Γ£à Curated emails: $CURATED"
         fi
       env:
         PYTHONPATH: ${{ github.workspace }}
 
     - name: Send Emails NOW (Using Cached Data)
       run: |
-        echo "⚡ INSTANT APPLY - Using cached HR emails!"
+        echo "ΓÜí INSTANT APPLY - Using cached HR emails!"
         echo "   No waiting for research - applying NOW!"
         if [ -f data/curated_hr_emails.csv ] && [ $(wc -l < data/curated_hr_emails.csv) -gt 1 ]; then
           python scripts/email_sender.py < /dev/null
         else
-          echo "⚠️ No cached emails found - will wait for research phase"
+          echo "ΓÜá∩╕Å No cached emails found - will wait for research phase"
           exit 0
         fi
       env:
         PYTHONPATH: ${{ github.workspace }}
         CI: 'true'
         GITHUB_ACTIONS: 'true'
-        SENDER_PASSWORD: ${{ secrets.SENDER_PASSWORD }}
-        GMAIL_APP_PASSWORD: ${{ secrets.SENDER_PASSWORD }}
-        SENDER_PASSWORD_YOGESHWARI: ${{ secrets.SENDER_PASSWORD }}
+        SENDER_PASSWORD: ${{ secrets.SENDER_PASSWORD_AJAY }}
+        GMAIL_APP_PASSWORD: ${{ secrets.SENDER_PASSWORD_AJAY }}
+        SENDER_PASSWORD_YOGESHWARI: ${{ secrets.SENDER_PASSWORD_AJAY }}
         MAX_EMAILS: ${{ github.event.inputs.max_emails || '10' }}
         INCLUDE_PORTFOLIO_LINKS: ${{ github.event.inputs.include_portfolio_links || 'false' }}
         USE_CACHED_ONLY: 'true'
@@ -298,7 +298,7 @@ jobs:
   # JOB 1: RESEARCH - SCRAPE JOBS (PARALLEL)
   # ============================================
   scrape-jobs:
-    name: "🔍 Phase 1: Scrape Jobs"
+    name: "≡ƒöì Phase 1: Scrape Jobs"
     runs-on: ubuntu-latest
     timeout-minutes: 45
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
@@ -343,9 +343,9 @@ jobs:
           job-data-ajay-${{ runner.os }}-
 
     # PHASE 1: Scrape Jobs (Reliable Engine)
-    - name: 🔍 Multi-Source Job Scraping
+    - name: ≡ƒöì Multi-Source Job Scraping
       run: |
-        echo "🔍 Running multi-source job scraping..."
+        echo "≡ƒöì Running multi-source job scraping..."
         python scripts/enhanced_job_scraper.py || python scripts/reliable_job_scraper.py
       env:
         PYTHONPATH: ${{ github.workspace }}
@@ -362,7 +362,7 @@ jobs:
   # JOB 2: RESEARCH - HR EMAIL DISCOVERY
   # ============================================
   hr-research:
-    name: "👥 Phase 2: HR Research"
+    name: "≡ƒæÑ Phase 2: HR Research"
     runs-on: ubuntu-latest
     timeout-minutes: 45
     needs: scrape-jobs
@@ -388,20 +388,21 @@ jobs:
       with:
         name: scraped-jobs
         path: data/
+      continue-on-error: true
 
     - name: Load Curated HR Database
       run: |
-        echo "📚 Loading HR emails..."
+        echo "≡ƒôÜ Loading HR emails..."
         python scripts/curated_hr_database.py
       env:
         PYTHONPATH: ${{ github.workspace }}
 
     - name: Find HR Emails from Job Postings (FAST MODE)
       run: |
-        echo "🔍 Finding HR emails (fast mode - using cached data)..."
+        echo "≡ƒöì Finding HR emails (fast mode - using cached data)..."
         python scripts/hr_email_finder.py
         python scripts/email_scraper.py || true
-        echo "📈 Running Advanced HR Discovery (FAST - 5 companies max)..."
+        echo "≡ƒôê Running Advanced HR Discovery (FAST - 5 companies max)..."
         python scripts/advanced_hr_discovery.py || true
       env:
         PYTHONPATH: ${{ github.workspace }}
@@ -410,7 +411,7 @@ jobs:
 
     - name: Resume Optimization Analysis
       run: |
-        echo "📄 Analyzing resume match scores..."
+        echo "≡ƒôä Analyzing resume match scores..."
         python scripts/resume_optimizer.py || true
       env:
         PYTHONPATH: ${{ github.workspace }}
@@ -426,7 +427,7 @@ jobs:
   # JOB 3: SEND MAIN APPLICATIONS
   # ============================================
   send-applications:
-    name: "📧 Phase 3: Send Applications"
+    name: "≡ƒôº Phase 3: Send Applications"
     runs-on: ubuntu-latest
     timeout-minutes: 45
     needs: [apply-cached, hr-research]
@@ -464,16 +465,16 @@ jobs:
 
     - name: Send Applications (Main Phase)
       run: |
-        echo "📧 MAIN APPLICATION PHASE"
+        echo "≡ƒôº MAIN APPLICATION PHASE"
         echo "   Sending applications to newly discovered HR contacts..."
         python scripts/email_sender.py < /dev/null
       env:
         PYTHONPATH: ${{ github.workspace }}
         CI: 'true'
         GITHUB_ACTIONS: 'true'
-        SENDER_PASSWORD: ${{ secrets.SENDER_PASSWORD }}
-        GMAIL_APP_PASSWORD: ${{ secrets.SENDER_PASSWORD }}
-        SENDER_PASSWORD_YOGESHWARI: ${{ secrets.SENDER_PASSWORD }}
+        SENDER_PASSWORD: ${{ secrets.SENDER_PASSWORD_AJAY }}
+        GMAIL_APP_PASSWORD: ${{ secrets.SENDER_PASSWORD_AJAY }}
+        SENDER_PASSWORD_YOGESHWARI: ${{ secrets.SENDER_PASSWORD_AJAY }}
         MAX_EMAILS: ${{ github.event.inputs.max_emails || '15' }}
         INCLUDE_PORTFOLIO_LINKS: ${{ github.event.inputs.include_portfolio_links || 'false' }}
       continue-on-error: true
@@ -489,7 +490,7 @@ jobs:
   # JOB 4: FINAL SUMMARY
   # ============================================
   summary:
-    name: "📊 Summary & Tracking"
+    name: "≡ƒôè Summary & Tracking"
     runs-on: ubuntu-latest
     timeout-minutes: 10
     needs: [apply-cached, send-applications]
@@ -527,29 +528,29 @@ jobs:
 
     - name: Update Application Tracker
       run: |
-        echo "📊 Updating application tracker..."
+        echo "≡ƒôè Updating application tracker..."
         python scripts/application_tracker.py || true
       env:
         PYTHONPATH: ${{ github.workspace }}
 
     - name: Run Analysis Phases
       run: |
-        echo "📈 Running success analysis..."
+        echo "≡ƒôê Running success analysis..."
         python scripts/run_analysis_phases.py || true
       env:
         PYTHONPATH: ${{ github.workspace }}
 
     - name: Final Summary
       run: |
-        echo "🎯 JOB APPLICATION CAMPAIGN COMPLETE!"
-        echo "📊 Check artifacts for detailed results"
+        echo "≡ƒÄ» JOB APPLICATION CAMPAIGN COMPLETE!"
+        echo "≡ƒôè Check artifacts for detailed results"
         
         if [ -f data/sent_emails_log.csv ]; then
           SENT_TODAY=$(grep "$(date +%Y-%m-%d)" data/sent_emails_log.csv 2>/dev/null | wc -l || echo "0")
-          echo "✅ Applications sent today: $SENT_TODAY"
+          echo "Γ£à Applications sent today: $SENT_TODAY"
         fi
         
         if [ -f data/jobs_today.csv ]; then
           JOBS_FOUND=$(tail -n +2 data/jobs_today.csv 2>/dev/null | wc -l || echo "0")
-          echo "🔍 Jobs found today: $JOBS_FOUND"
+          echo "≡ƒöì Jobs found today: $JOBS_FOUND"
         fi

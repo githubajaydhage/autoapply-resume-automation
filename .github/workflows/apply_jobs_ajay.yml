@@ -61,7 +61,7 @@ on:
       applicant_linkedin:
         description: 'LinkedIn URL'
         required: false
-        default: 'https://www.linkedin.com/in/ajay-dhage/'
+        default: 'https://www.linkedin.com/in/ajay-dhage-88aab9164/'
         type: string
       applicant_experience:
         description: 'Years of Experience'
@@ -192,7 +192,7 @@ env:
   APPLICANT_LOCATION: ${{ github.event.inputs.applicant_location || 'Bangalore, Karnataka, India' }}
   APPLICANT_CITY: ${{ github.event.inputs.applicant_city || 'Bangalore' }}
   APPLICANT_COUNTRY: ${{ github.event.inputs.applicant_country || 'India' }}
-  APPLICANT_LINKEDIN: ${{ github.event.inputs.applicant_linkedin || 'https://www.linkedin.com/in/ajay-dhage/' }}
+  APPLICANT_LINKEDIN: ${{ github.event.inputs.applicant_linkedin || 'https://www.linkedin.com/in/ajay-dhage-88aab9164/' }}
   APPLICANT_EXPERIENCE: ${{ github.event.inputs.applicant_experience || '5' }}
   YEARS_EXPERIENCE: ${{ github.event.inputs.applicant_experience || '5' }}
   APPLICANT_TARGET_ROLE: ${{ github.event.inputs.applicant_target_role || 'DevOps Engineer, Cloud Engineer, Infrastructure Engineer, SRE' }}

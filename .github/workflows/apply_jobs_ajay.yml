@@ -14,7 +14,7 @@
 #    2. Change default branch from "main" to "v.1.3.0-ajay"
 #    3. Cron will start working automatically
 # =================================================================
-# SECRETS CONFIGURED Γ£à: SENDER_PASSWORD (Gmail App Password)
+# SECRETS CONFIGURED Γ£à: SENDER_PASSWORD_AJAY (Gmail App Password for dhageajay012@gmail.com)
 # =================================================================
 
 on:
@@ -279,9 +279,9 @@ jobs:
         PYTHONPATH: ${{ github.workspace }}
         CI: 'true'
         GITHUB_ACTIONS: 'true'
-        SENDER_PASSWORD: ${{ secrets.SENDER_PASSWORD }}
-        GMAIL_APP_PASSWORD: ${{ secrets.SENDER_PASSWORD }}
-        SENDER_PASSWORD_YOGESHWARI: ${{ secrets.SENDER_PASSWORD }}
+        SENDER_PASSWORD: ${{ secrets.SENDER_PASSWORD_AJAY }}
+        GMAIL_APP_PASSWORD: ${{ secrets.SENDER_PASSWORD_AJAY }}
+        SENDER_PASSWORD_YOGESHWARI: ${{ secrets.SENDER_PASSWORD_AJAY }}
         MAX_EMAILS: ${{ github.event.inputs.max_emails || '10' }}
         INCLUDE_PORTFOLIO_LINKS: ${{ github.event.inputs.include_portfolio_links || 'false' }}
         USE_CACHED_ONLY: 'true'
@@ -472,9 +472,9 @@ jobs:
         PYTHONPATH: ${{ github.workspace }}
         CI: 'true'
         GITHUB_ACTIONS: 'true'
-        SENDER_PASSWORD: ${{ secrets.SENDER_PASSWORD }}
-        GMAIL_APP_PASSWORD: ${{ secrets.SENDER_PASSWORD }}
-        SENDER_PASSWORD_YOGESHWARI: ${{ secrets.SENDER_PASSWORD }}
+        SENDER_PASSWORD: ${{ secrets.SENDER_PASSWORD_AJAY }}
+        GMAIL_APP_PASSWORD: ${{ secrets.SENDER_PASSWORD_AJAY }}
+        SENDER_PASSWORD_YOGESHWARI: ${{ secrets.SENDER_PASSWORD_AJAY }}
         MAX_EMAILS: ${{ github.event.inputs.max_emails || '15' }}
         INCLUDE_PORTFOLIO_LINKS: ${{ github.event.inputs.include_portfolio_links || 'false' }}
       continue-on-error: true

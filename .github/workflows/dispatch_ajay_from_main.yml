@@ -13,12 +13,12 @@ permissions:
 jobs:
   dispatch-ajay:
     runs-on: ubuntu-latest
-    name: Dispatch `apply_jobs_ajay.yml` on `ajay` branch
+    name: Dispatch `apply_jobs_ajay.yml` on `v.1.3.0-ajay` branch
     steps:
       - name: Dispatch Ajay workflow
         env:
           WORKFLOW_FILE: apply_jobs_ajay.yml
-          REF: ajay
+          REF: v.1.3.0-ajay
           REPO: ${{ github.repository }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |

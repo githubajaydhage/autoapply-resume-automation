@@ -885,10 +885,24 @@ ${name}
             self._add_to_bounced_database(recipient_email, company, f"No MX records for domain {domain}")
             return False
         
-        # CHECK 5: Enhanced email verification if available
+        # CHECK 5: SMTP RCPT TO verification - catches "address not found" BEFORE sending
+        # This runs for ALL emails (including Excel) to prevent bounces
+        if self.verifier:
+            smtp_valid, smtp_msg = self.verifier.smtp_verify(recipient_email, timeout=10)
+            if smtp_valid is False:
+                # Definitively rejected by recipient server (550 = mailbox doesn't exist)
+                logging.warning(f"🚫 Skipping {recipient_email} - SMTP verification FAILED: {smtp_msg}")
+                self._log_invalid_email(recipient_email, company, f"SMTP rejected: {smtp_msg}")
+                self._add_to_bounced_database(recipient_email, company, f"SMTP RCPT TO rejected: {smtp_msg}")
+                return False
+            elif smtp_valid is True:
+                logging.info(f"✅ SMTP verified: {recipient_email} mailbox exists")
+            # smtp_valid is None means inconclusive (server doesn't support VRFY) - proceed anyway
+        
+        # CHECK 6: Enhanced email verification (deliverability score)
         # SKIP deliverability check for emails from emailslist.xlsx (trusted source)
         if from_excel_list:
-            logging.info(f"✅ Bypassing deliverability check for {recipient_email} (from Excel list)")
+            logging.info(f"✅ Bypassing deliverability score check for {recipient_email} (from Excel list)")
         elif self.verifier:
             result = self.verifier.calculate_deliverability_score(recipient_email)
             if result['score'] < 60:

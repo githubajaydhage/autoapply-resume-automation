@@ -41,7 +41,7 @@ on:
       applicant_phone:
         description: 'Phone Number'
         required: false
-        default: '+91-9876543210'
+        default: '+91-7847019704'
         type: string
       applicant_location:
         description: 'Location'
@@ -188,7 +188,7 @@ env:
   APPLICANT_LAST_NAME: ${{ github.event.inputs.applicant_name && 'Dhage' || 'Dhage' }}
   APPLICANT_EMAIL: ${{ github.event.inputs.applicant_email || 'dhageajay012@gmail.com' }}
   SENDER_EMAIL: ${{ github.event.inputs.applicant_email || 'dhageajay012@gmail.com' }}
-  APPLICANT_PHONE: ${{ github.event.inputs.applicant_phone || '+91-9876543210' }}
+  APPLICANT_PHONE: ${{ github.event.inputs.applicant_phone || '+91-7847019704' }}
   APPLICANT_LOCATION: ${{ github.event.inputs.applicant_location || 'Bangalore, Karnataka, India' }}
   APPLICANT_CITY: ${{ github.event.inputs.applicant_city || 'Bangalore' }}
   APPLICANT_COUNTRY: ${{ github.event.inputs.applicant_country || 'India' }}

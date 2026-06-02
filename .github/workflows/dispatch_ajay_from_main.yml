@@ -1,0 +1,30 @@
+name: Scheduled Dispatch - Run Ajay Workflow
+
+on:
+  schedule:
+    - cron: '30 5 * * *'   # 11:00 AM IST
+    - cron: '30 10 * * *'  # 4:00 PM IST
+    - cron: '30 15 * * *'  # 9:00 PM IST
+  workflow_dispatch:
+
+permissions:
+  actions: write
+
+jobs:
+  dispatch-ajay:
+    runs-on: ubuntu-latest
+    name: Dispatch `apply_jobs_ajay.yml` on `ajay` branch
+    steps:
+      - name: Dispatch Ajay workflow
+        env:
+          WORKFLOW_FILE: apply_jobs_ajay.yml
+          REF: ajay
+          REPO: ${{ github.repository }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "Dispatching workflow ${WORKFLOW_FILE} on ref ${REF} in repo ${REPO}"
+          curl -s -X POST "https://api.github.com/repos/${REPO}/actions/workflows/${WORKFLOW_FILE}/dispatches" \
+            -H "Authorization: Bearer ${GH_TOKEN}" \
+            -H "Accept: application/vnd.github+json" \
+            -d "{\"ref\":\"${REF}\"}" \
+            || true

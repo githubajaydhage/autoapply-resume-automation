@@ -1096,8 +1096,8 @@ def main():
     
     sender = PersonalizedEmailSender()
     
-    # Check for password first
-    if not os.getenv('SENDER_PASSWORD'):
+    # Check for password first (accept any of the supported env vars)
+    if not (os.getenv('SENDER_PASSWORD') or os.getenv('GMAIL_APP_PASSWORD') or os.getenv('SENDER_PASSWORD_YOGESHWARI')):
         logging.error("\n❌ Gmail App Password not configured!")
         logging.error("Add this ONE secret to GitHub:")
         logging.error("  SENDER_PASSWORD = your-16-char-app-password")

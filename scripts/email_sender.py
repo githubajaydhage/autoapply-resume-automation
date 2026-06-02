@@ -322,6 +322,12 @@ class PersonalizedEmailSender:
         
         # Load problematic domains from sent log
         self.problematic_domains = self._analyze_problematic_domains()
+        
+        # Load blacklisted companies - companies to never send to
+        self.blacklist_file = os.path.join(
+            os.path.dirname(__file__), '..', 'data', 'company_blacklist.csv'
+        )
+        self.blacklisted_companies = self._load_blacklist()
 
         # Initialize email verifier if available
         self.verifier = None
@@ -376,7 +382,30 @@ class PersonalizedEmailSender:
             logging.info(f"   🚫 Bounced emails in database: {len(self.bounced_emails)}")
         if self.problematic_domains:
             logging.info(f"   ⚠️ Problematic domains identified: {len(self.problematic_domains)}")
+        if self.blacklisted_companies:
+            logging.info(f"   🚫 Blacklisted companies: {len(self.blacklisted_companies)}")
         
+    def _load_blacklist(self) -> set:
+        """Load blacklisted companies - never send to these."""
+        blacklist = set()
+        
+        if not os.path.exists(self.blacklist_file):
+            return blacklist
+        
+        try:
+            df = pd.read_csv(self.blacklist_file)
+            if 'company' in df.columns and 'hr_email' in df.columns:
+                for _, row in df.iterrows():
+                    company = str(row.get('company', '')).lower().strip()
+                    email = str(row.get('hr_email', '')).lower().strip()
+                    if company and email:
+                        blacklist.add((company, email))
+                logging.info(f"📋 Loaded {len(blacklist)} blacklisted companies")
+        except Exception as e:
+            logging.warning(f"⚠️ Could not load blacklist: {e}")
+        
+        return blacklist
+    
     def _load_bounced_emails(self) -> set:
         """Load previously bounced emails to avoid re-sending."""
         bounced = set()
@@ -546,21 +575,81 @@ class PersonalizedEmailSender:
         # Fallback to standard subjects
         subjects = [
             # Direct and specific (highest open rates)
-            f"Application: {job_title} - Bangalore - {self.applicant_experience}+ Years Experience",
-            f"{job_title} Application - Bangalore - {self.applicant_name}",
+            f"Application: {job_title} - Immediate Joiner - {self.applicant_experience}+ Years Experience",
+            f"{job_title} Application - Immediate Joiner - {self.applicant_name}",
             
             # Creates urgency/interest
-            f"Immediate Availability: {job_title} Role in Bangalore",
-            f"Bangalore-Based Candidate for {job_title} Opening",
+            f"Immediate Joiner: {job_title} Role - Bangalore - {self.applicant_experience} Years",
+            f"{job_title} - Immediate Joiner | {self.applicant_experience}+ Years | Bangalore",
             
             # Personal touch
-            f"Interested in {job_title} at {company} Bangalore",
-            f"Connecting for {job_title} Opportunity - Bangalore",
+            f"{job_title} at {company} - Immediate Joiner Available",
+            f"Immediate Joiner for {job_title} - {self.applicant_experience} Years Experience",
         ]
         return random.choice(subjects)
     
-    def generate_email_body(self, job_title: str, company: str, job_url: str = None, recipient_email: str = None) -> str:
+    def _validate_hr_name(self, hr_name: str) -> str:
+        """Validate and clean HR name. Returns cleaned name or None if invalid.
+        
+        Invalid names include:
+        - Numbers or mostly numbers (e.g., '95', '123abc')
+        - Too short (< 2 chars)
+        - Special characters only
+        - Generic terms like 'HR', 'Hiring', 'Recruiter'
+        - Empty, 'nan', 'none', 'n/a', etc.
+        """
+        if not hr_name or not isinstance(hr_name, str):
+            return None
+        
+        name = hr_name.strip()
+        
+        # Check for empty or placeholder values
+        if not name or name.lower() in ['nan', 'none', 'n/a', 'na', 'null', '-', '--', 'unknown', 'no name']:
+            return None
+        
+        # Check if it's mostly numbers (more than 50% digits)
+        digit_count = sum(1 for c in name if c.isdigit())
+        if digit_count > 0 and (digit_count / len(name)) > 0.3:  # More than 30% digits = invalid
+            return None
+        
+        # Check if it's purely a number
+        try:
+            float(name)
+            return None  # It's a number, not a name
+        except ValueError:
+            pass  # Good, it's not a number
+        
+        # Check minimum length (at least 2 characters)
+        if len(name) < 2:
+            return None
+        
+        # Check for generic terms that aren't real names
+        generic_terms = ['hr', 'hiring', 'recruiter', 'recruitment', 'talent', 'career', 'careers', 
+                        'jobs', 'job', 'team', 'manager', 'support', 'info', 'contact', 'admin',
+                        'hello', 'help', 'enquiry', 'inquiry', 'general']
+        if name.lower() in generic_terms:
+            return None
+        
+        # Check if it contains only special characters
+        alpha_count = sum(1 for c in name if c.isalpha())
+        if alpha_count < 2:  # Need at least 2 letters
+            return None
+        
+        # Extract first name (use first word if multiple words)
+        first_name = name.split()[0].strip() if ' ' in name else name
+        
+        # Final validation on first name
+        if len(first_name) < 2 or not any(c.isalpha() for c in first_name):
+            return None
+        
+        # Return properly capitalized first name
+        return first_name.title()
+    
+    def generate_email_body(self, job_title: str, company: str, job_url: str = None, recipient_email: str = None, hr_name: str = None) -> str:
         """Generate a personalized email body with company-specific content."""
+        
+        # ALWAYS use "Hiring Team" - no name personalization to avoid errors
+        greeting_name = None
         
         # Use optimizer for personalized content if available
         if self.optimizer and recipient_email:
@@ -576,7 +665,8 @@ class PersonalizedEmailSender:
                 applicant_github=self.applicant_github,
                 applicant_portfolio=self.applicant_portfolio,
                 applicant_projects=self.applicant_projects,
-                include_portfolio=self.include_portfolio_links
+                include_portfolio=self.include_portfolio_links,
+                hr_name=None  # Always None - use Hiring Team
             )
         
         # Use HIGH RESPONSE templates (3x more callbacks)
@@ -590,13 +680,17 @@ class PersonalizedEmailSender:
                 phone=self.applicant_phone,
                 linkedin=self.applicant_linkedin,
                 city=os.getenv('APPLICANT_CITY', 'Bangalore'),
-                notice_period=os.getenv('NOTICE_PERIOD', 'Immediate')
+                notice_period=os.getenv('NOTICE_PERIOD', 'Immediate'),
+                hr_name=None  # Always None - use Hiring Team
             )
+        
+        # Always use Hiring Team greeting
+        greeting = "Dear Hiring Team,"
         
         # Fallback to standard templates
         templates = [
             # Template 1 - Professional and direct
-            """Dear Hiring Manager,
+            f"""{greeting}
 
 I am writing to express my strong interest in the ${job_title} position at ${company}. With ${experience}+ years of experience in ${skills_area}, I am confident in my ability to contribute effectively to your team.
 
@@ -747,8 +841,13 @@ ${name}
             except Exception:
                 return False
     
-    def send_email(self, recipient_email: str, company: str, job_title: str, job_url: str = None) -> bool:
-        """Send a personalized email to a single recipient with comprehensive bounce protection."""
+    def send_email(self, recipient_email: str, company: str, job_title: str, job_url: str = None, from_excel_list: bool = False, hr_name: str = None) -> bool:
+        """Send a personalized email to a single recipient with comprehensive bounce protection.
+        
+        Args:
+            from_excel_list: If True, skip deliverability score check (trusted Excel source)
+            hr_name: Name of HR person for personalized greeting
+        """
         
         recipient_lower = recipient_email.lower().strip()
         
@@ -786,8 +885,25 @@ ${name}
             self._add_to_bounced_database(recipient_email, company, f"No MX records for domain {domain}")
             return False
         
-        # CHECK 5: Enhanced email verification if available
+        # CHECK 5: SMTP RCPT TO verification - catches "address not found" BEFORE sending
+        # This runs for ALL emails (including Excel) to prevent bounces
         if self.verifier:
+            smtp_valid, smtp_msg = self.verifier.smtp_verify(recipient_email, timeout=10)
+            if smtp_valid is False:
+                # Definitively rejected by recipient server (550 = mailbox doesn't exist)
+                logging.warning(f"🚫 Skipping {recipient_email} - SMTP verification FAILED: {smtp_msg}")
+                self._log_invalid_email(recipient_email, company, f"SMTP rejected: {smtp_msg}")
+                self._add_to_bounced_database(recipient_email, company, f"SMTP RCPT TO rejected: {smtp_msg}")
+                return False
+            elif smtp_valid is True:
+                logging.info(f"✅ SMTP verified: {recipient_email} mailbox exists")
+            # smtp_valid is None means inconclusive (server doesn't support VRFY) - proceed anyway
+        
+        # CHECK 6: Enhanced email verification (deliverability score)
+        # SKIP deliverability check for emails from emailslist.xlsx (trusted source)
+        if from_excel_list:
+            logging.info(f"✅ Bypassing deliverability score check for {recipient_email} (from Excel list)")
+        elif self.verifier:
             result = self.verifier.calculate_deliverability_score(recipient_email)
             if result['score'] < 60:
                 logging.warning(f"⚠️ Skipping {recipient_email} - Low deliverability score: {result['score']}/100")
@@ -812,7 +928,7 @@ ${name}
         try:
             # Generate personalized content with optimizer
             subject = self.generate_email_subject(job_title, company, recipient_email)
-            body = self.generate_email_body(job_title, company, job_url, recipient_email)
+            body = self.generate_email_body(job_title, company, job_url, recipient_email, hr_name=hr_name)
             message = self.create_email_message(recipient_email, subject, body)
             
             # Connect and send
@@ -859,67 +975,80 @@ ${name}
     
     def send_bulk_emails(self, emails_df: pd.DataFrame, max_emails: int = 50, delay_range: tuple = (30, 60)) -> dict:
         """Send emails to multiple recipients from a DataFrame."""
-        
+
         if emails_df.empty:
             logging.warning("No emails to send!")
             return {'sent': 0, 'failed': 0, 'skipped': 0}
-        
+
         # Filter out already sent - now tracks by (email + job_title) combination
-        # This allows applying to NEW job openings at the same company
         def is_already_sent(row):
-            email = row['hr_email']
-            # Robustly handle NaN/float/non-string values
-            if pd.isna(email) or not isinstance(email, str):
-                return True
-            email = email.lower().strip()
+            email = str(row.get('hr_email', '')).lower().strip() if pd.notna(row.get('hr_email', '')) else ''
             job = str(row.get('job_title', '')).lower().strip()
             return f"{email}|{job}" in self.sent_emails
 
         already_sent_mask = emails_df.apply(is_already_sent, axis=1)
         new_jobs_count = (~already_sent_mask).sum()
         logging.info(f"📬 Found {new_jobs_count} NEW job applications (filtered {already_sent_mask.sum()} already-sent)")
-
         emails_df = emails_df[~already_sent_mask]
-        emails_df = emails_df[emails_df['hr_email'].notna()]
+        emails_df = emails_df[emails_df['hr_email'].apply(lambda x: isinstance(x, str) and pd.notna(x) and x.strip() != '')]
 
-        # CRITICAL: Filter to only HR-related emails (skip info@, support@, etc.)
-        def safe_is_hr_related(email):
-            if pd.isna(email) or not isinstance(email, str):
-                return False
-            return self.validator.is_hr_related_email(email)
+        excel_emails_df = emails_df[emails_df.get('from_excel_list', False) == True].copy() if 'from_excel_list' in emails_df.columns else pd.DataFrame()
+        non_excel_emails_df = emails_df[emails_df.get('from_excel_list', False) != True].copy() if 'from_excel_list' in emails_df.columns else emails_df.copy()
 
-        hr_mask = emails_df['hr_email'].apply(safe_is_hr_related)
-        non_hr_count = len(emails_df) - hr_mask.sum()
-        if non_hr_count > 0:
-            logging.info(f"🚫 Filtered out {non_hr_count} non-HR emails (info@, support@, cc@, etc.)")
-        emails_df = emails_df[hr_mask]
+        if not non_excel_emails_df.empty:
+            hr_mask = non_excel_emails_df['hr_email'].apply(self.validator.is_hr_related_email)
+            non_hr_count = len(non_excel_emails_df) - hr_mask.sum()
+            if non_hr_count > 0:
+                logging.info(f"🚫 Filtered out {non_hr_count} non-HR emails from curated list (info@, support@, cc@, etc.)")
+            non_excel_emails_df = non_excel_emails_df[hr_mask]
+
+        if not non_excel_emails_df.empty:
+            blacklist_mask = non_excel_emails_df.apply(
+                lambda row: (
+                    (str(row.get('company', '')).lower().strip(), str(row.get('hr_email', '')).lower().strip())
+                    not in self.blacklisted_companies
+                    if isinstance(row.get('hr_email', ''), str) and row.get('hr_email', '').strip() != ''
+                    else False
+                ),
+                axis=1
+            )
+            blacklisted_count = len(non_excel_emails_df) - blacklist_mask.sum()
+            if blacklisted_count > 0:
+                logging.info(f"🚫 Filtered out {blacklisted_count} blacklisted companies from curated list")
+            non_excel_emails_df = non_excel_emails_df[blacklist_mask]
+
+        emails_df = pd.concat([excel_emails_df, non_excel_emails_df], ignore_index=True)
+        logging.info(f"📋 Final email list: {len(excel_emails_df)} from Excel (no filters), {len(non_excel_emails_df)} from other sources")
 
         if emails_df.empty:
             logging.info("All emails have already been sent or filtered!")
             return {'sent': 0, 'failed': 0, 'skipped': 0}
-        
-        # Limit to max_emails
+
         emails_to_send = emails_df.head(max_emails)
-        
         logging.info(f"📧 Preparing to send {len(emails_to_send)} emails...")
-        
+
         stats = {'sent': 0, 'failed': 0, 'skipped': 0}
-        
+
         for idx, row in emails_to_send.iterrows():
-            # Check for shutdown signal (GitHub Actions cancel)
+            # Reload bounced_emails before each send to ensure latest bounces are checked
+            self.bounced_emails = self._load_bounced_emails()
+
             if SHUTDOWN_REQUESTED:
                 logging.info("🛑 Shutdown requested - stopping email campaign gracefully")
                 break
-                
+
             recipient = row['hr_email']
             company = row.get('company', 'Your Company')
             job_title = row.get('job_title', 'Open Position')
             job_url = row.get('job_url', '')
-            
-            logging.info(f"📤 Sending email {stats['sent'] + stats['failed'] + 1}/{len(emails_to_send)} to {recipient}")
-            
-            success = self.send_email(recipient, company, job_title, job_url)
-            
+            from_excel_list = row.get('from_excel_list', False)
+            hr_name = row.get('hr_name', None)
+
+            name_info = f" ({hr_name})" if hr_name and str(hr_name).strip() and str(hr_name).lower() not in ['nan', 'none'] else ""
+            logging.info(f"📤 Sending email {stats['sent'] + stats['failed'] + 1}/{len(emails_to_send)} to {recipient}{name_info}")
+
+            success = self.send_email(recipient, company, job_title, job_url, from_excel_list=from_excel_list, hr_name=hr_name)
+
             if success:
                 stats['sent'] += 1
             else:
@@ -927,22 +1056,20 @@ ${name}
                     stats['skipped'] += 1
                 else:
                     stats['failed'] += 1
-            
-            # Random delay between emails to avoid spam detection
+
             if idx < len(emails_to_send) - 1:
                 delay = random.uniform(*delay_range)
                 logging.info(f"⏳ Waiting {delay:.0f} seconds before next email...")
-                # Interruptible sleep - check for shutdown every second
                 for _ in range(int(delay)):
                     if SHUTDOWN_REQUESTED:
                         break
                     time.sleep(1)
-        
+
         logging.info(f"\n📊 Email Campaign Summary:")
         logging.info(f"   ✅ Sent: {stats['sent']}")
         logging.info(f"   ❌ Failed: {stats['failed']}")
         logging.info(f"   ⏭️ Skipped: {stats['skipped']}")
-        
+
         return stats
 
 
@@ -983,8 +1110,8 @@ def main():
     
     sender = PersonalizedEmailSender()
     
-    # Check for password first
-    if not os.getenv('SENDER_PASSWORD'):
+    # Check for password first (accept any of the supported env vars)
+    if not (os.getenv('SENDER_PASSWORD') or os.getenv('GMAIL_APP_PASSWORD') or os.getenv('SENDER_PASSWORD_YOGESHWARI')):
         logging.error("\n❌ Gmail App Password not configured!")
         logging.error("Add this ONE secret to GitHub:")
         logging.error("  SENDER_PASSWORD = your-16-char-app-password")
@@ -998,13 +1125,109 @@ def main():
     
     # Try smart matching first (job-specific applications)
     emails_df = load_smart_matched_applications()
-    
+
     # Fall back to legacy mode if smart matching fails
     if emails_df is None or emails_df.empty:
         logging.info("📋 Using legacy curated HR database mode...")
         emails_df = pd.DataFrame()
-        
-        # Source 1: Curated HR database (most reliable)
+
+        # Source 1: Excel file (emailslist.xlsx) - auto-detect email column, PRIORITY
+        excel_path = os.path.join(os.path.dirname(__file__), '..', 'data', 'emailslist.xlsx')
+        if os.path.exists(excel_path):
+            try:
+                # Try reading with skiprows=6 for NxtHiring format, fallback to default
+                try:
+                    excel_df = pd.read_excel(excel_path, skiprows=6)
+                except:
+                    excel_df = pd.read_excel(excel_path)
+                
+                # Try to auto-detect the email column (prioritize HR/recruiter emails)
+                email_col = None
+                priority_keywords = ['recruiter', 'talent', 'hr_email', 'hr email']
+                for col in excel_df.columns:
+                    col_lower = str(col).strip().lower()
+                    if any(kw in col_lower for kw in priority_keywords) and 'email' in col_lower:
+                        email_col = col
+                        break
+                if not email_col:
+                    for col in excel_df.columns:
+                        if str(col).strip().lower() in ['email', 'hr_email', 'mail', 'email_id', 'email address', 'e-mail']:
+                            email_col = col
+                            break
+                if not email_col:
+                    # Try to find a column containing 'email' in its name
+                    for col in excel_df.columns:
+                        if 'email' in str(col).strip().lower():
+                            email_col = col
+                            break
+                if email_col:
+                    excel_df = excel_df.rename(columns={email_col: 'hr_email'})
+                    
+                    # Strip whitespace from all column names for reliable detection
+                    excel_df.columns = excel_df.columns.str.strip()
+                    
+                    # Auto-detect company name column (specific match first)
+                    company_col = None
+                    for col in excel_df.columns:
+                        col_lower = str(col).strip().lower()
+                        # Match 'startup nme', 'company name', 'organisation', etc. but NOT just 'name'
+                        if any(kw in col_lower for kw in ['company', 'startup', 'organisation', 'firm']):
+                            company_col = col
+                            break
+                    if company_col and 'company' not in excel_df.columns:
+                        excel_df = excel_df.rename(columns={company_col: 'company'})
+                        logging.info(f"   📌 Detected company column: '{company_col}'")
+                    
+                    # Auto-detect HR/recruiter name column
+                    hr_name_col = None
+                    for col in excel_df.columns:
+                        col_lower = str(col).strip().lower()
+                        # Match 'name', 'hr name', 'recruiter name', 'contact name' but NOT 'company name'/'startup nme'
+                        if col_lower == 'name' or col_lower in ['hr name', 'recruiter name', 'contact name', 'person name', 'contact']:
+                            hr_name_col = col
+                            break
+                    if hr_name_col and 'hr_name' not in excel_df.columns:
+                        excel_df = excel_df.rename(columns={hr_name_col: 'hr_name'})
+                        logging.info(f"   📌 Detected HR name column: '{hr_name_col}'")
+                    
+                    # Add job_title column if missing
+                    if 'job_title' not in excel_df.columns:
+                        job_keywords_str = os.environ.get('JOB_KEYWORDS', 'Open Position')
+                        job_title_default = job_keywords_str.split(',')[0].strip().title() if job_keywords_str else 'Open Position'
+                        excel_df['job_title'] = job_title_default
+                    
+                    # CRITICAL: Handle multi-line emails (cells with multiple emails separated by \n or comma)
+                    # Expand each row with multiple emails into separate rows
+                    expanded_rows = []
+                    for _, row in excel_df.iterrows():
+                        email_cell = str(row.get('hr_email', ''))
+                        # Split by newlines, commas, or semicolons
+                        emails_in_cell = [e.strip() for e in email_cell.replace('\n', ',').replace(';', ',').split(',') if e.strip()]
+                        for email in emails_in_cell:
+                            # Skip if not a valid email format
+                            if '@' in email and ' ' not in email:
+                                new_row = row.copy()
+                                new_row['hr_email'] = email
+                                expanded_rows.append(new_row)
+                    
+                    if expanded_rows:
+                        excel_df = pd.DataFrame(expanded_rows)
+                    
+                    # Clean up: keep only rows with valid emails
+                    excel_df = excel_df[excel_df['hr_email'].notna()]
+                    excel_df = excel_df[excel_df['hr_email'].astype(str).str.contains('@', na=False)]
+                    # Filter out non-email values (names, etc.)
+                    excel_df = excel_df[~excel_df['hr_email'].astype(str).str.contains(' ', na=False)]
+                    # Mark as from Excel list to bypass deliverability check
+                    excel_df['from_excel_list'] = True
+                    emails_df = pd.concat([excel_df, emails_df], ignore_index=True)  # PRIORITY: emailslist.xlsx first
+                    logging.info(f"📥 Loaded {len(excel_df)} HR emails from emailslist.xlsx (auto-detected column: {email_col}) [PRIORITY - BYPASSING DELIVERABILITY CHECK]")
+                else:
+                    logging.warning("⚠️ Could not auto-detect email column in emailslist.xlsx. Please ensure it contains a recognizable email column.")
+            except Exception as e:
+                logging.warning(f"⚠️ Could not load emails from emailslist.xlsx: {e}")
+
+        # Source 2: Curated HR database (most reliable)
         curated_path = os.path.join(os.path.dirname(__file__), '..', 'data', 'curated_hr_emails.csv')
         if os.path.exists(curated_path):
             curated_df = pd.read_csv(curated_path)
@@ -1017,16 +1240,16 @@ def main():
             curated_df['job_title'] = job_title_default
             emails_df = pd.concat([emails_df, curated_df], ignore_index=True)
             logging.info(f"📋 Loaded {len(curated_df)} curated HR emails")
-        
-        # Source 2: Scraped emails
+
+        # Source 3: Scraped emails
         scraped_path = os.path.join(os.path.dirname(__file__), '..', 'data', 'all_hr_emails.csv')
         if os.path.exists(scraped_path):
             scraped_df = pd.read_csv(scraped_path)
             if 'hr_email' in scraped_df.columns:
                 emails_df = pd.concat([emails_df, scraped_df], ignore_index=True)
                 logging.info(f"🔍 Loaded {len(scraped_df)} scraped HR emails")
-        
-        # Source 3: Growing HR database from advanced discovery
+
+        # Source 4: Growing HR database from advanced discovery
         discovered_path = os.path.join(os.path.dirname(__file__), '..', 'data', 'discovered_hr_emails.csv')
         if os.path.exists(discovered_path):
             discovered_df = pd.read_csv(discovered_path)
@@ -1118,8 +1341,8 @@ def main():
         for source, count in source_stats.items():
             logging.info(f"   • {source}: {count}")
     
-    # Get max emails from environment variable
-    max_emails = int(os.getenv('MAX_EMAILS', '20'))
+    # Get max emails from environment variable (default 500 to send ALL Excel emails)
+    max_emails = int(os.getenv('MAX_EMAILS', '500'))
     
     # CI Mode: Use reduced delays to prevent GitHub Actions timeout
     if CI_MODE:
@@ -1152,15 +1375,27 @@ def main():
         return keyword_match and role_match and skills_match
 
     # Apply filtering if any criteria are set
+    # BUT: Excel emails (from_excel_list=True) ALWAYS bypass filtering
     if target_role or job_keywords or applicant_skills:
         before_count = len(emails_df)
-        filtered_df = emails_df[emails_df.apply(job_matches, axis=1)]
-        after_count = len(filtered_df)
-        logging.info(f"🔒 Filtered jobs by workflow criteria: {after_count} of {before_count} remain after filtering.")
-        if filtered_df.empty:
-            logging.warning("⚠️ No jobs matched the workflow criteria! Proceeding to send to all available HR contacts as fallback.")
+        # Keep ALL Excel emails, only filter non-Excel emails
+        excel_emails = emails_df[emails_df.get('from_excel_list', False) == True].copy() if 'from_excel_list' in emails_df.columns else pd.DataFrame()
+        non_excel_emails = emails_df[emails_df.get('from_excel_list', False) != True].copy() if 'from_excel_list' in emails_df.columns else emails_df.copy()
+        
+        # Only filter non-Excel emails
+        if not non_excel_emails.empty:
+            filtered_non_excel = non_excel_emails[non_excel_emails.apply(job_matches, axis=1)]
         else:
-            emails_df = filtered_df
+            filtered_non_excel = pd.DataFrame()
+        
+        # Combine: Excel emails FIRST (priority), then filtered non-Excel
+        emails_df = pd.concat([excel_emails, filtered_non_excel], ignore_index=True)
+        after_count = len(emails_df)
+        logging.info(f"🔒 Filtered jobs by workflow criteria: {after_count} of {before_count} remain after filtering.")
+        logging.info(f"   📋 Excel emails (bypassed filter): {len(excel_emails)}")
+        logging.info(f"   📋 Other emails (filtered): {len(filtered_non_excel)}")
+        if emails_df.empty:
+            logging.warning("⚠️ No jobs matched the workflow criteria! Proceeding to send to all available HR contacts as fallback.")
 
     if emails_df.empty:
         logging.error("❌ No HR emails found after fallback! Aborting.")

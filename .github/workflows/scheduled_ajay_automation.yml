@@ -1,0 +1,37 @@
+name: Scheduled Ajay Job Application Automation
+
+# PERMANENT FIX: This runs on main (where cron works) and triggers apply_jobs_ajay.yml on v.1.3.0-ajay
+# Scheduled: 3x daily - 11:00 AM, 4:00 PM, 9:00 PM IST
+
+on:
+  schedule:
+    - cron: '30 5 * * *'   # 11:00 AM IST (5:30 UTC)
+    - cron: '30 10 * * *'  # 4:00 PM IST (10:30 UTC)
+    - cron: '30 15 * * *'  # 9:00 PM IST (15:30 UTC)
+  workflow_dispatch:  # Allow manual trigger
+
+jobs:
+  schedule-ajay-automation:
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write  # Allow dispatching workflows
+      contents: read
+    steps:
+      - name: Trigger Ajay Job Automation
+        env:
+          REPO: ${{ github.repository }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "🚀 Triggering apply_jobs_ajay.yml on v.1.3.0-ajay branch..."
+          curl -s -X POST "https://api.github.com/repos/${REPO}/actions/workflows/apply_jobs_ajay.yml/dispatches" \
+            -H "Authorization: Bearer ${GH_TOKEN}" \
+            -H "Accept: application/vnd.github+json" \
+            -d '{
+              "ref": "v.1.3.0-ajay",
+              "inputs": {
+                "applicant_email": "dhageajay012@gmail.com",
+                "max_emails": "15",
+                "send_followups": "true"
+              }
+            }' \
+            && echo "✅ Dispatch successful!" || echo "❌ Dispatch failed!"

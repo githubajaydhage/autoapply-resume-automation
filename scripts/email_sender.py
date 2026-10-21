@@ -487,12 +487,15 @@ class PersonalizedEmailSender:
             df['domain'] = df['recipient_email'].str.lower().str.split('@').str[-1]
             
             # Count success/failure by domain
-            domain_stats = df.groupby('domain').apply(
-                lambda x: pd.Series({
-                    'total': len(x),
-                    'bounced': x['status'].str.lower().str.contains('bounced|failed|undeliverable|rejected', na=False, regex=True).sum()
-                })
-            ).reset_index()
+            df['_bounced'] = df['status'].str.lower().str.contains(
+                'bounced|failed|undeliverable|rejected',
+                na=False,
+                regex=True,
+            )
+            domain_stats = df.groupby('domain', as_index=False).agg(
+                total=('domain', 'size'),
+                bounced=('_bounced', 'sum'),
+            )
             
             # Domains with >50% bounce rate and at least 2 bounces are problematic
             for _, row in domain_stats.iterrows():
@@ -1346,7 +1349,7 @@ def main():
     if emails_df.empty:
         logging.error("❌ No HR emails found!")
         logging.info("Run curated_hr_database.py or email_scraper.py first.")
-        return
+        raise SystemExit(1)
     
     # Clean and dedupe
     emails_df = emails_df[emails_df['hr_email'].notna()]
@@ -1418,7 +1421,7 @@ def main():
 
     if emails_df.empty:
         logging.error("❌ No eligible HR emails remain after workflow filtering; aborting.")
-        return
+        raise SystemExit(1)
     # Send emails
     stats = sender.send_bulk_emails(
         emails_df,

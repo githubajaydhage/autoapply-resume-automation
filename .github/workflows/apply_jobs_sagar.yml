@@ -4,10 +4,14 @@
 # SAGAR DHAGE - Job Application Automation
 # Branch: sagar-resume-automation
 # =================================================================
-# Manual runs only. Scheduled workflows must be configured on the default branch.
+# Scheduled workflows run from main and check out the Sagar branch below.
 # =================================================================
 
 on:
+  schedule:
+    - cron: '30 5 * * *'   # 11:00 AM IST
+    - cron: '30 10 * * *'  # 4:00 PM IST
+    - cron: '30 15 * * *'  # 9:00 PM IST
   workflow_dispatch:
     inputs:
       # User Identity (Now with defaults - no manual input required!)
@@ -99,7 +103,7 @@ on:
       max_emails:
         description: 'Max new emails to send'
         required: false
-        default: '15'
+        default: '5'
         type: choice
         options:
         - '5'
@@ -111,7 +115,7 @@ on:
       send_followups:
         description: 'Send follow-up emails?'
         required: false
-        default: 'true'
+        default: 'false'
         type: choice
         options:
         - 'true'
@@ -221,7 +225,7 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v3
       with:
-        ref: ${{ github.ref }}
+        ref: sagar-resume-automation
 
     - name: Set up Python
       uses: actions/setup-python@v4
@@ -283,7 +287,7 @@ jobs:
         GITHUB_ACTIONS: 'true'
         SENDER_PASSWORD: ${{ secrets.SENDER_PASSWORD_SAGAR }}
         GMAIL_APP_PASSWORD: ${{ secrets.SENDER_PASSWORD_SAGAR }}
-        MAX_EMAILS: ${{ github.event.inputs.max_emails || '10' }}
+        MAX_EMAILS: ${{ github.event.inputs.max_emails || '5' }}
         INCLUDE_PORTFOLIO_LINKS: ${{ github.event.inputs.include_portfolio_links || 'false' }}
         USE_CACHED_ONLY: 'true'
       continue-on-error: true
@@ -311,7 +315,7 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v3
       with:
-        ref: ${{ github.ref }}
+        ref: sagar-resume-automation
 
     - name: Set up Python
       uses: actions/setup-python@v4
@@ -370,7 +374,7 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v3
       with:
-        ref: ${{ github.ref }}
+        ref: sagar-resume-automation
 
     - name: Set up Python
       uses: actions/setup-python@v4
@@ -436,7 +440,7 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v3
       with:
-        ref: ${{ github.ref }}
+        ref: sagar-resume-automation
 
     - name: Set up Python
       uses: actions/setup-python@v4
@@ -482,7 +486,7 @@ jobs:
         GITHUB_ACTIONS: 'true'
         SENDER_PASSWORD: ${{ secrets.SENDER_PASSWORD_SAGAR }}
         GMAIL_APP_PASSWORD: ${{ secrets.SENDER_PASSWORD_SAGAR }}
-        MAX_EMAILS: ${{ github.event.inputs.max_emails || '15' }}
+        MAX_EMAILS: ${{ github.event.inputs.max_emails || '5' }}
         INCLUDE_PORTFOLIO_LINKS: ${{ github.event.inputs.include_portfolio_links || 'false' }}
       continue-on-error: true
 
@@ -507,7 +511,7 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v3
       with:
-        ref: ${{ github.ref }}
+        ref: sagar-resume-automation
 
     - name: Set up Python
       uses: actions/setup-python@v4

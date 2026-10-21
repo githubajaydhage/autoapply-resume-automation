@@ -4,10 +4,14 @@
 # SAGAR DHAGE - Job Application Automation
 # Branch: sagar-resume-automation
 # =================================================================
-# Manual runs only. Scheduled workflows must be configured on the default branch.
+# Scheduled workflows run from main and check out the Sagar branch below.
 # =================================================================
 
 on:
+  schedule:
+    - cron: '30 5 * * *'   # 11:00 AM IST
+    - cron: '30 10 * * *'  # 4:00 PM IST
+    - cron: '30 15 * * *'  # 9:00 PM IST
   workflow_dispatch:
     inputs:
       # User Identity (Now with defaults - no manual input required!)
@@ -99,7 +103,7 @@ on:
       max_emails:
         description: 'Max new emails to send'
         required: false
-        default: '15'
+        default: '5'
         type: choice
         options:
         - '5'
@@ -111,7 +115,7 @@ on:
       send_followups:
         description: 'Send follow-up emails?'
         required: false
-        default: 'true'
+        default: 'false'
         type: choice
         options:
         - 'true'
@@ -192,15 +196,15 @@ env:
   APPLICANT_WORK_PREFERENCE: ${{ github.event.inputs.work_preference || 'Remote/Hybrid' }}
   APPLICANT_TARGET_ROLE: ${{ github.event.inputs.applicant_target_role || 'Product Support Engineer, Software Support Engineer, Technical Support Engineer, Application Support Engineer, SaaS Support Engineer' }}
   APPLICANT_SKILLS: ${{ github.event.inputs.applicant_skills || 'SaaS Application Support, Product Support, Technical Support, Customer Support, Cloud Telephony, Incident Management, Ticket Management, SLA Management, Root Cause Analysis, Application Troubleshooting, VPN Troubleshooting, IVR, Call Routing, Virtual Numbers, CRM Integrations, API Configurations, Freshdesk, Zendesk, Zoho Desk' }}
-  
+
   # Resume Configuration (from inputs)
   RESUME_FILENAME: ${{ github.event.inputs.resume_filename || 'Sagar_Dhage_Resume.pdf' }}
   RESUME_PATH: resumes/${{ github.event.inputs.resume_filename || 'Sagar_Dhage_Resume.pdf' }}
-  
+
   # Job Search Keywords (from inputs)
   JOB_KEYWORDS: ${{ github.event.inputs.job_keywords || 'product support engineer, software support engineer, technical support engineer, application support engineer, SaaS application support, customer support engineer' }}
   NAUKRI_KEYWORDS: ${{ github.event.inputs.job_keywords || 'product support engineer, software support engineer, technical support engineer, application support engineer' }}
-  
+
   # Optional Settings
   SEND_TO_AGENCIES: 'true'
   MAX_REFERRAL_REQUESTS: '10'
@@ -216,12 +220,12 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 45
     if: ${{ github.event.inputs.scrape_only != 'true' && github.event.inputs.max_emails != '0' }}
-    
+
     steps:
     - name: Checkout repository
       uses: actions/checkout@v3
       with:
-        ref: ${{ github.ref }}
+        ref: sagar-resume-automation
 
     - name: Set up Python
       uses: actions/setup-python@v4
@@ -283,7 +287,7 @@ jobs:
         GITHUB_ACTIONS: 'true'
         SENDER_PASSWORD: ${{ secrets.SENDER_PASSWORD_SAGAR }}
         GMAIL_APP_PASSWORD: ${{ secrets.SENDER_PASSWORD_SAGAR }}
-        MAX_EMAILS: ${{ github.event.inputs.max_emails || '10' }}
+        MAX_EMAILS: ${{ github.event.inputs.max_emails || '5' }}
         INCLUDE_PORTFOLIO_LINKS: ${{ github.event.inputs.include_portfolio_links || 'false' }}
         USE_CACHED_ONLY: 'true'
       continue-on-error: true
@@ -303,15 +307,15 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 45
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
-    
+
     outputs:
       jobs_count: ${{ steps.count.outputs.jobs }}
-    
+
     steps:
     - name: Checkout repository
       uses: actions/checkout@v3
       with:
-        ref: ${{ github.ref }}
+        ref: sagar-resume-automation
 
     - name: Set up Python
       uses: actions/setup-python@v4
@@ -365,12 +369,12 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 45
     needs: scrape-jobs
-    
+
     steps:
     - name: Checkout repository
       uses: actions/checkout@v3
       with:
-        ref: ${{ github.ref }}
+        ref: sagar-resume-automation
 
     - name: Set up Python
       uses: actions/setup-python@v4
@@ -422,7 +426,7 @@ jobs:
         path: data/
         retention-days: 1
 
-  # ============================================  
+  # ============================================
   # JOB 3: SEND MAIN APPLICATIONS
   # ============================================
   send-applications:
@@ -431,12 +435,12 @@ jobs:
     timeout-minutes: 45
     needs: [apply-cached, hr-research]
     if: always() && github.event.inputs.scrape_only != 'true'
-    
+
     steps:
     - name: Checkout repository
       uses: actions/checkout@v3
       with:
-        ref: ${{ github.ref }}
+        ref: sagar-resume-automation
 
     - name: Set up Python
       uses: actions/setup-python@v4
@@ -482,7 +486,7 @@ jobs:
         GITHUB_ACTIONS: 'true'
         SENDER_PASSWORD: ${{ secrets.SENDER_PASSWORD_SAGAR }}
         GMAIL_APP_PASSWORD: ${{ secrets.SENDER_PASSWORD_SAGAR }}
-        MAX_EMAILS: ${{ github.event.inputs.max_emails || '15' }}
+        MAX_EMAILS: ${{ github.event.inputs.max_emails || '5' }}
         INCLUDE_PORTFOLIO_LINKS: ${{ github.event.inputs.include_portfolio_links || 'false' }}
       continue-on-error: true
 
@@ -502,12 +506,12 @@ jobs:
     timeout-minutes: 10
     needs: [apply-cached, send-applications]
     if: always()
-    
+
     steps:
     - name: Checkout repository
       uses: actions/checkout@v3
       with:
-        ref: ${{ github.ref }}
+        ref: sagar-resume-automation
 
     - name: Set up Python
       uses: actions/setup-python@v4
@@ -551,12 +555,12 @@ jobs:
       run: |
         echo "≡ƒÄ» JOB APPLICATION CAMPAIGN COMPLETE!"
         echo "≡ƒôè Check artifacts for detailed results"
-        
+
         if [ -f data/sent_emails_log.csv ]; then
           SENT_TODAY=$(grep "$(date +%Y-%m-%d)" data/sent_emails_log.csv 2>/dev/null | wc -l || echo "0")
           echo "Γ£à Applications sent today: $SENT_TODAY"
         fi
-        
+
         if [ -f data/jobs_today.csv ]; then
           JOBS_FOUND=$(tail -n +2 data/jobs_today.csv 2>/dev/null | wc -l || echo "0")
           echo "≡ƒöì Jobs found today: $JOBS_FOUND"

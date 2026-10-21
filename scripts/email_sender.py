@@ -70,6 +70,32 @@ if CI_MODE:
     logging.info("🚀 CI Mode detected - using optimized delays for GitHub Actions")
 
 
+def _job_matches_workflow_criteria(
+    row: pd.Series,
+    target_roles: list[str],
+    job_keywords: list[str],
+    applicant_skills: list[str],
+) -> bool:
+    """Check whether a job matches any configured role and keyword."""
+    job_title = str(row.get('job_title', '') or row.get('title', '')).strip().lower()
+    keyword_match = any(keyword in job_title for keyword in job_keywords) if job_keywords else True
+    role_match = any(role in job_title for role in target_roles) if target_roles else True
+
+    skills_col = row.get('skills', '')
+    if isinstance(skills_col, str):
+        job_skills = skills_col.lower()
+    elif isinstance(skills_col, list):
+        job_skills = ','.join(skills_col).lower()
+    else:
+        job_skills = ''
+    skills_match = (
+        any(skill in job_skills for skill in applicant_skills)
+        if applicant_skills and job_skills
+        else True
+    )
+    return keyword_match and role_match and skills_match
+
+
 class EmailValidator:
     """Validates email addresses before sending."""
     
@@ -793,8 +819,8 @@ ${linkedin_line}"""
         
         return body
     
-    def create_email_message(self, recipient_email: str, subject: str, body: str, attach_resume: bool = True) -> MIMEMultipart:
-        """Create email message with optional resume attachment."""
+    def create_email_message(self, recipient_email: str, subject: str, body: str) -> MIMEMultipart:
+        """Create an email message with the required resume attachment."""
         message = MIMEMultipart()
         message['From'] = f"{self.sender_name} <{self.sender_email}>"
         message['To'] = recipient_email
@@ -803,24 +829,22 @@ ${linkedin_line}"""
         # Add body
         message.attach(MIMEText(body, 'plain'))
         
-        # Attach resume if requested and file exists
-        if attach_resume and os.path.exists(self.resume_path):
-            try:
-                with open(self.resume_path, 'rb') as attachment:
-                    part = MIMEBase('application', 'octet-stream')
-                    part.set_payload(attachment.read())
-                
-                encoders.encode_base64(part)
-                
-                filename = os.path.basename(self.resume_path)
-                part.add_header(
-                    'Content-Disposition',
-                    f'attachment; filename= {filename}'
-                )
-                message.attach(part)
-                logging.info(f"📎 Attached resume: {filename}")
-            except Exception as e:
-                logging.warning(f"Could not attach resume: {e}")
+        with open(self.resume_path, 'rb') as attachment:
+            resume_content = attachment.read()
+        if not resume_content:
+            raise ValueError(f"Required resume file is empty: {self.resume_path}")
+        part = MIMEBase('application', 'octet-stream')
+        part.set_payload(resume_content)
+
+        encoders.encode_base64(part)
+
+        filename = os.path.basename(self.resume_path)
+        part.add_header(
+            'Content-Disposition',
+            f'attachment; filename= {filename}'
+        )
+        message.attach(part)
+        logging.info(f"📎 Attached resume: {filename}")
         
         return message
     
@@ -863,6 +887,9 @@ ${linkedin_line}"""
             from_excel_list: If True, skip deliverability score check (trusted Excel source)
             hr_name: Name of HR person for personalized greeting
         """
+        if not os.path.isfile(self.resume_path) or os.path.getsize(self.resume_path) == 0:
+            logging.error(f"Cannot send email: required resume file is missing or empty: {self.resume_path}")
+            return False
         
         recipient_lower = recipient_email.lower().strip()
         
@@ -1367,31 +1394,17 @@ def main():
     
     # --- DYNAMIC JOB FILTERING LOGIC ---
     # Only apply for jobs matching workflow-defined target role, applicant skills, and job keywords
-    target_role = os.getenv('APPLICANT_TARGET_ROLE', '').strip().lower()
+    target_roles = [
+        role.strip().lower()
+        for role in os.getenv('APPLICANT_TARGET_ROLE', '').split(',')
+        if role.strip()
+    ]
     job_keywords = [kw.strip().lower() for kw in os.getenv('JOB_KEYWORDS', '').split(',') if kw.strip()]
     applicant_skills = [sk.strip().lower() for sk in os.getenv('APPLICANT_SKILLS', '').split(',') if sk.strip()]
 
-    def job_matches(row):
-        # Check job title against target role and keywords
-        job_title = str(row.get('job_title', '') or row.get('title', '')).strip().lower()
-        # Check for any keyword match in job title
-        keyword_match = any(kw in job_title for kw in job_keywords) if job_keywords else True
-        # Check for target role match
-        role_match = target_role in job_title if target_role else True
-        # Check for skills match (if skills column exists)
-        skills_col = row.get('skills', '')
-        if isinstance(skills_col, str):
-            job_skills = skills_col.lower()
-        elif isinstance(skills_col, list):
-            job_skills = ','.join(skills_col).lower()
-        else:
-            job_skills = ''
-        skills_match = any(sk in job_skills for sk in applicant_skills) if applicant_skills and job_skills else True
-        return keyword_match and role_match and skills_match
-
     # Apply filtering if any criteria are set
     # BUT: Excel emails (from_excel_list=True) ALWAYS bypass filtering
-    if target_role or job_keywords or applicant_skills:
+    if target_roles or job_keywords or applicant_skills:
         before_count = len(emails_df)
         # Keep ALL Excel emails, only filter non-Excel emails
         excel_emails = emails_df[emails_df.get('from_excel_list', False) == True].copy() if 'from_excel_list' in emails_df.columns else pd.DataFrame()
@@ -1399,7 +1412,13 @@ def main():
         
         # Only filter non-Excel emails
         if not non_excel_emails.empty:
-            filtered_non_excel = non_excel_emails[non_excel_emails.apply(job_matches, axis=1)]
+            filtered_non_excel = non_excel_emails[
+                non_excel_emails.apply(
+                    _job_matches_workflow_criteria,
+                    axis=1,
+                    args=(target_roles, job_keywords, applicant_skills),
+                )
+            ]
         else:
             filtered_non_excel = pd.DataFrame()
         
@@ -1410,10 +1429,10 @@ def main():
         logging.info(f"   📋 Excel emails (bypassed filter): {len(excel_emails)}")
         logging.info(f"   📋 Other emails (filtered): {len(filtered_non_excel)}")
         if emails_df.empty:
-            logging.warning("⚠️ No jobs matched the workflow criteria! Proceeding to send to all available HR contacts as fallback.")
+            logging.warning("⚠️ No jobs matched the workflow criteria; no emails will be sent.")
 
     if emails_df.empty:
-        logging.error("❌ No HR emails found after fallback! Aborting.")
+        logging.error("❌ No eligible HR emails remain after workflow filtering; aborting.")
         return
     # Send emails
     stats = sender.send_bulk_emails(

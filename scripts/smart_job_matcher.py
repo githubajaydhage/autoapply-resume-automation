@@ -122,7 +122,7 @@ class SmartJobMatcher:
     
     def extract_domain_from_email(self, email: str) -> str:
         """Extract company name from email domain."""
-        if not email or '@' not in email:
+        if not isinstance(email, str) or '@' not in email:
             return ""
         
         domain = email.split('@')[1].lower()
@@ -308,10 +308,10 @@ class SmartJobMatcher:
             # Find matching HR emails
             for _, hr in hr_df.iterrows():
                 hr_email = hr.get('hr_email', '')
-                hr_company = str(hr.get('company', '')).lower().strip()
-                
-                if not hr_email:
+                if not isinstance(hr_email, str) or not hr_email.strip():
                     continue
+                hr_email = hr_email.strip()
+                hr_company = str(hr.get('company', '')).lower().strip()
                 
                 # Try multiple matching strategies
                 similarity = 0.0

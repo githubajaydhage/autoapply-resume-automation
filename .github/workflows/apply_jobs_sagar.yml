@@ -281,6 +281,13 @@ jobs:
           exit 1
         fi
 
+    - name: Verify required resume
+      run: |
+        if [ ! -s "$RESUME_PATH" ]; then
+          echo "::error::Required resume file is missing or empty: $RESUME_PATH"
+          exit 1
+        fi
+
     - name: Send Emails NOW (Using Cached Data)
       run: |
         echo "ΓÜí INSTANT APPLY - Using cached HR emails!"
@@ -482,6 +489,13 @@ jobs:
       run: |
         if [ -z "$SENDER_PASSWORD" ]; then
           echo "::error::Configure the SENDER_PASSWORD_SAGAR repository secret before sending applications."
+          exit 1
+        fi
+
+    - name: Verify required resume
+      run: |
+        if [ ! -s "$RESUME_PATH" ]; then
+          echo "::error::Required resume file is missing or empty: $RESUME_PATH"
           exit 1
         fi
 

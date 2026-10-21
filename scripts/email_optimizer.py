@@ -320,30 +320,31 @@ class SubjectLineOptimizer:
         """
         # Detect industry from job title for specialized templates
         job_lower = job_title.lower() if job_title else ''
+        city = os.getenv('APPLICANT_CITY', 'Bengaluru')
         
         # Interior Design / Architecture specific subject lines
         if any(kw in job_lower for kw in ['interior', 'autocad', 'designer', 'estimation', 'drafts', 'revit', 'sketchup', 'architect']):
             templates = {
-                'design_portfolio': f"Application: {job_title} - {experience}+ Years | AutoCAD & SketchUp Expert",
-                'project_exp': f"{job_title} with {experience}+ Years Project Experience - Bangalore",
-                'design_ready': f"Experienced {job_title} | Ready to Join Immediately",
+                'design_portfolio': f"Application: {job_title} - {experience} Years | AutoCAD & SketchUp Expert",
+                'project_exp': f"{job_title} with {experience} Years Project Experience - Bangalore",
+                'design_ready': f"Experienced {job_title} - {experience} Years",
                 'skills_focus': f"Application: {job_title} - AutoCAD, SketchUp, 3Ds Max, Revit",
                 'design_passion': f"Passionate {job_title} Seeking {company} Opportunity",
                 'interior_specific': f"{job_title} Application - Interior Design & Estimation Expert",
-                'residential_commercial': f"{job_title} - Residential & Commercial Projects - {experience}+ Yrs",
+                'residential_commercial': f"{job_title} - Residential & Commercial Projects - {experience} Yrs",
                 'design_bangalore': f"{job_title} Candidate - {company} Bangalore",
             }
         else:
             # Generic templates for other roles
             templates = {
-                'specific_role': f"Application: {job_title} - {experience}+ Years Experience",
-                'location_focus': f"{job_title} Application - Bangalore - Immediate Availability",
+                'specific_role': f"Application: {job_title} - {experience} Years Experience",
+                'location_focus': f"{job_title} Application - {city}",
                 'value_prop': f"Experienced {job_title} Seeking {company} Opportunity",
                 'direct_ask': f"Interested in {job_title} Role at {company}",
                 'achievement': f"{job_title} with Proven Track Record - Application",
                 'referral_style': f"Regarding {job_title} Opening at {company}",
-                'urgent': f"Immediate Availability: {job_title} Position",
-                'personalized': f"{job_title} Candidate - {company} Bangalore",
+                'urgent': f"Application: {job_title} Position",
+                'personalized': f"{job_title} Candidate - {company}",
             }
         
         # Select template - prioritize ones with higher reply rates
@@ -504,13 +505,13 @@ class EmailOptimizer:
         
         # Handle NaN values for required fields
         # Default based on environment target role
-        default_role = os.getenv('APPLICANT_TARGET_ROLE', 'AutoCAD Designer').split(',')[0].strip()
-        default_skills = os.getenv('APPLICANT_SKILLS', 'AutoCAD, Interior Design')
+        default_role = os.getenv('APPLICANT_TARGET_ROLE', 'Product Support Engineer').split(',')[0].strip()
+        default_skills = os.getenv('APPLICANT_SKILLS', 'SaaS Application Support, Technical Support')
         
         job_title = str(job_title) if not pd.isna(job_title) else default_role
         company = str(company) if not pd.isna(company) else "your company"
         applicant_skills = str(applicant_skills) if not pd.isna(applicant_skills) else default_skills
-        applicant_experience = str(applicant_experience) if not pd.isna(applicant_experience) else "3"
+        applicant_experience = str(applicant_experience) if not pd.isna(applicant_experience) else "4.1"
         
         optimization = self.optimize_email(
             recipient_email, company, job_title, applicant_experience
@@ -526,12 +527,15 @@ class EmailOptimizer:
                 portfolio_section += f"   • Portfolio: {applicant_portfolio}\n"
             if applicant_projects:
                 portfolio_section += f"   • Key Projects: {applicant_projects}\n"
+
+        location = os.getenv('APPLICANT_LOCATION', 'Bengaluru, Karnataka, India')
+        linkedin_line = f"🔗 LinkedIn: {applicant_linkedin}" if applicant_linkedin else ""
         
         body = f"""{optimization['greeting']}
 
 {optimization['opener']}
 
-I am writing to express my strong interest in the {job_title} position at {company}. With {applicant_experience}+ years of experience in {applicant_skills.split(',')[0].strip()}, I am confident in my ability to contribute effectively to your team.
+I am writing to express my strong interest in the {job_title} position at {company}. With {applicant_experience} years of experience in {applicant_skills.split(',')[0].strip()}, I am confident in my ability to contribute effectively to your team.
 
 {optimization['culture_mention']}
 
@@ -541,7 +545,7 @@ My key qualifications include:
 • Excellent communication and collaboration skills
 • Proven track record of delivering results
 {portfolio_section}
-I am based in Bangalore and immediately available. I prefer Remote/Hybrid work arrangements but am flexible and open to all options.
+I am based in {location}.
 
 I have attached my resume for your review. I would welcome the opportunity to discuss how my background and skills can benefit {company}.
 
@@ -549,9 +553,9 @@ Thank you for considering my application. I look forward to hearing from you.
 
 Best regards,
 {applicant_name}
-📍 Location: Bangalore, Karnataka
+📍 Location: {location}
 📞 {applicant_phone}
-🔗 LinkedIn: {applicant_linkedin}"""
+{linkedin_line}"""
 
         return body
 

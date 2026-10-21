@@ -41,9 +41,16 @@ class EnhancedJobScraper:
         if self.ai:
             logging.info("🤖 AI-powered job analysis enabled")
         
-        # Default search parameters
-        self.keywords = ['data analyst', 'business analyst', 'data scientist', 'analytics']
-        self.locations = ['bangalore', 'india', 'remote']
+        self.keywords = [
+            keyword.strip()
+            for keyword in os.getenv(
+                'JOB_KEYWORDS',
+                'product support engineer, software support engineer, technical support engineer, application support engineer, SaaS application support, customer support engineer'
+            ).split(',')
+            if keyword.strip()
+        ]
+        self.current_keyword = self.keywords[0] if self.keywords else 'product support engineer'
+        self.job_location = os.getenv('JOB_LOCATION', 'Bangalore')
         
         # User agent for requests
         self.headers = {
@@ -66,10 +73,10 @@ class EnhancedJobScraper:
         base_url = "https://wellfound.com/api/v1/jobs/search"
         
         try:
-            for keyword in self.keywords[:2]:  # Limit queries
+            for keyword in [self.current_keyword]:
                 params = {
                     'query': keyword,
-                    'location': 'india',
+                    'location': self.job_location,
                     'remote': 'true',
                     'page': 1,
                     'per_page': 50
@@ -124,8 +131,8 @@ class EnhancedJobScraper:
         
         try:
             params = {
-                'query': 'data analyst',
-                'location': 'bangalore',
+                'query': self.current_keyword,
+                'location': self.job_location.lower(),
                 'page': 1,
                 'page_size': 50
             }
@@ -176,8 +183,8 @@ class EnhancedJobScraper:
         
         try:
             payload = {
-                'query': 'data analyst',
-                'location': 'bangalore',
+                'query': self.current_keyword,
+                'location': self.job_location.lower(),
                 'experience': {'min': 0, 'max': 5}
             }
             
@@ -229,8 +236,8 @@ class EnhancedJobScraper:
         
         try:
             params = {
-                'keywords': 'data analyst',
-                'location': 'India',
+                'keywords': self.current_keyword,
+                'location': self.job_location,
                 'geoId': '102713980',  # India
                 'start': 0
             }
@@ -286,7 +293,7 @@ class EnhancedJobScraper:
         
         try:
             params = {
-                'sc.keyword': 'data analyst',
+                'sc.keyword': self.current_keyword,
                 'locT': 'C',
                 'locId': '2906753',  # Bangalore
                 'jobType': 'all',
@@ -344,8 +351,8 @@ class EnhancedJobScraper:
         
         try:
             params = {
-                'q': 'data analyst',
-                'l': 'bangalore',
+                'q': self.current_keyword,
+                'l': self.job_location.lower(),
                 'sort': 'date'
             }
             
@@ -373,7 +380,7 @@ class EnhancedJobScraper:
                         parsed = {
                             'title': job_title.strip(),
                             'company': company.strip(),
-                            'location': 'Bangalore',
+                            'location': self.job_location,
                             'url': link.get_text() if link else '',
                             'source': 'Indeed',
                             'scraped_at': datetime.now().isoformat(),
@@ -403,8 +410,8 @@ class EnhancedJobScraper:
         
         try:
             payload = {
-                'query': 'data analyst',
-                'locations': ['bangalore'],
+                'query': self.current_keyword,
+                'locations': [self.job_location.lower()],
                 'experience': {'min': 0, 'max': 5},
                 'page': 1,
                 'limit': 50
@@ -464,13 +471,16 @@ class EnhancedJobScraper:
             self.scrape_foundit,
         ]
         
-        for scraper in scrapers:
-            try:
-                jobs = scraper()
-                all_jobs.extend(jobs)
-            except Exception as e:
-                logging.warning(f"Scraper error: {e}")
-            time.sleep(2)  # Be polite between scrapers
+        for keyword in self.keywords:
+            self.current_keyword = keyword
+            logging.info(f"Searching support roles for: {keyword}")
+            for scraper in scrapers:
+                try:
+                    jobs = scraper()
+                    all_jobs.extend(jobs)
+                except Exception as e:
+                    logging.warning(f"Scraper error: {e}")
+                time.sleep(2)  # Be polite between scrapers
         
         # Create DataFrame
         df = pd.DataFrame(all_jobs)

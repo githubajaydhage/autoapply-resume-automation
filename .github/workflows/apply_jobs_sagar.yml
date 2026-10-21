@@ -1,57 +1,40 @@
-﻿name: Job Application - Ajay Dhage
+﻿name: Job Application - Sagar Dhage
 
 # =================================================================
-# AJAY DHAGE - Job Application Automation
-# Branch: v.1.3.0-ajay
+# SAGAR DHAGE - Job Application Automation
+# Branch: sagar-resume-automation
 # =================================================================
-# ≡ƒôà CRON SCHEDULE: Runs 3x daily (11:00 AM, 4:00 PM, 9:00 PM IST)
-# ΓÜá∩╕Å  CRON ISSUE: Scheduled workflows ONLY run from DEFAULT branch
-#    Γ£à Manual runs work from any branch (v.1.3.0-ajay Γ£ô)
-#    Γ¥î Scheduled runs only work from main/master branch
-#    
-#    ≡ƒöº SOLUTION: Make v.1.3.0-ajay the default branch:
-#    1. Go to GitHub repo ΓåÆ Settings ΓåÆ Branches
-#    2. Change default branch from "main" to "v.1.3.0-ajay"
-#    3. Cron will start working automatically
-# =================================================================
-# SECRETS CONFIGURED Γ£à: SENDER_PASSWORD_AJAY (Gmail App Password for dhageajay012@gmail.com)
+# Manual runs only. Scheduled workflows must be configured on the default branch.
 # =================================================================
 
 on:
-  # Daily schedule - DISABLED (commented out to prevent auto-runs)
-  schedule:
-    - cron: '30 5 * * *'   # 11:00 AM IST
-    - cron: '30 10 * * *'  # 4:00 PM IST
-    - cron: '30 15 * * *'  # 9:00 PM IST
-  
-  # Manual trigger only
   workflow_dispatch:
     inputs:
       # User Identity (Now with defaults - no manual input required!)
       applicant_name:
         description: 'Full Name'
         required: false
-        default: 'Ajay Dhage'
+        default: 'Sagar Dhage'
         type: string
       applicant_email:
         description: 'Email Address'
         required: false
-        default: 'dhageajay012@gmail.com'
+        default: 'sagardhage9741@gmail.com'
         type: string
       applicant_phone:
         description: 'Phone Number'
         required: false
-        default: '+91-7847019704'
+        default: '9741479329'
         type: string
       applicant_location:
         description: 'Location'
         required: false
-        default: 'Bangalore, Karnataka, India'
+        default: 'Bengaluru, Karnataka, India'
         type: string
       applicant_city:
         description: 'City'
         required: false
-        default: 'Bangalore'
+        default: 'Bengaluru'
         type: string
       applicant_country:
         description: 'Country'
@@ -59,34 +42,34 @@ on:
         default: 'India'
         type: string
       applicant_linkedin:
-        description: 'LinkedIn URL'
+        description: 'LinkedIn URL (optional)'
         required: false
-        default: 'https://www.linkedin.com/in/ajay-dhage-88aab9164/'
+        default: ''
         type: string
       applicant_experience:
         description: 'Years of Experience'
         required: false
-        default: '5'
+        default: '4.1'
         type: string
       applicant_target_role:
         description: 'Target Roles'
         required: false
-        default: 'DevOps Engineer, Cloud Engineer, Infrastructure Engineer, SRE'
+        default: 'Product Support Engineer, Software Support Engineer, Technical Support Engineer, Application Support Engineer, SaaS Support Engineer'
         type: string
       applicant_skills:
         description: 'Key Skills (comma-separated)'
         required: false
-        default: 'Kubernetes, Docker, AWS, Azure, GCP, Terraform, Jenkins, CI/CD, Linux, Python'
+        default: 'SaaS Application Support, Product Support, Technical Support, Customer Support, Cloud Telephony, Incident Management, Ticket Management, SLA Management, Root Cause Analysis, Application Troubleshooting, VPN Troubleshooting, IVR, Call Routing, Virtual Numbers, CRM Integrations, API Configurations, Freshdesk, Zendesk, Zoho Desk'
         type: string
       resume_filename:
         description: 'Resume Filename'
         required: false
-        default: 'Ajay_Dhage_Resume.pdf'
+        default: 'Sagar_Dhage_Resume.pdf'
         type: string
       job_keywords:
         description: 'Job Search Keywords (comma-separated)'
         required: false
-        default: 'devops engineer, cloud engineer, kubernetes, docker, aws, terraform'
+        default: 'product support engineer, software support engineer, technical support engineer, application support engineer, SaaS application support, customer support engineer'
         type: string
       # Job Search Parameters (Optional with defaults)
       job_location:
@@ -172,9 +155,9 @@ on:
         - 'false'
         - 'true'
 
-# Cancel any in-progress workflow when a new one starts
+# Cancel an in-progress run for this branch when a new one starts
 concurrency:
-  group: job-application-ajay-${{ github.ref }}
+  group: job-application-sagar-${{ github.ref }}
   cancel-in-progress: true
 
 # ============================================
@@ -183,28 +166,28 @@ concurrency:
 # ============================================
 env:
   # User Identity (from inputs)
-  APPLICANT_NAME: ${{ github.event.inputs.applicant_name || 'Ajay Dhage' }}
-  APPLICANT_FIRST_NAME: ${{ github.event.inputs.applicant_name && 'Ajay' || 'Ajay' }}
-  APPLICANT_LAST_NAME: ${{ github.event.inputs.applicant_name && 'Dhage' || 'Dhage' }}
-  APPLICANT_EMAIL: ${{ github.event.inputs.applicant_email || 'dhageajay012@gmail.com' }}
-  SENDER_EMAIL: ${{ github.event.inputs.applicant_email || 'dhageajay012@gmail.com' }}
-  APPLICANT_PHONE: ${{ github.event.inputs.applicant_phone || '+91-7847019704' }}
-  APPLICANT_LOCATION: ${{ github.event.inputs.applicant_location || 'Bangalore, Karnataka, India' }}
-  APPLICANT_CITY: ${{ github.event.inputs.applicant_city || 'Bangalore' }}
+  APPLICANT_NAME: ${{ github.event.inputs.applicant_name || 'Sagar Dhage' }}
+  APPLICANT_FIRST_NAME: Sagar
+  APPLICANT_LAST_NAME: Dhage
+  APPLICANT_EMAIL: ${{ github.event.inputs.applicant_email || 'sagardhage9741@gmail.com' }}
+  SENDER_EMAIL: ${{ github.event.inputs.applicant_email || 'sagardhage9741@gmail.com' }}
+  APPLICANT_PHONE: ${{ github.event.inputs.applicant_phone || '9741479329' }}
+  APPLICANT_LOCATION: ${{ github.event.inputs.applicant_location || 'Bengaluru, Karnataka, India' }}
+  APPLICANT_CITY: ${{ github.event.inputs.applicant_city || 'Bengaluru' }}
   APPLICANT_COUNTRY: ${{ github.event.inputs.applicant_country || 'India' }}
-  APPLICANT_LINKEDIN: ${{ github.event.inputs.applicant_linkedin || 'https://www.linkedin.com/in/ajay-dhage-88aab9164/' }}
-  APPLICANT_EXPERIENCE: ${{ github.event.inputs.applicant_experience || '5' }}
-  YEARS_EXPERIENCE: ${{ github.event.inputs.applicant_experience || '5' }}
-  APPLICANT_TARGET_ROLE: ${{ github.event.inputs.applicant_target_role || 'DevOps Engineer, Cloud Engineer, Infrastructure Engineer, SRE' }}
-  APPLICANT_SKILLS: ${{ github.event.inputs.applicant_skills || 'Kubernetes, Docker, AWS, Azure, GCP, Terraform, Jenkins, CI/CD, Linux, Python' }}
+  APPLICANT_LINKEDIN: ${{ github.event.inputs.applicant_linkedin || '' }}
+  APPLICANT_EXPERIENCE: ${{ github.event.inputs.applicant_experience || '4.1' }}
+  YEARS_EXPERIENCE: ${{ github.event.inputs.applicant_experience || '4.1' }}
+  APPLICANT_TARGET_ROLE: ${{ github.event.inputs.applicant_target_role || 'Product Support Engineer, Software Support Engineer, Technical Support Engineer, Application Support Engineer, SaaS Support Engineer' }}
+  APPLICANT_SKILLS: ${{ github.event.inputs.applicant_skills || 'SaaS Application Support, Product Support, Technical Support, Customer Support, Cloud Telephony, Incident Management, Ticket Management, SLA Management, Root Cause Analysis, Application Troubleshooting, VPN Troubleshooting, IVR, Call Routing, Virtual Numbers, CRM Integrations, API Configurations, Freshdesk, Zendesk, Zoho Desk' }}
   
   # Resume Configuration (from inputs)
-  RESUME_FILENAME: ${{ github.event.inputs.resume_filename || 'Ajay_Dhage_Resume.pdf' }}
-  RESUME_PATH: resumes/${{ github.event.inputs.resume_filename || 'Ajay_Dhage_Resume.pdf' }}
+  RESUME_FILENAME: ${{ github.event.inputs.resume_filename || 'Sagar_Dhage_Resume.pdf' }}
+  RESUME_PATH: resumes/${{ github.event.inputs.resume_filename || 'Sagar_Dhage_Resume.pdf' }}
   
   # Job Search Keywords (from inputs)
-  JOB_KEYWORDS: ${{ github.event.inputs.job_keywords || 'devops engineer, cloud engineer, kubernetes, docker, aws, terraform, ci/cd, infrastructure engineer' }}
-  NAUKRI_KEYWORDS: ${{ github.event.inputs.job_keywords || 'devops engineer, cloud engineer, infrastructure engineer, sre' }}
+  JOB_KEYWORDS: ${{ github.event.inputs.job_keywords || 'product support engineer, software support engineer, technical support engineer, application support engineer, SaaS application support, customer support engineer' }}
+  NAUKRI_KEYWORDS: ${{ github.event.inputs.job_keywords || 'product support engineer, software support engineer, technical support engineer, application support engineer' }}
   
   # Optional Settings
   SEND_TO_AGENCIES: 'true'
@@ -226,7 +209,7 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v3
       with:
-        ref: v.1.3.0-ajay
+        ref: ${{ github.ref }}
 
     - name: Set up Python
       uses: actions/setup-python@v4
@@ -248,11 +231,9 @@ jobs:
           data/verified_hr_emails.csv
           data/discovered_hr_emails.csv
           data/jobs_today.csv
-        key: job-data-ajay-${{ runner.os }}-v10-${{ github.run_number }}
+        key: job-data-sagar-${{ runner.os }}-v1-${{ github.run_number }}
         restore-keys: |
-          job-data-ajay-${{ runner.os }}-v10-
-          job-data-ajay-${{ runner.os }}-v9-
-          job-data-ajay-${{ runner.os }}-
+          job-data-sagar-${{ runner.os }}-v1-
 
     - name: Load Curated HR Database (100+ verified emails)
       run: |
@@ -264,6 +245,15 @@ jobs:
         fi
       env:
         PYTHONPATH: ${{ github.workspace }}
+
+    - name: Verify Sagar sender credential
+      env:
+        SENDER_PASSWORD: ${{ secrets.SENDER_PASSWORD_SAGAR }}
+      run: |
+        if [ -z "$SENDER_PASSWORD" ]; then
+          echo "::error::Configure the SENDER_PASSWORD_SAGAR repository secret before sending applications."
+          exit 1
+        fi
 
     - name: Send Emails NOW (Using Cached Data)
       run: |
@@ -279,9 +269,8 @@ jobs:
         PYTHONPATH: ${{ github.workspace }}
         CI: 'true'
         GITHUB_ACTIONS: 'true'
-        SENDER_PASSWORD: ${{ secrets.SENDER_PASSWORD_AJAY }}
-        GMAIL_APP_PASSWORD: ${{ secrets.SENDER_PASSWORD_AJAY }}
-        SENDER_PASSWORD_YOGESHWARI: ${{ secrets.SENDER_PASSWORD_AJAY }}
+        SENDER_PASSWORD: ${{ secrets.SENDER_PASSWORD_SAGAR }}
+        GMAIL_APP_PASSWORD: ${{ secrets.SENDER_PASSWORD_SAGAR }}
         MAX_EMAILS: ${{ github.event.inputs.max_emails || '10' }}
         INCLUDE_PORTFOLIO_LINKS: ${{ github.event.inputs.include_portfolio_links || 'false' }}
         USE_CACHED_ONLY: 'true'
@@ -310,7 +299,7 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v3
       with:
-        ref: v.1.3.0-ajay
+        ref: ${{ github.ref }}
 
     - name: Set up Python
       uses: actions/setup-python@v4
@@ -336,11 +325,9 @@ jobs:
           data/discovered_hr_emails.csv
           data/discovered_employees.csv
           data/discovered_companies.csv
-        key: job-data-ajay-${{ runner.os }}-v10-${{ github.run_number }}
+        key: job-data-sagar-${{ runner.os }}-v1-${{ github.run_number }}
         restore-keys: |
-          job-data-ajay-${{ runner.os }}-v10-
-          job-data-ajay-${{ runner.os }}-v9-
-          job-data-ajay-${{ runner.os }}-
+          job-data-sagar-${{ runner.os }}-v1-
 
     # PHASE 1: Scrape Jobs (Reliable Engine)
     - name: ≡ƒöì Multi-Source Job Scraping
@@ -371,7 +358,7 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v3
       with:
-        ref: v.1.3.0-ajay
+        ref: ${{ github.ref }}
 
     - name: Set up Python
       uses: actions/setup-python@v4
@@ -437,7 +424,7 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v3
       with:
-        ref: v.1.3.0-ajay
+        ref: ${{ github.ref }}
 
     - name: Set up Python
       uses: actions/setup-python@v4
@@ -463,6 +450,15 @@ jobs:
         find artifacts -name "*.txt" -exec cp {} data/ \; 2>/dev/null || true
       continue-on-error: true
 
+    - name: Verify Sagar sender credential
+      env:
+        SENDER_PASSWORD: ${{ secrets.SENDER_PASSWORD_SAGAR }}
+      run: |
+        if [ -z "$SENDER_PASSWORD" ]; then
+          echo "::error::Configure the SENDER_PASSWORD_SAGAR repository secret before sending applications."
+          exit 1
+        fi
+
     - name: Send Applications (Main Phase)
       run: |
         echo "≡ƒôº MAIN APPLICATION PHASE"
@@ -472,9 +468,8 @@ jobs:
         PYTHONPATH: ${{ github.workspace }}
         CI: 'true'
         GITHUB_ACTIONS: 'true'
-        SENDER_PASSWORD: ${{ secrets.SENDER_PASSWORD_AJAY }}
-        GMAIL_APP_PASSWORD: ${{ secrets.SENDER_PASSWORD_AJAY }}
-        SENDER_PASSWORD_YOGESHWARI: ${{ secrets.SENDER_PASSWORD_AJAY }}
+        SENDER_PASSWORD: ${{ secrets.SENDER_PASSWORD_SAGAR }}
+        GMAIL_APP_PASSWORD: ${{ secrets.SENDER_PASSWORD_SAGAR }}
         MAX_EMAILS: ${{ github.event.inputs.max_emails || '15' }}
         INCLUDE_PORTFOLIO_LINKS: ${{ github.event.inputs.include_portfolio_links || 'false' }}
       continue-on-error: true
@@ -500,7 +495,7 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v3
       with:
-        ref: v.1.3.0-ajay
+        ref: ${{ github.ref }}
 
     - name: Set up Python
       uses: actions/setup-python@v4

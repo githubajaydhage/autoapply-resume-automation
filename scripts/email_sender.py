@@ -277,7 +277,7 @@ class PersonalizedEmailSender:
         self.applicant_phone = os.getenv('APPLICANT_PHONE', USER_DETAILS.get('phone', ''))
         self.applicant_linkedin = USER_DETAILS.get('linkedin_url', '')
         self.applicant_experience = USER_DETAILS.get('years_experience', '3')
-        self.applicant_skills = USER_DETAILS.get('key_skills', 'Data Analysis, Python, SQL, Excel, Tableau, Power BI')
+        self.applicant_skills = USER_DETAILS.get('key_skills', 'SaaS Application Support, Technical Support, Incident Management, Freshdesk, Zendesk')
         
         # Portfolio links for higher response rates
         self.applicant_github = USER_DETAILS.get('github_url', '')
@@ -351,7 +351,7 @@ class PersonalizedEmailSender:
         logging.info(f"📧 Email Sender Configuration:")
         logging.info(f"   Sender: {self.sender_name} <{self.sender_email}>")
         logging.info(f"   Phone: {self.applicant_phone}")
-        logging.info(f"   Experience: {self.applicant_experience}+ years")
+        logging.info(f"   Experience: {self.applicant_experience} years")
         logging.info(f"   Resume: {self.resume_path}")
         
         # CRITICAL: Check if resume file exists
@@ -569,22 +569,23 @@ class PersonalizedEmailSender:
                 name=self.applicant_name,
                 experience=self.applicant_experience,
                 skills=self.applicant_skills,
-                city=os.getenv('APPLICANT_CITY', 'Bangalore')
+                city=os.getenv('APPLICANT_CITY', 'Bengaluru')
             )
         
-        # Fallback to standard subjects
+        # Fallback to standard subjects without assuming availability.
+        city = os.getenv('APPLICANT_CITY', 'Bengaluru')
         subjects = [
             # Direct and specific (highest open rates)
-            f"Application: {job_title} - Immediate Joiner - {self.applicant_experience}+ Years Experience",
-            f"{job_title} Application - Immediate Joiner - {self.applicant_name}",
+            f"Application: {job_title} - {self.applicant_experience} Years Experience",
+            f"{job_title} Application - {self.applicant_name}",
             
             # Creates urgency/interest
-            f"Immediate Joiner: {job_title} Role - Bangalore - {self.applicant_experience} Years",
-            f"{job_title} - Immediate Joiner | {self.applicant_experience}+ Years | Bangalore",
+            f"{job_title} Role - {city} - {self.applicant_experience} Years",
+            f"{job_title} - {self.applicant_experience} Years | {city}",
             
             # Personal touch
-            f"{job_title} at {company} - Immediate Joiner Available",
-            f"Immediate Joiner for {job_title} - {self.applicant_experience} Years Experience",
+            f"{job_title} at {company} - Application",
+            f"Application for {job_title} - {self.applicant_experience} Years Experience",
         ]
         return random.choice(subjects)
     
@@ -679,62 +680,65 @@ class PersonalizedEmailSender:
                 skills=self.applicant_skills,
                 phone=self.applicant_phone,
                 linkedin=self.applicant_linkedin,
-                city=os.getenv('APPLICANT_CITY', 'Bangalore'),
-                notice_period=os.getenv('NOTICE_PERIOD', 'Immediate'),
+                city=os.getenv('APPLICANT_CITY', 'Bengaluru'),
+                notice_period=os.getenv('NOTICE_PERIOD', ''),
                 hr_name=None  # Always None - use Hiring Team
             )
         
         # Always use Hiring Team greeting
         greeting = "Dear Hiring Team,"
+        city = os.getenv('APPLICANT_CITY', 'Bengaluru')
+        location = os.getenv('APPLICANT_LOCATION', f'{city}, Karnataka, India')
+        linkedin_line = f"🔗 LinkedIn: {self.applicant_linkedin}" if self.applicant_linkedin else ""
         
         # Fallback to standard templates
         templates = [
             # Template 1 - Professional and direct
             f"""{greeting}
 
-I am writing to express my strong interest in the ${job_title} position at ${company}. With ${experience}+ years of experience in ${skills_area}, I am confident in my ability to contribute effectively to your team.
+I am writing to express my strong interest in the ${{job_title}} position at ${{company}}. With ${{experience}} years of experience in ${{skills_area}}, I am confident in my ability to contribute effectively to your team.
 
 My key qualifications include:
-• Proficient in ${skills}
+• Proficient in ${{skills}}
 • Strong analytical and problem-solving abilities
 • Excellent communication and collaboration skills
 • Proven track record of delivering results
 
-I am based in Bangalore and prefer Remote/Hybrid work arrangements, but I am open to all options including on-site.
+I am based in ${{location}}.
 
-I am particularly drawn to ${company}'s reputation for innovation and excellence in the industry. I believe my skills and experience align well with the requirements of this role.
+I am particularly drawn to ${{company}}'s reputation for innovation and excellence in the industry. I believe my skills and experience align well with the requirements of this role.
 
-I have attached my resume for your review. I would welcome the opportunity to discuss how my background and skills can benefit ${company}.
+I have attached my resume for your review. I would welcome the opportunity to discuss how my background and skills can benefit ${{company}}.
 
 Thank you for considering my application. I look forward to hearing from you.
 
 Best regards,
-${name}
-📍 Location: Bangalore, Karnataka
-📞 ${phone}
-🔗 LinkedIn: ${linkedin}""",
+${{name}}
+📍 Location: ${{location}}
+📞 ${{phone}}
+${{linkedin_line}}""",
 
             # Template 2 - Enthusiastic
             """Dear HR Team,
 
 I recently came across the ${job_title} opening at ${company}, and I am excited to submit my application for this role.
 
-As a professional with ${experience}+ years of experience, I have developed strong expertise in ${skills}. I am passionate about leveraging data and technology to drive business insights and decisions.
+As a professional with ${experience} years of experience, I have developed strong expertise in ${skills}. My experience includes supporting SaaS products, resolving technical issues, and coordinating with customer and engineering teams.
 
 What excites me about ${company}:
 • Your commitment to innovation and excellence
 • The opportunity to work on challenging projects
 • The collaborative and growth-oriented culture
 
-I am based in Bangalore and immediately available. I prefer Remote/Hybrid arrangements but am flexible and open to all work modes.
+I am based in ${location}.
 
 Please find my resume attached for your consideration.
 
 Warm regards,
 ${name}
-📍 Location: Bangalore, Karnataka
+📍 Location: ${location}
 📞 ${phone}
-🔗 LinkedIn: ${linkedin}""",
+${linkedin_line}""",
 
             # Template 3 - Concise
             """Dear Recruitment Team,
@@ -742,11 +746,9 @@ ${name}
 I am applying for the ${job_title} position at ${company}.
 
 Profile Summary:
-• Experience: ${experience}+ years
+• Experience: ${experience} years
 • Skills: ${skills}
-• Location: Bangalore, Karnataka
-• Work Preference: Remote/Hybrid preferred, open to all
-• Availability: Immediate
+• Location: ${location}
 
 I am excited about the opportunity to contribute to ${company}'s success.
 
@@ -754,16 +756,16 @@ Please review my attached resume. I look forward to discussing this opportunity 
 
 Best regards,
 ${name}
-📍 Location: Bangalore, Karnataka
+📍 Location: ${location}
 📞 ${phone}
-🔗 LinkedIn: ${linkedin}"""
+${linkedin_line}"""
         ]
         
         template = Template(random.choice(templates))
         
         # Determine skills area from skills
         skills_list = self.applicant_skills.split(',')
-        skills_area = "data analysis and business intelligence" if any('data' in s.lower() or 'analyst' in s.lower() for s in skills_list) else "technology and analytics"
+        skills_area = "SaaS product and technical support" if any('support' in s.lower() or 'saas' in s.lower() for s in skills_list) else "technology and customer support"
         
         body = template.substitute(
             job_title=job_title,
@@ -773,7 +775,8 @@ ${name}
             skills_area=skills_area,
             name=self.applicant_name,
             phone=self.applicant_phone,
-            linkedin=self.applicant_linkedin if self.applicant_linkedin else "(LinkedIn profile available upon request)"
+            location=location,
+            linkedin_line=linkedin_line
         )
         
         return body

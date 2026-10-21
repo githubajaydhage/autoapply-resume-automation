@@ -22,14 +22,14 @@ class HighResponseSubjects:
     
     # TIER 1: Highest performing subjects (40%+ open rate)
     HIGH_IMPACT_SUBJECTS = [
-        # Specificity + Urgency
-        "{job_title} - {experience} Years | Immediate Joiner | {city}",
-        "Application: {job_title} at {company} - {experience}+ YOE | {skills_short}",
-        "{job_title} Opening - {experience} Years Exp | Notice: Immediate",
+        # Specificity without unsupported availability claims
+        "{job_title} - {experience} Years | {city}",
+        "Application: {job_title} at {company} - {experience} YOE | {skills_short}",
+        "{job_title} Opening - {experience} Years Exp",
         
         # Results-focused
-        "Experienced {job_title} | {skills_short} | Ready to Join",
-        "{job_title} with {experience} Years in {skills_primary} - Available Now",
+        "Experienced {job_title} | {skills_short}",
+        "{job_title} with {experience} Years in {skills_primary}",
         
         # Company-specific (personalized)
         "Excited about {job_title} role at {company}",
@@ -40,7 +40,7 @@ class HighResponseSubjects:
     STANDARD_SUBJECTS = [
         "{job_title} Application - {name} | {experience} Years Experience",
         "Application: {job_title} Position - {city} Based",
-        "{experience}+ Years {skills_primary} Professional - {job_title} Role",
+        "{experience} Years {skills_primary} Professional - {job_title} Role",
         "Interested in {job_title} at {company}",
     ]
     
@@ -53,13 +53,13 @@ class HighResponseSubjects:
     
     @classmethod
     def get_subject(cls, job_title: str, company: str, name: str, 
-                   experience: str, skills: str, city: str = "Bangalore") -> str:
+                   experience: str, skills: str, city: str = "Bengaluru") -> str:
         """Get a high-performing subject line."""
         
         # Parse skills for short version
         skills_list = [s.strip() for s in skills.split(',')][:3]
         skills_short = ', '.join(skills_list[:2])
-        skills_primary = skills_list[0] if skills_list else "Analytics"
+        skills_primary = skills_list[0] if skills_list else "Product Support"
         
         # 70% chance of high-impact, 25% standard, 5% safe
         roll = random.random()
@@ -91,10 +91,9 @@ class HighResponseEmailBodies:
 I'm applying for the {job_title} position at {company}.
 
 QUICK PROFILE:
-• Experience: {experience}+ years in {skills_area}
+• Experience: {experience} years in {skills_area}
 • Core Skills: {skills}
-• Location: {city} | Availability: Immediate
-• Notice Period: {notice_period}
+• Location: {city}
 
 I've attached my resume for your review. Would love to discuss how my experience aligns with this role.
 
@@ -109,9 +108,9 @@ Best regards,
 I noticed {company}'s {job_title} opening and wanted to reach out directly.
 
 WHY ME:
-✓ {experience}+ years hands-on experience with {skills_primary}
+✓ {experience} years hands-on experience with {skills_primary}
 ✓ Proven track record in {skills_area}
-✓ {city}-based, ready to join immediately
+✓ Based in {city}
 
 KEY SKILLS: {skills}
 
@@ -122,23 +121,23 @@ Resume attached for your reference.
 Warm regards,
 {name}
 📱 {phone}
-💼 LinkedIn: {linkedin}"""
+{linkedin_line}"""
 
     # TEMPLATE 3: Brief & Professional (For formal companies)
     PROFESSIONAL_TEMPLATE = """Dear Hiring Manager,
 
 I am writing to apply for the {job_title} position at {company}.
 
-With {experience}+ years of experience in {skills_area}, I have developed strong expertise in {skills}.
+With {experience} years of experience in {skills_area}, I have developed strong expertise in {skills}.
 
-I am based in {city} and available to join immediately. Please find my resume attached.
+I am based in {city}. Please find my resume attached.
 
 I look forward to the opportunity to discuss my candidacy.
 
 Best regards,
 {name}
 Phone: {phone}
-LinkedIn: {linkedin}"""
+{linkedin_line}"""
 
     # TEMPLATE 4: Story-based (For startups/creative companies)
     STORY_TEMPLATE = """Hi there,
@@ -146,16 +145,16 @@ LinkedIn: {linkedin}"""
 I came across the {job_title} role at {company} and got excited - this is exactly the kind of work I've been looking for!
 
 A bit about me:
-• {experience}+ years solving problems with {skills_primary}
+• {experience} years solving problems with {skills_primary}
 • I love working with {skills}
-• Currently in {city}, can start immediately
+• Currently based in {city}
 
 I've attached my resume - would love to chat about how I can add value to your team.
 
 Cheers,
 {name}
 📞 {phone}
-🔗 {linkedin}"""
+{linkedin_line}"""
 
     # TEMPLATE 5: Achievement-focused (For senior roles)
     ACHIEVEMENT_TEMPLATE = """Dear {company} Team,
@@ -163,19 +162,19 @@ Cheers,
 I'm reaching out regarding the {job_title} position.
 
 RELEVANT EXPERIENCE:
-• {experience}+ years in {skills_area}
+• {experience} years in {skills_area}
 • Expertise: {skills}
-• Successfully delivered projects involving data-driven decision making
+• Resolved product issues across SaaS and cloud telephony platforms
 • Strong background in {skills_primary}
 
-I'm {city}-based with immediate availability. Resume attached for your review.
+I am based in {city}. Resume attached for your review.
 
 Looking forward to discussing this opportunity.
 
 Best,
 {name}
 📞 {phone}
-💼 {linkedin}"""
+{linkedin_line}"""
 
     @classmethod
     def get_templates(cls) -> list:
@@ -191,24 +190,26 @@ Best,
     @classmethod
     def get_body(cls, job_title: str, company: str, name: str,
                  experience: str, skills: str, phone: str, 
-                 linkedin: str, city: str = "Bangalore",
-                 notice_period: str = "Immediate") -> str:
+                 linkedin: str, city: str = "Bengaluru",
+                 notice_period: str = "") -> str:
         """Get a high-performing email body."""
         
         # Parse skills
         skills_list = [s.strip() for s in skills.split(',')]
-        skills_primary = skills_list[0] if skills_list else "Data Analysis"
+        skills_primary = skills_list[0] if skills_list else "Product Support"
         
         # Determine skills area based on keywords
         skills_lower = skills.lower()
-        if 'sql' in skills_lower or 'data' in skills_lower:
+        if 'support' in skills_lower or 'saas' in skills_lower:
+            skills_area = "SaaS Product and Technical Support"
+        elif 'sql' in skills_lower or 'data' in skills_lower:
             skills_area = "Data Analysis & Business Intelligence"
         elif 'python' in skills_lower and ('ml' in skills_lower or 'machine' in skills_lower):
             skills_area = "Data Science & Machine Learning"
         elif 'tableau' in skills_lower or 'power bi' in skills_lower:
             skills_area = "Data Visualization & Reporting"
         else:
-            skills_area = "Data Analytics"
+            skills_area = "Product and Technical Support"
         
         # Select template based on weighted randomness
         # Concise template has highest success rate
@@ -225,7 +226,7 @@ Best,
             skills_primary=skills_primary,
             skills_area=skills_area,
             phone=phone,
-            linkedin=linkedin if linkedin else "(Available upon request)",
+            linkedin_line=f"🔗 LinkedIn: {linkedin}" if linkedin else "",
             city=city,
             notice_period=notice_period
         )

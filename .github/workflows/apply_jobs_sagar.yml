@@ -115,11 +115,20 @@ on:
       send_followups:
         description: 'Send follow-up emails?'
         required: false
-        default: 'false'
+        default: 'true'
         type: choice
         options:
         - 'true'
         - 'false'
+      max_followups:
+        description: 'Max follow-up emails per run'
+        required: false
+        default: '5'
+        type: choice
+        options:
+        - '5'
+        - '10'
+        - '15'
       scrape_only:
         description: 'Only scrape (no emails)'
         required: false
@@ -194,6 +203,7 @@ env:
   YEARS_EXPERIENCE: ${{ github.event.inputs.applicant_experience || '4.1' }}
   NOTICE_PERIOD: ${{ github.event.inputs.notice_period || 'Immediate' }}
   APPLICANT_WORK_PREFERENCE: ${{ github.event.inputs.work_preference || 'Remote/Hybrid' }}
+  ENABLE_FOLLOWUPS: ${{ github.event.inputs.send_followups || 'true' }}
   APPLICANT_TARGET_ROLE: ${{ github.event.inputs.applicant_target_role || 'Product Support Engineer, Software Support Engineer, Technical Support Engineer, Application Support Engineer, SaaS Support Engineer' }}
   APPLICANT_SKILLS: ${{ github.event.inputs.applicant_skills || 'SaaS Application Support, Product Support, Technical Support, Customer Support, Cloud Telephony, Incident Management, Ticket Management, SLA Management, Root Cause Analysis, Application Troubleshooting, VPN Troubleshooting, IVR, Call Routing, Virtual Numbers, CRM Integrations, API Configurations, Freshdesk, Zendesk, Zoho Desk' }}
 
@@ -523,6 +533,17 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
 
+    - name: Restore follow-up history
+      uses: actions/cache@v3
+      with:
+        path: |
+          data/sent_emails_log.csv
+          data/followup_log.csv
+        key: followup-sagar-${{ runner.os }}-v1-${{ github.run_number }}
+        restore-keys: |
+          followup-sagar-${{ runner.os }}-v1-
+          job-data-sagar-${{ runner.os }}-v1-
+
     - name: Download All Results
       uses: actions/download-artifact@v4
       with:
@@ -536,6 +557,20 @@ jobs:
         find artifacts -name "*.json" -exec cp {} data/ \; 2>/dev/null || true
         find artifacts -name "*.txt" -exec cp {} data/ \; 2>/dev/null || true
       continue-on-error: true
+
+    - name: Send due follow-up emails
+      if: ${{ github.event_name == 'schedule' || env.ENABLE_FOLLOWUPS == 'true' }}
+      env:
+        SENDER_PASSWORD: ${{ secrets.SENDER_PASSWORD_SAGAR }}
+        MAX_FOLLOWUPS: ${{ github.event.inputs.max_followups || '5' }}
+        CI: 'true'
+        GITHUB_ACTIONS: 'true'
+      run: |
+        if [ -z "$SENDER_PASSWORD" ]; then
+          echo "::error::Configure the SENDER_PASSWORD_SAGAR repository secret before sending follow-ups."
+          exit 1
+        fi
+        python scripts/followup_sender.py
 
     - name: Update Application Tracker
       run: |

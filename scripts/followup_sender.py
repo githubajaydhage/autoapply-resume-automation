@@ -302,6 +302,20 @@ ${phone}"""
             message['To'] = recipient_email
             message['Subject'] = subject
             message.attach(MIMEText(body, 'plain'))
+
+            if not os.path.exists(BASE_RESUME_PATH):
+                logging.error(f"Resume not found; skipping follow-up: {BASE_RESUME_PATH}")
+                return False
+
+            with open(BASE_RESUME_PATH, 'rb') as attachment:
+                resume_part = MIMEBase('application', 'octet-stream')
+                resume_part.set_payload(attachment.read())
+            encoders.encode_base64(resume_part)
+            resume_part.add_header(
+                'Content-Disposition',
+                f'attachment; filename={os.path.basename(BASE_RESUME_PATH)}'
+            )
+            message.attach(resume_part)
             
             context = ssl.create_default_context()
             

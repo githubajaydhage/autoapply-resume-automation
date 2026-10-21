@@ -1,6 +1,7 @@
 import os
 import tempfile
 import unittest
+import warnings
 from email.mime.multipart import MIMEMultipart
 
 import pandas as pd
@@ -38,6 +39,29 @@ class RequiredResumeTests(unittest.TestCase):
         sender.resume_path = os.path.join(tempfile.gettempdir(), "missing-required-resume.pdf")
 
         self.assertFalse(sender.send_email("hr@example.org", "Acme", "Support Engineer"))
+
+
+class ProblematicDomainTests(unittest.TestCase):
+    def test_domain_stats_avoid_pandas_groupby_apply_warning(self):
+        sender = PersonalizedEmailSender.__new__(PersonalizedEmailSender)
+
+        with tempfile.TemporaryDirectory() as directory:
+            sender.sent_log_path = os.path.join(directory, "sent_emails.csv")
+            pd.DataFrame(
+                [
+                    {"recipient_email": "hr1@acme.org", "status": "bounced"},
+                    {"recipient_email": "hr2@acme.org", "status": "rejected"},
+                ]
+            ).to_csv(sender.sent_log_path, index=False)
+
+            with warnings.catch_warnings(record=True) as caught:
+                warnings.simplefilter("always")
+                problematic_domains = sender._analyze_problematic_domains()
+
+        self.assertIn("acme.org", problematic_domains)
+        self.assertFalse(
+            any(issubclass(item.category, FutureWarning) for item in caught)
+        )
 
 
 class SmartJobMatcherTests(unittest.TestCase):

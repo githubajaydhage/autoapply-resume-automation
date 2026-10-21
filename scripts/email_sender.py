@@ -569,14 +569,15 @@ class PersonalizedEmailSender:
                 name=self.applicant_name,
                 experience=self.applicant_experience,
                 skills=self.applicant_skills,
-                city=os.getenv('APPLICANT_CITY', 'Bengaluru')
+                city=os.getenv('APPLICANT_CITY', 'Bangalore')
             )
         
         # Fallback to standard subjects without assuming availability.
-        city = os.getenv('APPLICANT_CITY', 'Bengaluru')
+        city = os.getenv('APPLICANT_CITY', 'Bangalore')
         subjects = [
             # Direct and specific (highest open rates)
             f"Application: {job_title} - {self.applicant_experience} Years Experience",
+            f"Immediate Joiner: {job_title} - {city}",
             f"{job_title} Application - {self.applicant_name}",
             
             # Creates urgency/interest
@@ -666,8 +667,7 @@ class PersonalizedEmailSender:
                 applicant_github=self.applicant_github,
                 applicant_portfolio=self.applicant_portfolio,
                 applicant_projects=self.applicant_projects,
-                include_portfolio=self.include_portfolio_links,
-                hr_name=None  # Always None - use Hiring Team
+                include_portfolio=self.include_portfolio_links
             )
         
         # Use HIGH RESPONSE templates (3x more callbacks)
@@ -680,15 +680,22 @@ class PersonalizedEmailSender:
                 skills=self.applicant_skills,
                 phone=self.applicant_phone,
                 linkedin=self.applicant_linkedin,
-                city=os.getenv('APPLICANT_CITY', 'Bengaluru'),
-                notice_period=os.getenv('NOTICE_PERIOD', ''),
-                hr_name=None  # Always None - use Hiring Team
+                city=os.getenv('APPLICANT_CITY', 'Bangalore'),
+                notice_period=os.getenv('NOTICE_PERIOD', 'Immediate'),
+                work_preference=os.getenv('APPLICANT_WORK_PREFERENCE', 'Remote/Hybrid')
             )
         
         # Always use Hiring Team greeting
         greeting = "Dear Hiring Team,"
-        city = os.getenv('APPLICANT_CITY', 'Bengaluru')
+        city = os.getenv('APPLICANT_CITY', 'Bangalore')
         location = os.getenv('APPLICANT_LOCATION', f'{city}, Karnataka, India')
+        notice_period = os.getenv('NOTICE_PERIOD', 'Immediate')
+        availability = (
+            "am available to join immediately"
+            if notice_period.lower() == 'immediate'
+            else f"have a notice period of {notice_period}"
+        )
+        work_preference = os.getenv('APPLICANT_WORK_PREFERENCE', 'Remote/Hybrid')
         linkedin_line = f"🔗 LinkedIn: {self.applicant_linkedin}" if self.applicant_linkedin else ""
         
         # Fallback to standard templates
@@ -704,7 +711,7 @@ My key qualifications include:
 • Excellent communication and collaboration skills
 • Proven track record of delivering results
 
-I am based in ${{location}}.
+I am based in ${{location}}, prefer a ${{work_preference}} work arrangement, and ${{availability}}.
 
 I am particularly drawn to ${{company}}'s reputation for innovation and excellence in the industry. I believe my skills and experience align well with the requirements of this role.
 
@@ -730,7 +737,7 @@ What excites me about ${company}:
 • The opportunity to work on challenging projects
 • The collaborative and growth-oriented culture
 
-I am based in ${location}.
+I am based in ${location}, prefer a ${work_preference} work arrangement, and ${availability}.
 
 Please find my resume attached for your consideration.
 
@@ -749,6 +756,8 @@ Profile Summary:
 • Experience: ${experience} years
 • Skills: ${skills}
 • Location: ${location}
+• Availability: ${notice_period}
+• Preference: ${work_preference}
 
 I am excited about the opportunity to contribute to ${company}'s success.
 
@@ -776,6 +785,9 @@ ${linkedin_line}"""
             name=self.applicant_name,
             phone=self.applicant_phone,
             location=location,
+            notice_period=notice_period,
+            work_preference=work_preference,
+            availability=availability,
             linkedin_line=linkedin_line
         )
         

@@ -320,7 +320,7 @@ class SubjectLineOptimizer:
         """
         # Detect industry from job title for specialized templates
         job_lower = job_title.lower() if job_title else ''
-        city = os.getenv('APPLICANT_CITY', 'Bengaluru')
+        city = os.getenv('APPLICANT_CITY', 'Bangalore')
         
         # Interior Design / Architecture specific subject lines
         if any(kw in job_lower for kw in ['interior', 'autocad', 'designer', 'estimation', 'drafts', 'revit', 'sketchup', 'architect']):
@@ -338,7 +338,7 @@ class SubjectLineOptimizer:
             # Generic templates for other roles
             templates = {
                 'specific_role': f"Application: {job_title} - {experience} Years Experience",
-                'location_focus': f"{job_title} Application - {city}",
+                'location_focus': f"Immediate Joiner: {job_title} - {city}",
                 'value_prop': f"Experienced {job_title} Seeking {company} Opportunity",
                 'direct_ask': f"Interested in {job_title} Role at {company}",
                 'achievement': f"{job_title} with Proven Track Record - Application",
@@ -528,7 +528,14 @@ class EmailOptimizer:
             if applicant_projects:
                 portfolio_section += f"   • Key Projects: {applicant_projects}\n"
 
-        location = os.getenv('APPLICANT_LOCATION', 'Bengaluru, Karnataka, India')
+        location = os.getenv('APPLICANT_LOCATION', 'Bangalore, Karnataka, India')
+        notice_period = os.getenv('NOTICE_PERIOD', 'Immediate')
+        work_preference = os.getenv('APPLICANT_WORK_PREFERENCE', 'Remote/Hybrid')
+        availability = (
+            "am available to join immediately"
+            if notice_period.lower() == 'immediate'
+            else f"have a notice period of {notice_period}"
+        )
         linkedin_line = f"🔗 LinkedIn: {applicant_linkedin}" if applicant_linkedin else ""
         
         body = f"""{optimization['greeting']}
@@ -545,7 +552,7 @@ My key qualifications include:
 • Excellent communication and collaboration skills
 • Proven track record of delivering results
 {portfolio_section}
-I am based in {location}.
+I am based in {location}, prefer a {work_preference} work arrangement, and {availability}.
 
 I have attached my resume for your review. I would welcome the opportunity to discuss how my background and skills can benefit {company}.
 

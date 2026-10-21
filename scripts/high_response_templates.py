@@ -22,7 +22,8 @@ class HighResponseSubjects:
     
     # TIER 1: Highest performing subjects (40%+ open rate)
     HIGH_IMPACT_SUBJECTS = [
-        # Specificity without unsupported availability claims
+        # Use availability from the applicant profile
+        "Immediate Joiner: {job_title} - {city}",
         "{job_title} - {experience} Years | {city}",
         "Application: {job_title} at {company} - {experience} YOE | {skills_short}",
         "{job_title} Opening - {experience} Years Exp",
@@ -53,7 +54,7 @@ class HighResponseSubjects:
     
     @classmethod
     def get_subject(cls, job_title: str, company: str, name: str, 
-                   experience: str, skills: str, city: str = "Bengaluru") -> str:
+                   experience: str, skills: str, city: str = "Bangalore") -> str:
         """Get a high-performing subject line."""
         
         # Parse skills for short version
@@ -94,13 +95,15 @@ QUICK PROFILE:
 • Experience: {experience} years in {skills_area}
 • Core Skills: {skills}
 • Location: {city}
+• Availability: {notice_period}
+• Work preference: {work_preference}
 
 I've attached my resume for your review. Would love to discuss how my experience aligns with this role.
 
 Best regards,
 {name}
 📞 {phone}
-🔗 {linkedin}"""
+{linkedin_line}"""
 
     # TEMPLATE 2: Value-Proposition Focused (Shows what you bring)
     VALUE_TEMPLATE = """Dear Hiring Team,
@@ -111,6 +114,7 @@ WHY ME:
 ✓ {experience} years hands-on experience with {skills_primary}
 ✓ Proven track record in {skills_area}
 ✓ Based in {city}
+✓ Availability: {notice_period} | Preference: {work_preference}
 
 KEY SKILLS: {skills}
 
@@ -130,7 +134,7 @@ I am writing to apply for the {job_title} position at {company}.
 
 With {experience} years of experience in {skills_area}, I have developed strong expertise in {skills}.
 
-I am based in {city}. Please find my resume attached.
+I am based in {city} and prefer a {work_preference} work arrangement. {availability} Please find my resume attached.
 
 I look forward to the opportunity to discuss my candidacy.
 
@@ -148,6 +152,7 @@ A bit about me:
 • {experience} years solving problems with {skills_primary}
 • I love working with {skills}
 • Currently based in {city}
+• Availability: {notice_period} | Preference: {work_preference}
 
 I've attached my resume - would love to chat about how I can add value to your team.
 
@@ -167,7 +172,7 @@ RELEVANT EXPERIENCE:
 • Resolved product issues across SaaS and cloud telephony platforms
 • Strong background in {skills_primary}
 
-I am based in {city}. Resume attached for your review.
+I am based in {city} and prefer a {work_preference} work arrangement. {availability} Resume attached for your review.
 
 Looking forward to discussing this opportunity.
 
@@ -190,13 +195,19 @@ Best,
     @classmethod
     def get_body(cls, job_title: str, company: str, name: str,
                  experience: str, skills: str, phone: str, 
-                 linkedin: str, city: str = "Bengaluru",
-                 notice_period: str = "") -> str:
+                 linkedin: str, city: str = "Bangalore",
+                 notice_period: str = "Immediate",
+                 work_preference: str = "Remote/Hybrid") -> str:
         """Get a high-performing email body."""
         
         # Parse skills
         skills_list = [s.strip() for s in skills.split(',')]
         skills_primary = skills_list[0] if skills_list else "Product Support"
+        availability = (
+            "Available to join immediately."
+            if notice_period.lower() == "immediate"
+            else f"Notice period: {notice_period}."
+        )
         
         # Determine skills area based on keywords
         skills_lower = skills.lower()
@@ -228,7 +239,9 @@ Best,
             phone=phone,
             linkedin_line=f"🔗 LinkedIn: {linkedin}" if linkedin else "",
             city=city,
-            notice_period=notice_period
+            notice_period=notice_period,
+            availability=availability,
+            work_preference=work_preference
         )
 
 

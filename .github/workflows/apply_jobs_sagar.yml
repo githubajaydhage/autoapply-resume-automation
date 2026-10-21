@@ -29,12 +29,12 @@ on:
       applicant_location:
         description: 'Location'
         required: false
-        default: 'Bengaluru, Karnataka, India'
+        default: 'Bangalore, Karnataka, India'
         type: string
       applicant_city:
         description: 'City'
         required: false
-        default: 'Bengaluru'
+        default: 'Bangalore'
         type: string
       applicant_country:
         description: 'Country'
@@ -42,14 +42,24 @@ on:
         default: 'India'
         type: string
       applicant_linkedin:
-        description: 'LinkedIn URL (optional)'
+        description: 'LinkedIn URL'
         required: false
-        default: ''
+        default: 'https://www.linkedin.com/in/sagar-dhage-2a12553a1/'
         type: string
       applicant_experience:
         description: 'Years of Experience'
         required: false
         default: '4.1'
+        type: string
+      notice_period:
+        description: 'Availability / notice period'
+        required: false
+        default: 'Immediate'
+        type: string
+      work_preference:
+        description: 'Preferred work arrangement'
+        required: false
+        default: 'Remote/Hybrid'
         type: string
       applicant_target_role:
         description: 'Target Roles'
@@ -172,12 +182,14 @@ env:
   APPLICANT_EMAIL: ${{ github.event.inputs.applicant_email || 'sagardhage9741@gmail.com' }}
   SENDER_EMAIL: ${{ github.event.inputs.applicant_email || 'sagardhage9741@gmail.com' }}
   APPLICANT_PHONE: ${{ github.event.inputs.applicant_phone || '9741479329' }}
-  APPLICANT_LOCATION: ${{ github.event.inputs.applicant_location || 'Bengaluru, Karnataka, India' }}
-  APPLICANT_CITY: ${{ github.event.inputs.applicant_city || 'Bengaluru' }}
+  APPLICANT_LOCATION: ${{ github.event.inputs.applicant_location || 'Bangalore, Karnataka, India' }}
+  APPLICANT_CITY: ${{ github.event.inputs.applicant_city || 'Bangalore' }}
   APPLICANT_COUNTRY: ${{ github.event.inputs.applicant_country || 'India' }}
-  APPLICANT_LINKEDIN: ${{ github.event.inputs.applicant_linkedin || '' }}
+  APPLICANT_LINKEDIN: ${{ github.event.inputs.applicant_linkedin || 'https://www.linkedin.com/in/sagar-dhage-2a12553a1/' }}
   APPLICANT_EXPERIENCE: ${{ github.event.inputs.applicant_experience || '4.1' }}
   YEARS_EXPERIENCE: ${{ github.event.inputs.applicant_experience || '4.1' }}
+  NOTICE_PERIOD: ${{ github.event.inputs.notice_period || 'Immediate' }}
+  APPLICANT_WORK_PREFERENCE: ${{ github.event.inputs.work_preference || 'Remote/Hybrid' }}
   APPLICANT_TARGET_ROLE: ${{ github.event.inputs.applicant_target_role || 'Product Support Engineer, Software Support Engineer, Technical Support Engineer, Application Support Engineer, SaaS Support Engineer' }}
   APPLICANT_SKILLS: ${{ github.event.inputs.applicant_skills || 'SaaS Application Support, Product Support, Technical Support, Customer Support, Cloud Telephony, Incident Management, Ticket Management, SLA Management, Root Cause Analysis, Application Troubleshooting, VPN Troubleshooting, IVR, Call Routing, Virtual Numbers, CRM Integrations, API Configurations, Freshdesk, Zendesk, Zoho Desk' }}
   

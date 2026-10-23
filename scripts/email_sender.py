@@ -357,9 +357,7 @@ class PersonalizedEmailSender:
         # CRITICAL: Check if resume file exists
         if not os.path.exists(self.resume_path):
             logging.error(f"⚠️ ⚠️ ⚠️  RESUME FILE NOT FOUND: {self.resume_path}")
-            logging.error(f"   Emails will be sent WITHOUT resume attachment!")
-            logging.error(f"   This is likely why you're not getting callbacks!")
-            logging.error(f"   Please add resume file: {os.path.basename(self.resume_path)}")
+            logging.error(f"   Email sending will stop until {os.path.basename(self.resume_path)} is available.")
         else:
             # Check resume file size
             resume_size = os.path.getsize(self.resume_path)
@@ -1109,6 +1107,9 @@ def main():
     logging.info("="*60)
     
     sender = PersonalizedEmailSender()
+
+    if not os.path.isfile(sender.resume_path):
+        raise FileNotFoundError(f"Required resume file not found: {sender.resume_path}")
     
     # Check for password first (accept any of the supported env vars)
     if not (os.getenv('SENDER_PASSWORD') or os.getenv('GMAIL_APP_PASSWORD') or os.getenv('SENDER_PASSWORD_YOGESHWARI')):
@@ -1319,7 +1320,7 @@ def main():
     if emails_df.empty:
         logging.error("❌ No HR emails found!")
         logging.info("Run curated_hr_database.py or email_scraper.py first.")
-        return
+        raise RuntimeError("No HR emails found to send applications to.")
     
     # Clean and dedupe
     emails_df = emails_df[emails_df['hr_email'].notna()]
@@ -1352,9 +1353,10 @@ def main():
     
     # --- DYNAMIC JOB FILTERING LOGIC ---
     # Only apply for jobs matching workflow-defined target role, applicant skills, and job keywords
-    target_role = os.getenv('APPLICANT_TARGET_ROLE', '').strip().lower()
+    target_roles = [role.strip().lower() for role in os.getenv('APPLICANT_TARGET_ROLE', '').split(',') if role.strip()]
     job_keywords = [kw.strip().lower() for kw in os.getenv('JOB_KEYWORDS', '').split(',') if kw.strip()]
     applicant_skills = [sk.strip().lower() for sk in os.getenv('APPLICANT_SKILLS', '').split(',') if sk.strip()]
+    unfiltered_emails_df = emails_df.copy()
 
     def job_matches(row):
         # Check job title against target role and keywords
@@ -1362,7 +1364,7 @@ def main():
         # Check for any keyword match in job title
         keyword_match = any(kw in job_title for kw in job_keywords) if job_keywords else True
         # Check for target role match
-        role_match = target_role in job_title if target_role else True
+        role_match = any(role in job_title for role in target_roles) if target_roles else True
         # Check for skills match (if skills column exists)
         skills_col = row.get('skills', '')
         if isinstance(skills_col, str):
@@ -1395,11 +1397,12 @@ def main():
         logging.info(f"   📋 Excel emails (bypassed filter): {len(excel_emails)}")
         logging.info(f"   📋 Other emails (filtered): {len(filtered_non_excel)}")
         if emails_df.empty:
-            logging.warning("⚠️ No jobs matched the workflow criteria! Proceeding to send to all available HR contacts as fallback.")
+            logging.warning("⚠️ No jobs matched the workflow criteria! Restoring all available HR contacts as fallback.")
+            emails_df = unfiltered_emails_df
 
     if emails_df.empty:
         logging.error("❌ No HR emails found after fallback! Aborting.")
-        return
+        raise RuntimeError("No HR contacts remain after applying workflow criteria.")
     # Send emails
     stats = sender.send_bulk_emails(
         emails_df,

@@ -1412,6 +1412,13 @@ def main():
         max_emails=max_emails,
         delay_range=delay_range
     )
+
+    if stats['sent'] == 0:
+        raise RuntimeError(
+            "Email campaign sent 0 applications "
+            f"(failed: {stats['failed']}, skipped: {stats['skipped']}). "
+            "Check recipient validity, bounce history, and SMTP configuration."
+        )
     
     logging.info("="*60)
     logging.info("✅ Email campaign completed!")

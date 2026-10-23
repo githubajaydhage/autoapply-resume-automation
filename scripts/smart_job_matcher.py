@@ -338,7 +338,16 @@ class SmartJobMatcher:
                         'source': hr.get('source', 'curated')
                     })
         
-        result_df = pd.DataFrame(matches)
+        result_df = pd.DataFrame(matches, columns=[
+            'job_title',
+            'job_company',
+            'job_url',
+            'job_match_score',
+            'hr_email',
+            'hr_company',
+            'company_similarity',
+            'source',
+        ])
         
         if not result_df.empty:
             # Remove duplicates (same email + same job)

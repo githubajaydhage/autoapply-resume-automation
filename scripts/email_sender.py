@@ -459,12 +459,15 @@ class PersonalizedEmailSender:
             df['domain'] = df['recipient_email'].str.lower().str.split('@').str[-1]
             
             # Count success/failure by domain
-            domain_stats = df.groupby('domain').apply(
-                lambda x: pd.Series({
-                    'total': len(x),
-                    'bounced': x['status'].str.lower().str.contains('bounced|failed|undeliverable|rejected', na=False, regex=True).sum()
-                })
-            ).reset_index()
+            df['_bounced'] = df['status'].str.lower().str.contains(
+                'bounced|failed|undeliverable|rejected',
+                na=False,
+                regex=True,
+            )
+            domain_stats = df.groupby('domain', as_index=False).agg(
+                total=('domain', 'size'),
+                bounced=('_bounced', 'sum'),
+            )
             
             # Domains with >50% bounce rate and at least 2 bounces are problematic
             for _, row in domain_stats.iterrows():
@@ -1378,7 +1381,7 @@ def main():
 
     # Apply filtering if any criteria are set
     # BUT: Excel emails (from_excel_list=True) ALWAYS bypass filtering
-    if target_role or job_keywords or applicant_skills:
+    if target_roles or job_keywords or applicant_skills:
         before_count = len(emails_df)
         # Keep ALL Excel emails, only filter non-Excel emails
         excel_emails = emails_df[emails_df.get('from_excel_list', False) == True].copy() if 'from_excel_list' in emails_df.columns else pd.DataFrame()

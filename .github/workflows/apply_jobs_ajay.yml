@@ -224,12 +224,12 @@ jobs:
     
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v3
+      uses: actions/checkout@v7
       with:
         ref: v.1.3.0-ajay
 
     - name: Set up Python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v7
       with:
         python-version: '3.9'
 
@@ -239,7 +239,7 @@ jobs:
         pip install -r requirements.txt
 
     - name: Restore Cached HR Emails
-      uses: actions/cache@v3
+      uses: actions/cache@v6
       with:
         path: |
           data/sent_emails_log.csv
@@ -285,10 +285,9 @@ jobs:
         MAX_EMAILS: ${{ github.event.inputs.max_emails || '10' }}
         INCLUDE_PORTFOLIO_LINKS: ${{ github.event.inputs.include_portfolio_links || 'false' }}
         USE_CACHED_ONLY: 'true'
-      continue-on-error: true
 
     - name: Upload Instant Results
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: instant-apply-results
         path: data/
@@ -308,12 +307,12 @@ jobs:
     
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v3
+      uses: actions/checkout@v7
       with:
         ref: v.1.3.0-ajay
 
     - name: Set up Python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v7
       with:
         python-version: '3.9'
 
@@ -323,7 +322,7 @@ jobs:
         pip install -r requirements.txt
 
     - name: Restore Previous Data
-      uses: actions/cache@v3
+      uses: actions/cache@v6
       with:
         path: |
           data/sent_emails_log.csv
@@ -352,7 +351,7 @@ jobs:
         JOB_LOCATION: ${{ github.event.inputs.job_location || 'Bangalore' }}
 
     - name: Upload Job Data
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: scraped-jobs
         path: data/jobs_today.csv
@@ -369,12 +368,12 @@ jobs:
     
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v3
+      uses: actions/checkout@v7
       with:
         ref: v.1.3.0-ajay
 
     - name: Set up Python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v7
       with:
         python-version: '3.9'
 
@@ -384,7 +383,7 @@ jobs:
         pip install -r requirements.txt
 
     - name: Download Scraped Jobs
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v7
       with:
         name: scraped-jobs
         path: data/
@@ -417,7 +416,7 @@ jobs:
         PYTHONPATH: ${{ github.workspace }}
 
     - name: Upload HR Research Results
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: hr-research-results
         path: data/
@@ -435,12 +434,12 @@ jobs:
     
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v3
+      uses: actions/checkout@v7
       with:
         ref: v.1.3.0-ajay
 
     - name: Set up Python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v7
       with:
         python-version: '3.9'
 
@@ -450,7 +449,7 @@ jobs:
         pip install -r requirements.txt
 
     - name: Download All Results
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v7
       with:
         path: artifacts/
       continue-on-error: true
@@ -477,10 +476,9 @@ jobs:
         SENDER_PASSWORD_YOGESHWARI: ${{ secrets.SENDER_PASSWORD_AJAY }}
         MAX_EMAILS: ${{ github.event.inputs.max_emails || '15' }}
         INCLUDE_PORTFOLIO_LINKS: ${{ github.event.inputs.include_portfolio_links || 'false' }}
-      continue-on-error: true
 
     - name: Upload Final Results
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: application-results
         path: data/
@@ -498,12 +496,12 @@ jobs:
     
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v3
+      uses: actions/checkout@v7
       with:
         ref: v.1.3.0-ajay
 
     - name: Set up Python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v7
       with:
         python-version: '3.9'
 
@@ -513,7 +511,7 @@ jobs:
         pip install -r requirements.txt
 
     - name: Download All Results
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v7
       with:
         path: artifacts/
       continue-on-error: true
